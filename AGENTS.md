@@ -26,7 +26,7 @@ This document provides instructions for AI coding agents and human contributors.
 
 Check this before assuming anything is wired up.
 
-- **Frontend (`apps/web`):** a clickable mockup of every main screen (marketplace, listing detail, create listing, wanted posts and matches, deals, move-out, dashboard and requests, profiles, deposit demo). All data comes from `src/lib/mock-data.ts` and `src/lib/mock-shop.ts`. Forms and status buttons only change local React state.
+- **Frontend (`apps/web`):** a clickable mockup of every main screen (marketplace, listing detail, create listing, wanted posts and matches, deals, move-out, dashboard and requests, profiles, deposit demo). Every mockup route lives under `/marketplace` (`src/app/marketplace/`, with its own layout); the root `/` is still the starter page. All data comes from `src/lib/mock-data.ts` and `src/lib/mock-shop.ts`. Forms and status buttons only change local React state.
 - **Backend (`apps/api`):** FastAPI scaffold with `GET /health` only. No database, auth or AI integration exists yet.
 - **Labelled mockups:** AI drafting, AI matching and the Solana deposit show canned or simulated results and say so in the UI. Keep those labels until the real integration replaces them (sections 2.5 and 19.3).
 - **Signed-in user:** hard-coded as `CURRENT_USER_ID` in `mock-data.ts`.
@@ -240,7 +240,7 @@ The frontend groups domain components by folder under `components/`:
 
 ```text
 apps/web/src/
-├── app/                 # routes and layouts
+├── app/                 # root layout; mockup routes under app/marketplace/
 ├── components/
 │   ├── ui/              # shadcn/ui primitives
 │   ├── marketplace/     # listing cards, thumbnails, status badges, search prompt

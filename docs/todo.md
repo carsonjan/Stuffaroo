@@ -36,20 +36,20 @@ Settle these before building the matching items below. Each one is a team call, 
 - [ ] Replace `CURRENT_USER_ID` with the signed-in user everywhere it is used.
 
 ### Listings
-- [ ] `GET /api/listings` with `q`, `category`, `price` and `all` filters, matching what `app/marketplace/page.tsx` filters in memory today.
+- [ ] `GET /api/listings` with `q`, `category`, `price` and `all` filters, matching what `app/marketplace/browse/page.tsx` filters in memory today.
 - [ ] `GET /api/listings/{id}` for the listing page.
 - [ ] `POST /api/listings` from `components/listings/listing-form.tsx`. Its submit currently only sets local `published` state. The form has no availability field yet; add one.
-- [ ] `GET /api/profiles/{id}` plus the owner's listings for `app/profile/[id]/page.tsx`.
+- [ ] `GET /api/profiles/{id}` plus the owner's listings for `app/marketplace/profile/[id]/page.tsx`.
 
 ### Wanted posts and matching
 - [ ] `GET /api/wanted`, `GET /api/wanted/{id}`, `POST /api/wanted` for the wanted pages and `wanted-form.tsx`.
 - [ ] `POST /api/matches` (or `GET /api/wanted/{id}/matches`): filter real listings by category, availability, price and dates first, then rank. Return `{listing_id, score, reason}` like `MatchSuggestion`, and drop any ID that is not in the database.
-- [ ] Replace `mockMatches` where it is read (`app/wanted/[id]/page.tsx`, `components/wanted/wanted-form.tsx`, `components/wanted/wanted-card.tsx`) and the canned extraction in `wanted-form.tsx`. `match-list.tsx` only renders the matches it is given.
+- [ ] Replace `mockMatches` where it is read (`app/marketplace/wanted/[id]/page.tsx`, `components/wanted/wanted-form.tsx`, `components/wanted/wanted-card.tsx`) and the canned extraction in `wanted-form.tsx`. `match-list.tsx` only renders the matches it is given.
 - [ ] A deterministic fallback (category + keyword) when the AI call fails, labelled as such in the UI.
 
 ### Rental requests
 - [ ] `POST /api/rentals` from `components/requests/request-form.tsx`. It currently only sets `submitted`.
-- [ ] `GET /api/rentals?role=borrower|owner` for `app/dashboard/requests/page.tsx` and the dashboard.
+- [ ] `GET /api/rentals?role=borrower|owner` for `app/marketplace/dashboard/requests/page.tsx` and the dashboard.
 - [ ] `PATCH /api/rentals/{id}` for accept, reject, cancel, start and complete. `request-row.tsx` changes local state only today.
 - [ ] Enforce on the server: transitions are only pending to accepted/rejected/cancelled, accepted to active, active to completed; only the owner accepts or rejects; only the borrower cancels; no requests on your own listing; no overlapping accepted or active bookings for one listing.
 - [ ] pytest coverage for the state machine and the overlap check.
@@ -64,7 +64,7 @@ Settle these before building the matching items below. Each one is a team call, 
 
 ## P2: later
 
-- [ ] Wire buy listings, price drops and bundles (`/deals`, `/move-out`) if the buy/sell decision above says so.
+- [ ] Wire buy listings, price drops and bundles (`/marketplace/deals`, `/marketplace/move-out`) if the buy/sell decision above says so.
 - [ ] Semantic search with pgvector.
 - [ ] Deploy (Vercel for web, a host for the API) and set up the custom domain.
 
@@ -76,5 +76,5 @@ Found in the 2026-11-07 review and left for when each screen is wired:
 - [ ] The photo input in `listing-form.tsx` is never read (covered by the image upload item above).
 - [ ] `request-form.tsx` has hard-coded default dates that will go stale, and its button says "Request to borrow" for paid rentals too.
 - [ ] Mock loading timers (`setTimeout`) in `listing-form.tsx`, `wanted-form.tsx` and `deposit-demo.tsx` are never cleared. They go away when real calls replace them.
-- [ ] `mock-shop.ts` models buy and rent items separately from `Listing`, so buy items are not searchable in `/marketplace` and shop cards don't link anywhere. Resolve with the buy/sell decision.
+- [ ] `mock-shop.ts` models buy and rent items separately from `Listing`, so buy items are not searchable in `/marketplace/browse` and shop cards don't link anywhere. Resolve with the buy/sell decision.
 - [ ] `components/shop/mode-switcher.tsx` hand-rolls a tablist without arrow-key support. `components/ui/tabs.tsx` already handles this.

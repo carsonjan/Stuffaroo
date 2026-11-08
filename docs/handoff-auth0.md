@@ -40,7 +40,7 @@ Someone with access to the Auth0 dashboard must create the tenant resources and 
 
 - Add `@auth0/nextjs-auth0`.
 - `src/lib/auth0.ts`: create one `Auth0Client`, requesting the API audience so `getAccessToken()` returns a token FastAPI can verify.
-- `src/proxy.ts`: hand requests to the SDK so `/auth/login`, `/auth/logout` and `/auth/callback` work. Optionally redirect signed-out users away from `/dashboard`, `/listings/new`, `/wanted/new` and `/deposits`. Treat this as a convenience only, not the security check.
+- `src/proxy.ts`: hand requests to the SDK so `/auth/login`, `/auth/logout` and `/auth/callback` work. Optionally redirect signed-out users away from `/marketplace/dashboard`, `/marketplace/listings/new`, `/marketplace/wanted/new` and `/marketplace/deposits`. Treat this as a convenience only, not the security check.
 - Re-check the session on the server in protected pages, route handlers and server actions.
 - Header: show a "Sign in" link (`/auth/login`) when signed out. Show the account menu when signed in, using the session's name and picture. Point the existing "Sign out" item at `/auth/logout`. It currently links to `/`.
 - Add a small server-side helper in `src/lib/` that attaches `Authorization: Bearer <access token>` when calling FastAPI. The backend wiring will build its API client on top of it.
