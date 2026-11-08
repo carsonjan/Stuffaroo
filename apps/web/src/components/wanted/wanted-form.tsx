@@ -1,6 +1,6 @@
 "use client";
 
-import { LoaderCircle, Sparkles } from "lucide-react";
+import { CircleCheck, LoaderCircle, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -16,17 +16,55 @@ import { MatchList } from "@/components/wanted/match-list";
 import { categories, mockMatches } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
-/** Mockup: "Find matches" reveals canned AI output for the keyboard example. */
+/**
+ * Mockup: "Find matches" reveals canned AI output for the keyboard example,
+ * and "Post wanted" shows a confirmation without saving anything.
+ */
 export function WantedForm() {
   const [text, setText] = useState(
     "I need a mechanical keyboard for three days next week, nothing too loud",
   );
-  const [stage, setStage] = useState<"idle" | "loading" | "parsed">("idle");
+  const [stage, setStage] = useState<"idle" | "loading" | "parsed" | "posted">(
+    "idle",
+  );
 
   const analyze = () => {
     setStage("loading");
     setTimeout(() => setStage("parsed"), 900);
   };
+
+  if (stage === "posted") {
+    return (
+      <div className="mt-8 flex flex-col items-center rounded-card bg-paper-2 p-6 text-center">
+        <CircleCheck className="size-8 text-accent" aria-hidden />
+        <p className="mt-3 font-medium">Wanted post created</p>
+        <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+          We&apos;d let students with matching items know.
+        </p>
+        <p className="mt-2 text-xs text-muted-foreground italic">
+          Mockup: nothing was saved, and your post won&apos;t appear in the
+          list.
+        </p>
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
+          <Link
+            href="/marketplace/wanted"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "lg" }),
+              "px-4",
+            )}
+          >
+            Back to wanted posts
+          </Link>
+          <Link
+            href="/marketplace/wanted/w-2"
+            className={cn(buttonVariants({ size: "lg" }), "px-4")}
+          >
+            See a sample post
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-8 flex flex-col gap-8">
@@ -141,12 +179,14 @@ export function WantedForm() {
             >
               Cancel
             </Link>
-            <Link
-              href="/marketplace/wanted/w-2"
-              className={cn(buttonVariants({ size: "lg" }), "px-5")}
+            <Button
+              type="button"
+              size="lg"
+              className="px-5"
+              onClick={() => setStage("posted")}
             >
               Post wanted
-            </Link>
+            </Button>
           </div>
         </>
       )}
