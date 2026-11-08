@@ -134,5 +134,6 @@ type RentalRequest = {
 
 1. Hard filters in SQL: listing `available`, same category when one is given, price within budget when one is given, not the requester's own listing.
 2. Rank: with Gemini configured, embed the need (`RETRIEVAL_QUERY`) and order by cosine distance to listing embeddings (`RETRIEVAL_DOCUMENT`, 768 dims) using the DiskANN index. Otherwise fall back to keyword ranking and return `method: "keyword"`.
-3. Drop weak vector matches below a similarity floor. Return at most 6.
-4. `reason` lists the attributes that fit (category, price vs budget, pickup area, free to borrow), so it never claims anything the listing doesn't have.
+3. Drop weak vector matches: below a similarity floor, or too far behind the best match. Return at most 6.
+4. A Gemini text model then checks the shortlist and removes listings that clearly can't do the job (for example items that only share a word like "HDMI"). It only removes, never adds; its answer is validated against the shortlist, and if the check fails the shortlist stands.
+5. `reason` lists the attributes that fit (category, price vs budget, pickup area, free to borrow), so it never claims anything the listing doesn't have.

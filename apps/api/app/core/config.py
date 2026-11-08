@@ -37,6 +37,14 @@ class Settings(BaseSettings):
     # gemini-embedding-001 scores: good matches ~0.59-0.68, unrelated ~0.52-0.58.
     match_min_similarity: float = 0.58
     match_max_gap_from_best: float = 0.07
+    # A Gemini text model double-checks the vector shortlist and drops listings
+    # that don't actually meet the need. On Vertex AI, current text models are
+    # served from the "global" location (embeddings use google_cloud_location).
+    match_relevance_check: bool = True
+    # flash-lite was faster (~2s per search) but dropped good matches;
+    # flash (~3s) kept every fitting item across repeated runs.
+    gemini_relevance_model: str = "gemini-3.5-flash"
+    gemini_relevance_location: str = "global"
 
     cors_origins: list[str] = ["http://localhost:3000"]
 
