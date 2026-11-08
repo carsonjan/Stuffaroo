@@ -1,10 +1,14 @@
-# Stuffaroo
+<div align="center">
+
+<h1>Stuffaroo</h1>
 
 A campus marketplace where students buy, sell, rent and borrow things from each other. Built for HackCamp 2026.
 
-**Live at [stuffaroo.shop](https://stuffaroo.shop)** · [Marketplace](https://stuffaroo.shop/marketplace) · [Demo video](docs/demo/stuffaroo-demo.mp4)
+**Live at [Stuffaroo.shop](https://stuffaroo.shop/marketplace)** · [Demo video](docs/demo/stuffaroo-demo.mp4)
 
 [![Stuffaroo marketplace home](docs/snapshots/desktop/01-home-fold.jpg)](https://stuffaroo.shop/marketplace)
+
+</div>
 
 **Tech Stack:**
 
