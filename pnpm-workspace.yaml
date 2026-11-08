@@ -1,8 +1,16 @@
 packages:
   - apps/web
+  - apps/homepage
   - packages/*
 
 allowBuilds:
+  esbuild: true
   lefthook: true
   sharp: false
   unrs-resolver: false
+
+permissions:
+  "@tanstack/react-start":
+    skills: true
+  "@tanstack/router-plugin":
+    skills: true
