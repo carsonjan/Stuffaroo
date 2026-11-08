@@ -7,6 +7,7 @@ import { Rail } from "@/components/ds/rail";
 import { ScrollFillText } from "@/components/ds/scroll-fill-text";
 import { SearchBox } from "@/components/ds/search-box";
 import { Sticker } from "@/components/ds/sticker";
+import { CampusMap } from "@/components/marketplace/campus-map";
 import { CategoryIcon } from "@/components/marketplace/category-icon";
 import { Roo } from "@/components/roo";
 import { buttonVariants } from "@/components/ui/button";
@@ -83,6 +84,8 @@ function HomeView({
       {shell ? null : (
         <>
           <Rail
+            key={mode}
+            className="settle-in"
             title={railTitles[mode]}
             allHref={`/marketplace/browse?mode=${mode}`}
             allLabel={mode === "request" ? "See all requests" : "Shop all"}
@@ -136,8 +139,7 @@ function Hero({
       <div className="grid grid-cols-[minmax(0,1fr)] gap-3 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,1fr)] lg:gap-4">
         {/* Left tile: status, headline, toggle, search */}
         <div className="flex flex-col rounded-tile bg-surface px-5 pt-6 pb-5 md:px-10 md:pt-10 md:pb-8">
-          <p className="t-label flex w-fit items-center gap-2 rounded-pill bg-white px-3.5 py-2 text-ink">
-            <span className="size-1.5 rounded-full bg-ok" aria-hidden />
+          <p className="t-label flex w-fit items-center rounded-pill bg-white px-3.5 py-2 text-ink">
             128 students listing this week
           </p>
           <h1 className="t-display mt-8 md:mt-12">
@@ -153,7 +155,11 @@ function Hero({
             <ModeToggle
               active={mode}
               counts={counts}
-              hrefFor={hrefFor}
+              hrefs={{
+                buy: hrefFor("buy"),
+                rent: hrefFor("rent"),
+                request: hrefFor("request"),
+              }}
               className="w-fit"
             />
             {/* Roo peeks over the search and grips its top edge (Hopper-style) */}
@@ -181,34 +187,41 @@ function Hero({
   );
 }
 
-const collageFrames: { id: string; className: string; rotate: number }[] = [
-  { id: "b-1", className: "left-[6%] top-[8%] w-[38%]", rotate: -4 },
-  { id: "r-2", className: "left-[48%] top-[4%] w-[34%]", rotate: 3 },
-  { id: "b-3", className: "left-[24%] top-[42%] w-[36%]", rotate: 2 },
-  { id: "r-1", className: "left-[62%] top-[46%] w-[32%]", rotate: -3 },
+/**
+ * Prints tossed on a table: later entries land on top. Positions are percentages
+ * of a 9:10 stage, so the spread keeps its shape at every width.
+ */
+const scatter: {
+  id: string;
+  left: number;
+  top: number;
+  width: number;
+  rotate: number;
+}[] = [
+  { id: "r-4", left: 65, top: 0, width: 32, rotate: 11 },
+  { id: "b-1", left: 0, top: 4, width: 34, rotate: -9 },
+  { id: "r-2", left: 33, top: 21, width: 34, rotate: 5 },
+  { id: "r-3", left: 2, top: 56, width: 33, rotate: 7 },
+  { id: "r-1", left: 64, top: 50, width: 34, rotate: -10 },
+  { id: "b-3", left: 34, top: 62, width: 32, rotate: -3 },
 ];
 
 function Collage() {
   const byId = new Map(catalog.map((item) => [item.id, item]));
   return (
-    <div className="relative aspect-square rounded-tile bg-surface-2 sm:aspect-[5/4] lg:aspect-auto lg:min-h-[640px]">
-      {collageFrames.map(({ id, className, rotate }) => {
-        const item = byId.get(id);
-        return item ? (
-          <CollageFrame
-            key={id}
-            item={item}
-            className={className}
-            rotate={rotate}
-          />
-        ) : null;
-      })}
+    <div className="relative flex items-center justify-center rounded-tile bg-surface-2 px-[5%] py-12 lg:min-h-[640px]">
+      <div className="relative aspect-[9/10] w-full max-w-[600px]">
+        {scatter.map(({ id, ...pos }) => {
+          const item = byId.get(id);
+          return item ? <CollageFrame key={id} item={item} {...pos} /> : null;
+        })}
+      </div>
 
       <Sticker
         variant="burst"
         fill="lime"
         rotate={10}
-        className="absolute top-[30%] right-[3%] size-[104px] md:size-[120px]"
+        className="absolute top-[3%] right-[3%] z-10 size-[96px] md:size-[120px]"
       >
         4.9 ★ from classmates
       </Sticker>
@@ -216,7 +229,7 @@ function Collage() {
         variant="pill"
         fill="peach"
         rotate={-6}
-        className="absolute bottom-[8%] right-[6%]"
+        className="absolute bottom-[4%] left-[5%] z-10"
       >
         Pickup on campus
       </Sticker>
@@ -224,13 +237,18 @@ function Collage() {
   );
 }
 
+/** One photo print: white border, a tilt, and it lifts to the top of the pile on hover. */
 function CollageFrame({
   item,
-  className,
+  left,
+  top,
+  width,
   rotate,
 }: {
   item: CatalogItem;
-  className: string;
+  left: number;
+  top: number;
+  width: number;
   rotate: number;
 }) {
   const price =
@@ -240,30 +258,34 @@ function CollageFrame({
   return (
     <Link
       href={`/marketplace/listings/${item.id}`}
-      className={cn(
-        "absolute aspect-[4/5] overflow-hidden rounded-card bg-surface shadow-float transition-transform duration-[400ms] ease-out hover:scale-[1.02]",
-        className,
-      )}
-      style={{ rotate: `${rotate}deg` }}
+      className="absolute rounded-[14px] bg-white p-1.5 shadow-float transition-[scale] duration-[400ms] ease-out hover:z-20 hover:scale-[1.05] md:p-2"
+      style={{
+        left: `${left}%`,
+        top: `${top}%`,
+        width: `${width}%`,
+        rotate: `${rotate}deg`,
+      }}
     >
-      {item.photos[0] ? (
-        // biome-ignore lint/performance/noImgElement: hot-linked mockup photos, cropped by the Unsplash CDN
-        <img
-          src={item.photos[0]}
-          alt={item.title}
-          className="absolute inset-0 size-full object-cover"
-        />
-      ) : (
-        <span className="flex size-full items-center justify-center text-ink-4">
-          <CategoryIcon
-            category={item.category}
-            className="size-6 md:size-7"
-            strokeWidth={1.5}
+      <span className="relative block aspect-[4/5] overflow-hidden rounded-[9px] bg-surface">
+        {item.photos[0] ? (
+          // biome-ignore lint/performance/noImgElement: hot-linked mockup photos, cropped by the Unsplash CDN
+          <img
+            src={item.photos[0]}
+            alt={item.title}
+            className="absolute inset-0 size-full object-cover"
           />
+        ) : (
+          <span className="flex size-full items-center justify-center text-ink-4">
+            <CategoryIcon
+              category={item.category}
+              className="size-6 md:size-7"
+              strokeWidth={1.5}
+            />
+          </span>
+        )}
+        <span className="frost t-label absolute bottom-2 left-2 max-w-[calc(100%-16px)] truncate rounded-pill px-2.5 py-1.5 text-ink">
+          {price} · {item.title.split(",")[0]}
         </span>
-      )}
-      <span className="frost t-label absolute bottom-2.5 left-2.5 max-w-[calc(100%-20px)] truncate rounded-pill px-2.5 py-1.5 text-ink">
-        {price} · {item.title.split(",")[0]}
       </span>
     </Link>
   );
@@ -370,63 +392,20 @@ function PickupMap({ mode, wantedCount }: { mode: Mode; wantedCount: number }) {
           )}
         </div>
         <div className="relative aspect-[4/5] overflow-hidden rounded-tile bg-surface sm:aspect-[16/9]">
-          <CampusMap />
-          {spots.map((spot) => {
-            const n = count(spot.slug);
-            return (
-              <Link
-                key={spot.slug}
-                href={`/marketplace/browse?mode=${mode}&spot=${spot.slug}`}
-                className="frost t-label press absolute flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 rounded-pill py-2 pr-3.5 pl-2.5 text-ink shadow-float"
-                style={{ left: `${spot.x}%`, top: `${spot.y}%` }}
-              >
-                <MapPin className="size-3.5" strokeWidth={1.75} aria-hidden />
-                {spot.name}
-                {n !== null && <span className="num text-ink-2">{n}</span>}
-              </Link>
-            );
-          })}
+          <CampusMap
+            pins={spots.map((spot) => ({
+              slug: spot.slug,
+              name: spot.name,
+              lat: spot.lat,
+              lng: spot.lng,
+              side: spot.labelSide,
+              href: `/marketplace/browse?mode=${mode}&spot=${spot.slug}`,
+              count: count(spot.slug),
+            }))}
+          />
         </div>
       </div>
     </section>
-  );
-}
-
-/** A quiet, abstract campus: green spaces, a few buildings and the main malls. Decorative. */
-function CampusMap() {
-  return (
-    <svg
-      viewBox="0 0 160 90"
-      preserveAspectRatio="xMidYMid slice"
-      className="absolute inset-0 size-full"
-      aria-hidden
-    >
-      <rect width="160" height="90" fill="var(--color-surface)" />
-      <path
-        d="M0 70 Q 30 60 50 72 T 100 80 T 160 70 V90 H0Z"
-        fill="var(--color-surface-2)"
-      />
-      <circle cx="120" cy="20" r="14" fill="var(--color-surface-2)" />
-      <ellipse cx="30" cy="18" rx="18" ry="10" fill="var(--color-surface-2)" />
-      <g
-        stroke="var(--color-white)"
-        strokeWidth="2.2"
-        fill="none"
-        strokeLinecap="round"
-      >
-        <path d="M10 45 H150" />
-        <path d="M70 0 V90" />
-        <path d="M20 85 L 110 10" />
-        <path d="M110 45 Q 125 60 150 62" />
-      </g>
-      <g fill="var(--color-white)">
-        <rect x="48" y="26" width="12" height="9" rx="1.5" />
-        <rect x="88" y="16" width="16" height="8" rx="1.5" />
-        <rect x="100" y="52" width="14" height="10" rx="1.5" />
-        <rect x="30" y="60" width="10" height="12" rx="1.5" />
-        <rect x="76" y="58" width="9" height="9" rx="1.5" />
-      </g>
-    </svg>
   );
 }
 
@@ -460,10 +439,23 @@ function MoveOut() {
             See move-out finds
           </Link>
         </div>
-        {inSeason && (
+        {inSeason ? (
           <p className="flex flex-col md:items-end">
             <span className="t-statement num">{days}</span>
             <span className="t-label mt-2 text-ink-2">days until move-out</span>
+          </p>
+        ) : (
+          <p className="flex flex-col md:items-end md:text-right">
+            <span className="t-statement num">
+              {new Date(`${MOVE_OUT_DATE}T00:00:00`).toLocaleDateString(
+                "en-US",
+                { month: "short", day: "numeric" },
+              )}
+            </span>
+            <span className="t-label mt-2 text-ink-2">Next move-out day</span>
+            <span className="t-body mt-1 text-ink-2">
+              Reservations open in March
+            </span>
           </p>
         )}
         <Sticker

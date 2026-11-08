@@ -62,7 +62,7 @@ export function Roo({ className }: { className?: string }) {
           <stop offset="1" stopColor="#ea7434" />
         </radialGradient>
         <clipPath id="roo-above-edge">
-          <rect x="-20" y="-20" width="160" height="92" />
+          <rect x="-20" y="-20" width="160" height="90" />
         </clipPath>
       </defs>
 
@@ -177,9 +177,9 @@ export function Roo({ className }: { className?: string }) {
       <g className="roo-paws">
         {[37, 83].map((x) => (
           <g key={x}>
-            <ellipse cx={x} cy="73.5" rx="7.5" ry="5.2" fill="url(#roo-paw)" />
+            <ellipse cx={x} cy="71" rx="7.5" ry="5.2" fill="url(#roo-paw)" />
             <path
-              d={`M${x - 2.4} 75.6 v-2.6 M${x + 2.4} 75.6 v-2.6`}
+              d={`M${x - 2.4} 73.1 v-2.6 M${x + 2.4} 73.1 v-2.6`}
               stroke="#c25a20"
               strokeWidth="0.9"
               strokeLinecap="round"

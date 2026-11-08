@@ -30,13 +30,47 @@ export type Spot = {
   /** Position on the stylised campus map, in % of the map tile. */
   x: number;
   y: number;
+  /** Real location on the UBC Vancouver campus (WGS84). */
+  lat: number;
+  lng: number;
+  /** Which side of the point the map pill sits on, when centring it would collide with a neighbour. */
+  labelSide?: "left" | "right";
 };
 
 export const spots: Spot[] = [
-  { slug: "koerner", name: "Koerner Library", x: 34, y: 38 },
-  { slug: "buchanan", name: "Buchanan", x: 58, y: 26 },
-  { slug: "nest", name: "The Nest", x: 68, y: 56 },
-  { slug: "totem", name: "Totem Park", x: 24, y: 74 },
+  {
+    slug: "koerner",
+    name: "Koerner Library",
+    x: 34,
+    y: 38,
+    lat: 49.26686,
+    lng: -123.25526,
+  },
+  {
+    slug: "buchanan",
+    name: "Buchanan",
+    x: 58,
+    y: 26,
+    lat: 49.26908,
+    lng: -123.25456,
+  },
+  {
+    slug: "nest",
+    name: "The Nest",
+    x: 68,
+    y: 56,
+    lat: 49.26657,
+    lng: -123.24995,
+    labelSide: "right",
+  },
+  {
+    slug: "totem",
+    name: "Totem Park",
+    x: 24,
+    y: 74,
+    lat: 49.26054,
+    lng: -123.25335,
+  },
 ];
 
 export function isSpot(value: string): value is SpotSlug {

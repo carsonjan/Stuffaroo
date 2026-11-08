@@ -26,7 +26,13 @@ import {
   sorts,
   withoutApiDuplicates,
 } from "@/lib/browse";
-import { catalog, getSpot, type Mode, sampleRequests } from "@/lib/catalog";
+import {
+  catalog,
+  getSpot,
+  type Mode,
+  modes,
+  sampleRequests,
+} from "@/lib/catalog";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Browse" };
@@ -146,7 +152,14 @@ async function Browse({
         <ModeToggle
           active={f.mode}
           counts={counts}
-          hrefFor={(m) => browseHref(f, { mode: f.mode === m ? null : m })}
+          hrefs={
+            Object.fromEntries(
+              modes.map(({ key }) => [
+                key,
+                browseHref(f, { mode: f.mode === key ? null : key }),
+              ]),
+            ) as Record<Mode, string>
+          }
         />
         <div className="ml-auto flex items-center gap-2">
           <FiltersSheet count={filterCount} results={total}>
@@ -218,7 +231,7 @@ async function Browse({
           {total === 0 ? (
             <EmptyState f={f} />
           ) : f.mode === "request" ? (
-            <ul className={gridClass}>
+            <ul key="request" className={cn(gridClass, "settle-in")}>
               {requests.map((post) => (
                 <li key={post.id}>
                   <RequestTile post={post} />
@@ -226,7 +239,7 @@ async function Browse({
               ))}
             </ul>
           ) : (
-            <ul className={gridClass}>
+            <ul key={f.mode ?? "all"} className={cn(gridClass, "settle-in")}>
               {items.map((item) => (
                 <li key={item.id}>
                   <ListingTile item={item} />
