@@ -21,14 +21,15 @@ Forms and buttons only change local state, and their success messages are labell
 
 ## Features in the mockup
 
-- **Marketplace** (`/marketplace`): browse listings, search by name, filter by category and price.
-- **Listing detail** (`/listings/[id]`): item info, owner, availability and a borrow/rent request form.
-- **Create listing** (`/listings/new`): listing form with a "Draft with AI" helper.
-- **Wanted posts** (`/wanted`, `/wanted/new`, `/wanted/[id]`): describe what you need and see matching listings with a reason for each match.
-- **Deals and move-out** (`/deals`, `/move-out`): price drops, bundles and a countdown to move-out day.
-- **Dashboard** (`/dashboard`, `/dashboard/requests`): your listings and incoming and outgoing rental requests, with accept, reject, cancel, "mark handed over" and "mark returned" actions.
-- **Profiles** (`/profile/[id]`): public student profile with their listings.
-- **Deposit demo** (`/deposits`): walkthrough of a Solana Devnet deposit transfer.
+- **Home** (`/marketplace`): value proposition, featured listings, categories, deals and move-out highlights.
+- **Browse** (`/marketplace/browse`): browse listings, search by name, filter by category and price.
+- **Listing detail** (`/marketplace/listings/[id]`): item info, owner, availability and a borrow/rent request form.
+- **Create listing** (`/marketplace/listings/new`): listing form with a "Draft with AI" helper.
+- **Wanted posts** (`/marketplace/wanted`, `/marketplace/wanted/new`, `/marketplace/wanted/[id]`): describe what you need and see matching listings with a reason for each match.
+- **Deals and move-out** (`/marketplace/deals`, `/marketplace/move-out`): price drops, bundles and a countdown to move-out day.
+- **Dashboard** (`/marketplace/dashboard`, `/marketplace/dashboard/requests`): your listings and incoming and outgoing rental requests, with accept, reject, cancel, "mark handed over" and "mark returned" actions.
+- **Profiles** (`/marketplace/profile/[id]`): public student profile with their listings.
+- **Deposit demo** (`/marketplace/deposits`): walkthrough of a Solana Devnet deposit transfer.
 
 ## Tech stack
 
@@ -89,11 +90,11 @@ GitHub Actions (`.github/workflows/ci.yml`) runs `pnpm check` and a production b
 
 ## Demo
 
-There is no live demo yet. Locally, start with `/` and follow the main journey:
+There is no live demo yet. The mockup lives under `/marketplace` (the root `/` is still the starter page). Locally, start at `/marketplace` and follow the main journey:
 
-1. Browse `/marketplace` and open a listing.
-2. Post a need at `/wanted/new` and click "Find matches".
-3. Open `/dashboard/requests` to accept or reject a request.
-4. Walk through the deposit at `/deposits`.
+1. Browse `/marketplace/browse` and open a listing.
+2. Post a need at `/marketplace/wanted/new` and click "Find matches".
+3. Open `/marketplace/dashboard/requests` to accept or reject a request.
+4. Walk through the deposit at `/marketplace/deposits`.
 
 Every result in this flow comes from sample data.
