@@ -105,6 +105,7 @@ export function ListingForm() {
               setPublished(false);
               setDraft(emptyDraft);
               setAiFilled(false);
+              setPhotoNames([]);
             }}
             className={cn(
               buttonVariants({ variant: "outline", size: "lg" }),
