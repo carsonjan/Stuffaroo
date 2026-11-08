@@ -10,6 +10,8 @@ allowBuilds:
   unrs-resolver: false
 
 permissions:
+  "@auth0/nextjs-auth0":
+    skills: false
   "@tanstack/react-start":
     skills: true
   "@tanstack/router-plugin":
