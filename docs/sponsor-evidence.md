@@ -35,7 +35,11 @@ Post a need at `/marketplace/wanted/new` or open a wanted post. Matches come fro
 ## Sponsor: Google (Gemini on Vertex AI)
 
 ### Technology used
-Gemini text embeddings (`gemini-embedding-001`, 768 dimensions) through **Vertex AI** on a Google Cloud project, via the `google-genai` SDK. An AI Studio API key is supported as a fallback.
+Through **Vertex AI** on a Google Cloud project, via the `google-genai` SDK:
+- Gemini text embeddings (`gemini-embedding-001`, 768 dimensions) to find candidate listings
+- a Gemini text model (`gemini-3.5-flash`) to check that each candidate actually meets the need
+
+An AI Studio API key is supported as a fallback.
 
 ### Problem solved
 Students describe needs in their own words ("something to film a club event"). Keyword search misses many of these. Embeddings let a need match a listing by meaning.
@@ -47,6 +51,11 @@ Students describe needs in their own words ("something to film a club event"). K
   - selects Vertex AI or an API key from config
 - **Listings:** each new listing is embedded on create (`app/services/listings.py`). `pnpm db:embed` backfills listings that don't have a vector yet.
 - **Fallback:** if Gemini is missing or fails, matching returns `method: "keyword"`, and the UI says "Keyword match (AI matching unavailable)". It is never presented as AI.
+- **Relevance check:** `apps/api/app/services/relevance.py`.
+  - Gemini reviews the shortlist and removes listings that clearly can't do the job.
+  - It returns candidate numbers only, which are validated against the shortlist, so it can remove listings but never add or invent one.
+  - The need and listing text are passed as data, with an instruction to ignore anything inside them.
+  - If the check fails, the similarity cut-off result stands.
 - **Reasons:** the "why this matches" text is built from real listing fields, not written by the model.
 
 ### Demo
@@ -59,10 +68,16 @@ With Gemini configured, match results show "Ranked with Gemini embeddings".
   - first-year calculus → textbook, TI-84
   - soup → Instant Pot
   - groceries on a bike → nothing, because nothing fits
-- Tests use a deterministic fake embedder for the vector path, the failure-to-keyword fallback, embedding on create and backend selection. `test_cut_off_keeps_only_close_matches` replays the real scores (`test_matching.py`, `test_rentals.py`).
+- **Relevance check, live:** two runs each on the 9 needs and 4 seeded posts gave identical results.
+  - filming a club event → both cameras
+  - calculus → textbook and TI-84
+  - the "Projector for a movie night" post ("anything with HDMI works") → nothing; before the check it matched a calculator and a keyboard
+  - the camping-stove post → nothing
+- Tests use a deterministic fake embedder for the vector path, the failure-to-keyword fallback, embedding on create and backend selection. `test_cut_off_keeps_only_close_matches` replays the real scores. The relevance tests use a fake verdict: removing listings, emptying the list, the shortlist surviving a failed check, and invalid candidate numbers ignored (`test_matching.py`, `test_rentals.py`).
 
 ### Limitations
-- **Similarity can't tell shared tech words from fit.** The seeded "Projector for a movie night" post says "anything with HDMI works", which pulls the calculator and keyboard up to 0.61–0.62, above the cut-off. A Gemini relevance check on the top candidates would fix this; it isn't built.
+- **Speed:** the relevance check makes a search take about 3 seconds (up to 5) instead of about 1. The faster `gemini-3.5-flash-lite` (about 2 seconds) wrongly dropped fitting listings in testing.
+- Tuned on 12 seeded listings. Recheck the cut-off and the check's choices as real listings grow.
 - AI listing drafts are still a labelled mockup.
 
 ## Sponsor: Auth0
