@@ -139,5 +139,5 @@ What it shows, in order:
 
 ## Try it out
 
-- Live: https://stuffaroo-web.vercel.app/marketplace
+- Live: https://stuffaroo.shop
 - GitHub: https://github.com/carsonjan/Stuffaroo
