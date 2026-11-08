@@ -108,6 +108,10 @@ pnpm dev:api      # API only
 
 The API health endpoint is at `http://localhost:8000/health`.
 
+### Connecting the real services
+
+To switch on Tiger Cloud, Gemini and Auth0, follow [docs/setup-services.md](docs/setup-services.md). `pnpm check:setup` reports what is connected and how to fix anything that isn't.
+
 ## Checks
 
 ```sh
