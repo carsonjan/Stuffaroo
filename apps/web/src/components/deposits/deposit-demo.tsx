@@ -95,8 +95,8 @@ export function DepositDemo({
           </dl>
           <p className="mt-4 flex gap-2 rounded-small bg-muted p-3 text-xs text-muted-foreground">
             <Info className="mt-px size-3.5 shrink-0" aria-hidden />
-            The demo sends a fixed, symbolic amount of Devnet SOL. It is not
-            converted from the dollar deposit.
+            The demo simulates a fixed, symbolic amount of Devnet SOL. It is not
+            converted from the dollar deposit, and nothing is sent.
           </p>
         </section>
 
@@ -105,9 +105,9 @@ export function DepositDemo({
           {stage === "disconnected" ? (
             <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="font-medium">Connect a wallet</p>
+                <p className="font-medium">Connect a mock wallet</p>
                 <p className="text-sm text-muted-foreground">
-                  Switch your wallet to Devnet first.
+                  Simulated: your real wallet is not contacted.
                 </p>
               </div>
               <Button
@@ -115,7 +115,7 @@ export function DepositDemo({
                 className="px-4"
                 onClick={() => setStage("connected")}
               >
-                <Wallet data-icon="inline-start" /> Connect wallet
+                <Wallet data-icon="inline-start" /> Connect mock wallet
               </Button>
             </div>
           ) : (
@@ -131,7 +131,8 @@ export function DepositDemo({
               </div>
               {stage === "connected" && (
                 <Button size="lg" className="h-11" onClick={send}>
-                  Send {DEMO_AMOUNT_SOL} Devnet SOL to {ownerName.split(" ")[0]}
+                  Simulate sending {DEMO_AMOUNT_SOL} Devnet SOL to{" "}
+                  {ownerName.split(" ")[0]}
                 </Button>
               )}
               {(stage === "signing" || stage === "submitted") && (
