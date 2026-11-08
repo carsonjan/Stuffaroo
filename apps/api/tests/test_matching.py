@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 from app.core import config
 from app.embed_listings import embed_missing
 from app.seed.__main__ import seed_id
-from app.services import embeddings, matching
+from app.services import embeddings, matching, relevance
 
 
 def fake_embed(texts: list[str], task_type: str) -> list[list[float]]:
@@ -34,6 +34,8 @@ def vector_client(
     monkeypatch.setenv("GEMINI_API_KEY", "test-key")
     monkeypatch.setenv("MATCH_MIN_SIMILARITY", "0")
     monkeypatch.setenv("MATCH_MAX_GAP_FROM_BEST", "1")
+    # Relevance is tested separately with a fake verdict; never call Gemini here.
+    monkeypatch.setenv("MATCH_RELEVANCE_CHECK", "false")
     config.get_settings.cache_clear()
     monkeypatch.setattr(embeddings, "embed_texts", fake_embed)
     with psycopg.connect(database_url) as conn:
@@ -176,3 +178,62 @@ def test_cut_off_keeps_only_close_matches() -> None:
     bike = {"canon": 0.579, "drill": 0.577, "basketball": 0.572}
     assert keep(bike) == set()
     assert keep({}) == set()
+
+
+@pytest.fixture
+def relevance_client(
+    vector_client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> TestClient:
+    monkeypatch.setenv("MATCH_RELEVANCE_CHECK", "true")
+    config.get_settings.cache_clear()
+    return vector_client
+
+
+def test_relevance_check_removes_listings_that_dont_fit(
+    relevance_client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    seen: list[list[str]] = []
+
+    def only_keyboards(need: str, listings: list) -> set[int]:
+        seen.append([listing.title for listing in listings])
+        return {
+            i
+            for i, listing in enumerate(listings)
+            if "keyboard" in listing.title.lower()
+        }
+
+    monkeypatch.setattr(relevance, "fitting_indices", only_keyboards)
+    result = relevance_client.post(
+        "/api/matches", json={"text": "mechanical keyboard", "category": "electronics"}
+    ).json()
+    assert result["method"] == "vector"
+    assert len(seen[0]) > 1  # the check saw a real shortlist...
+    assert [m["listing"]["id"] for m in result["matches"]] == [str(seed_id("l-2"))]
+
+
+def test_relevance_check_can_empty_the_list(
+    relevance_client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(relevance, "fitting_indices", lambda need, listings: set())
+    result = relevance_client.get(f"/api/wanted/{seed_id('w-4')}/matches").json()
+    assert result == {"method": "vector", "matches": []}
+
+
+def test_relevance_failure_keeps_the_shortlist(
+    relevance_client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def broken(need: str, listings: list) -> set[int]:
+        raise relevance.RelevanceError("model unavailable")
+
+    monkeypatch.setattr(relevance, "fitting_indices", broken)
+    result = relevance_client.post(
+        "/api/matches", json={"text": "mechanical keyboard"}
+    ).json()
+    assert result["method"] == "vector"
+    assert str(seed_id("l-2")) in ids(result)
+
+
+def test_model_output_is_validated() -> None:
+    # Out-of-range or non-integer candidate numbers are ignored, never trusted.
+    assert relevance.valid_numbers([1, 3, 0, 7, -2], count=3) == {1, 3}
+    assert relevance.valid_numbers([], count=3) == set()
