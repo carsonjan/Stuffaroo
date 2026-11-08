@@ -19,7 +19,13 @@ def get_pool() -> ConnectionPool:
             get_settings().database_url,
             min_size=1,
             max_size=10,
-            kwargs={"row_factory": dict_row},
+            kwargs={
+                "row_factory": dict_row,
+                # Tiger Cloud's connection pooler runs in transaction mode, where
+                # server-side prepared statements break; never auto-prepare.
+                "prepare_threshold": None,
+                "connect_timeout": 10,
+            },
             open=True,
         )
     return _pool

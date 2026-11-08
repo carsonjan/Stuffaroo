@@ -221,3 +221,5 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+# Google Cloud service-account key for Vertex AI (secret, shared privately)
+gcp-key.json

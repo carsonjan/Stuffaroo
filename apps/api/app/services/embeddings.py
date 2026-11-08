@@ -9,12 +9,14 @@ GOOGLE_CLOUD_PROJECT, Application Default Credentials) or with an AI Studio key
 """
 
 import math
+from functools import lru_cache
+from pathlib import Path
 from typing import Any, Literal
 
 from google import genai
 from google.genai import types
 
-from app.core.config import EMBEDDING_DIMENSIONS, Settings, get_settings
+from app.core.config import API_ROOT, EMBEDDING_DIMENSIONS, Settings, get_settings
 
 TaskType = Literal["RETRIEVAL_DOCUMENT", "RETRIEVAL_QUERY"]
 
@@ -36,6 +38,53 @@ def client_options(settings: Settings) -> dict[str, Any] | None:
     return None
 
 
+def credentials_path(settings: Settings) -> Path | None:
+    """The service-account key file, resolved against apps/api, if one is set."""
+    if not settings.google_application_credentials:
+        return None
+    path = Path(settings.google_application_credentials)
+    return path if path.is_absolute() else API_ROOT / path
+
+
+@lru_cache
+def _service_account_credentials(path: Path) -> Any:
+    from google.oauth2 import service_account
+
+    return service_account.Credentials.from_service_account_file(
+        str(path), scopes=["https://www.googleapis.com/auth/cloud-platform"]
+    )
+
+
+def make_client(settings: Settings, location: str | None = None) -> genai.Client:
+    """A Gemini client for the configured backend. Raises EmbeddingError if
+    Gemini isn't configured or the service-account key can't be read."""
+    options = client_options(settings)
+    if options is None:
+        raise EmbeddingError("Gemini is not configured (Vertex AI or GEMINI_API_KEY)")
+    if options.get("vertexai"):
+        if location:
+            options["location"] = location
+        path = credentials_path(settings)
+        if path is not None:
+            try:
+                options["credentials"] = _service_account_credentials(path)
+            except (OSError, ValueError) as error:
+                raise EmbeddingError(
+                    f"Can't read the service-account key at {path}: {error}"
+                ) from error
+    try:
+        return genai.Client(
+            **options,
+            http_options=types.HttpOptions(
+                timeout=int(settings.gemini_timeout_seconds * 1000)
+            ),
+        )
+    # Resolving Google credentials raises several error types (for example no
+    # Application Default Credentials); all mean "no client".
+    except Exception as error:
+        raise EmbeddingError(f"Can't create the Gemini client: {error}") from error
+
+
 def is_configured() -> bool:
     return client_options(get_settings()) is not None
 
@@ -51,20 +100,10 @@ def _normalize(values: list[float]) -> list[float]:
 def embed_texts(texts: list[str], task_type: TaskType) -> list[list[float]]:
     """Embed texts with Gemini. Raises EmbeddingError on any failure."""
     settings = get_settings()
-    options = client_options(settings)
-    if options is None:
-        raise EmbeddingError("Gemini is not configured (Vertex AI or GEMINI_API_KEY)")
     if not texts:
         return []
+    client = make_client(settings)
     try:
-        # Creating the Vertex AI client resolves Google Cloud credentials, which
-        # can fail too (for example before `gcloud auth application-default login`).
-        client = genai.Client(
-            **options,
-            http_options=types.HttpOptions(
-                timeout=int(settings.gemini_timeout_seconds * 1000)
-            ),
-        )
         response = client.models.embed_content(
             model=settings.gemini_embedding_model,
             contents=texts,
