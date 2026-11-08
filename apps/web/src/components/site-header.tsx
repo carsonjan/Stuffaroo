@@ -177,8 +177,8 @@ export function SiteHeader({ activePath }: { activePath: string | null }) {
                   <User /> Public profile
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem render={<Link href="/marketplace" />}>
-                  <LogOut /> Sign out
+                <DropdownMenuItem disabled>
+                  <LogOut /> Sign out (not in mockup)
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
