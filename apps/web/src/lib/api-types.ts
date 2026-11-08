@@ -70,3 +70,63 @@ export type MatchQuery = {
   startDate?: string;
   endDate?: string;
 };
+
+export type RentalStatus =
+  | "pending"
+  | "accepted"
+  | "rejected"
+  | "cancelled"
+  | "active"
+  | "completed";
+
+export type RentalRequest = {
+  id: string;
+  listingId: string;
+  borrowerId: string;
+  startDate: string;
+  endDate: string;
+  status: RentalStatus;
+  message: string;
+  createdAt: string;
+  updatedAt: string;
+  listing: ListingDetail;
+  borrower: Profile;
+};
+
+/** accept/reject/start/complete are the owner's; cancel is the borrower's. */
+export type RentalAction =
+  | "accept"
+  | "reject"
+  | "cancel"
+  | "start"
+  | "complete";
+
+/** owner = requests for my listings; borrower = requests I made. */
+export type RentalRole = "owner" | "borrower";
+
+export type ListingInput = {
+  title: string;
+  description: string;
+  category: CategorySlug;
+  condition: Condition;
+  /** null = free to borrow */
+  pricePerDayCents: number | null;
+  depositCents: number | null;
+  location: string;
+};
+
+export type WantedInput = {
+  title: string;
+  description: string;
+  category: CategorySlug;
+  budgetPerDayCents: number | null;
+  startDate: string;
+  endDate: string;
+};
+
+export type RentalInput = {
+  listingId: string;
+  startDate: string;
+  endDate: string;
+  message: string;
+};

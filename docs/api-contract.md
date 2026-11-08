@@ -110,7 +110,7 @@ type RentalRequest = {
 | POST | `/api/matches` | no | `MatchResult` for an unsaved need. Body: `text`, optional `category`, `budgetPerDayCents`, `startDate`, `endDate` |
 | POST | `/api/rentals` | yes | Request a listing. Body: `listingId`, `startDate`, `endDate`, `message`. Returns `RentalRequest` (201) |
 | GET | `/api/rentals` | yes | Query `role=owner` (incoming) or `role=borrower` (mine). `RentalRequest[]` |
-| GET | `/api/rentals/{id}` | yes | One request; only the borrower or the listing owner |
+| GET | `/api/rentals/{id}` | yes | One request. Only the borrower or the listing owner can see it; anyone else gets 404, so its existence doesn't leak |
 | POST | `/api/rentals/{id}/transition` | yes | Body `{ "action": "accept" \| "reject" \| "cancel" \| "start" \| "complete" }`. Returns the updated `RentalRequest` |
 
 ## Rental rules (enforced in the API)
@@ -127,6 +127,8 @@ type RentalRequest = {
 - `endDate` must be on or after `startDate`.
 - Accepting fails with 409 if the dates overlap another `accepted` or `active` request for the same listing.
 - `start` sets the listing to `on_loan`; `complete` sets it back to `available`.
+- Acting on someone else's request returns 404; the wrong party (for example the borrower trying to accept) gets 403; the wrong current status gets 409.
+- The database also enforces the overlap rule (an exclusion constraint), so it holds even under concurrent accepts.
 
 ## Matching
 

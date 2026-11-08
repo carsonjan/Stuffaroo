@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Any
 from uuid import UUID
 
@@ -47,3 +48,33 @@ def list_for_user(conn: psycopg.Connection, user_id: UUID) -> list[WantedPost]:
 def get_wanted(conn: psycopg.Connection, wanted_id: UUID) -> WantedPost | None:
     row = conn.execute(f"{WANTED_SELECT} where w.id = %s", (wanted_id,)).fetchone()
     return wanted_from_row(row) if row else None
+
+
+def create_wanted(
+    conn: psycopg.Connection,
+    *,
+    user_id: UUID,
+    title: str,
+    description: str,
+    category: str,
+    budget_per_day_cents: int | None,
+    start_date: date,
+    end_date: date,
+) -> WantedPost:
+    row = conn.execute(
+        "insert into wanted_posts (user_id, title, description, category,"
+        " budget_per_day_cents, start_date, end_date)"
+        " values (%s, %s, %s, %s, %s, %s, %s) returning id",
+        (
+            user_id,
+            title,
+            description,
+            category,
+            budget_per_day_cents,
+            start_date,
+            end_date,
+        ),
+    ).fetchone()
+    post = get_wanted(conn, row["id"])
+    assert post is not None
+    return post

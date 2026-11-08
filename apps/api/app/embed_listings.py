@@ -43,7 +43,11 @@ def main() -> None:
             " or GEMINI_API_KEY); nothing embedded."
         )
     with psycopg.connect(get_settings().database_url) as conn:
-        count = embed_missing(conn)
+        try:
+            count = embed_missing(conn)
+        except embeddings.EmbeddingError as error:
+            # Batches already embedded are committed; rerun to finish the rest.
+            raise SystemExit(f"Embedding stopped: {error}") from None
     print(f"Embedded {count} listings.")
 
 

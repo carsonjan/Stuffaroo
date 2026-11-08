@@ -33,27 +33,27 @@ Settle these before building the matching items below. Each one is a team call, 
 - [x] Forward the Auth0 access token from the Next.js server to FastAPI as a Bearer token.
 - [x] Verify the token on every protected FastAPI route (JWKS, issuer, audience). Derive the user from `sub`, never from a client-sent ID.
 - [x] Create or update the `profiles` row on first sign-in, keyed by `auth0_user_id`.
-- [ ] Replace `CURRENT_USER_ID` with the signed-in user everywhere it is used. Done for the header, listing and wanted pages; the dashboard is chunk 4.
+- [x] Replace `CURRENT_USER_ID` with the signed-in user everywhere it is used.
 - [ ] Configure a real Auth0 tenant and demo users (needs dashboard access; see `docs/handoff-auth0.md`).
 
 ### Listings
 - [x] `GET /api/listings` with `q`, `category`, `price` and `all` filters, matching what `app/marketplace/browse/page.tsx` filters in memory today.
 - [x] `GET /api/listings/{id}` for the listing page.
-- [ ] `POST /api/listings` from `components/listings/listing-form.tsx`. Its submit currently only sets local `published` state. The form has no availability field yet; add one.
+- [x] `POST /api/listings` from `components/listings/listing-form.tsx`. Its submit currently only sets local `published` state. The form has no availability field yet; add one.
 - [x] `GET /api/profiles/{id}` plus the owner's listings for `app/marketplace/profile/[id]/page.tsx`.
 
 ### Wanted posts and matching
-- [ ] `POST /api/wanted` (chunk 4). Done: `GET /api/wanted`, `GET /api/wanted/{id}`, for the wanted pages and `wanted-form.tsx`.
+- [x] `POST /api/wanted`. Done: `GET /api/wanted`, `GET /api/wanted/{id}`, for the wanted pages and `wanted-form.tsx`.
 - [x] `POST /api/matches` and `GET /api/wanted/{id}/matches`: filter real listings by category, availability, price and dates first, then rank. Return `{listing_id, score, reason}` like `MatchSuggestion`, and drop any ID that is not in the database.
 - [x] Replace `mockMatches` where it is read (`app/marketplace/wanted/[id]/page.tsx`, `components/wanted/wanted-form.tsx`, `components/wanted/wanted-card.tsx`) and the canned extraction in `wanted-form.tsx`. `match-list.tsx` only renders the matches it is given.
 - [x] A deterministic fallback (category + keyword) when the AI call fails, labelled as such in the UI.
 
 ### Rental requests
-- [ ] `POST /api/rentals` from `components/requests/request-form.tsx`. It currently only sets `submitted`.
-- [ ] `GET /api/rentals?role=borrower|owner` for `app/marketplace/dashboard/requests/page.tsx` and the dashboard.
-- [ ] `PATCH /api/rentals/{id}` for accept, reject, cancel, start and complete. `request-row.tsx` changes local state only today.
-- [ ] Enforce on the server: transitions are only pending to accepted/rejected/cancelled, accepted to active, active to completed; only the owner accepts or rejects; only the borrower cancels; no requests on your own listing; no overlapping accepted or active bookings for one listing.
-- [ ] pytest coverage for the state machine and the overlap check.
+- [x] `POST /api/rentals` from `components/requests/request-form.tsx`. It currently only sets `submitted`.
+- [x] `GET /api/rentals?role=borrower|owner` for `app/marketplace/dashboard/requests/page.tsx` and the dashboard.
+- [x] `POST /api/rentals/{id}/transition` (instead of PATCH) for accept, reject, cancel, start and complete. `request-row.tsx` changes local state only today.
+- [x] Enforce on the server: transitions are only pending to accepted/rejected/cancelled, accepted to active, active to completed; only the owner accepts or rejects; only the borrower cancels; no requests on your own listing; no overlapping accepted or active bookings for one listing.
+- [x] pytest coverage for the state machine and the overlap check.
 
 ## P1: differentiators and sponsors
 

@@ -7,14 +7,15 @@ import { ListingCard } from "@/components/marketplace/listing-card";
 import { ListingThumb } from "@/components/marketplace/listing-thumb";
 import { AvailabilityBadge } from "@/components/marketplace/status-badge";
 import { RequestForm } from "@/components/requests/request-form";
+import { SignInPrompt } from "@/components/sign-in-prompt";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
 import { ApiError, getListing, getListings } from "@/lib/api";
 import type { ListingDetail } from "@/lib/api-types";
-import { formatMoneyCents, formatPriceCents } from "@/lib/format";
+import { formatMoneyCents, formatPriceCents, isoDateAfter } from "@/lib/format";
 import { getCategory } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
-import { getViewerProfileId } from "@/lib/viewer";
+import { getViewer } from "@/lib/viewer";
 
 export async function generateMetadata({
   params,
@@ -52,7 +53,10 @@ export default async function ListingPage({
 
   const { owner } = listing;
   const category = getCategory(listing.category);
-  const isOwn = (await getViewerProfileId()) === listing.ownerId;
+  const viewer = await getViewer();
+  const isOwn =
+    viewer.status === "signed-in" && viewer.profile?.id === listing.ownerId;
+  const now = new Date();
 
   return (
     <div className="mx-auto max-w-[1200px] px-4 py-8 sm:px-10">
@@ -139,7 +143,22 @@ export default async function ListingPage({
                   </Link>
                 </div>
               ) : listing.availability === "available" ? (
-                <RequestForm listing={listing} />
+                viewer.status === "signed-in" ? (
+                  <RequestForm
+                    listing={listing}
+                    minDate={isoDateAfter(now, 0)}
+                    defaultStart={isoDateAfter(now, 1)}
+                    defaultEnd={isoDateAfter(now, 3)}
+                  />
+                ) : (
+                  <SignInPrompt
+                    className="px-4 py-6"
+                    status={viewer.status}
+                    returnTo={`/marketplace/listings/${listing.id}`}
+                    title={`Sign in to ${listing.pricePerDayCents === null ? "borrow" : "rent"} this`}
+                    description="Requests go to the owner from your account, so sign in first."
+                  />
+                )
               ) : (
                 <div className="border-t pt-4 text-sm text-muted-foreground">
                   This item isn&apos;t available right now. Post a wanted

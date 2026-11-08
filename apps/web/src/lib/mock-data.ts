@@ -1,8 +1,6 @@
 /**
- * Sample data for the frontend mockup.
- *
- * Shapes mirror the planned Supabase schema (profiles, listings, wanted_posts,
- * rental_requests, deposits) so these can be swapped for real queries later.
+ * Category metadata, shared enum types, and the sample data the deposit demo
+ * (app/marketplace/deposits) still reads. Everything else comes from the API.
  * Nothing here represents a real transaction.
  */
 
@@ -63,19 +61,6 @@ export type Listing = {
   createdAt: string;
 };
 
-export type WantedPost = {
-  id: string;
-  userId: string;
-  title: string;
-  description: string;
-  category: CategorySlug;
-  budgetPerDay: number | null;
-  startDate: string;
-  endDate: string;
-  status: "open" | "fulfilled" | "closed";
-  createdAt: string;
-};
-
 export type RentalStatus =
   | "pending"
   | "accepted"
@@ -94,15 +79,6 @@ export type RentalRequest = {
   message: string;
   createdAt: string;
 };
-
-export type MatchSuggestion = {
-  listingId: string;
-  score: number;
-  reason: string;
-};
-
-/** The signed-in student in the mockup. */
-export const CURRENT_USER_ID = "u-maya";
 
 export const profiles: Profile[] = [
   {
@@ -337,96 +313,6 @@ export const listings: Listing[] = [
   },
 ];
 
-export const wantedPosts: WantedPost[] = [
-  {
-    id: "w-1",
-    userId: "u-maya",
-    title: "Camera for a weekend trip",
-    description:
-      "Heading to Tofino for the weekend and want something better than my phone for landscapes. Mirrorless preferred.",
-    category: "cameras",
-    budgetPerDay: 15,
-    startDate: "2026-11-14",
-    endDate: "2026-11-16",
-    status: "open",
-    createdAt: "2026-11-05",
-  },
-  {
-    id: "w-2",
-    userId: "u-sam",
-    title: "Mechanical keyboard for three days",
-    description:
-      "Trying one out before I buy. Quiet-ish switches please, I work in the library.",
-    category: "electronics",
-    budgetPerDay: 5,
-    startDate: "2026-11-10",
-    endDate: "2026-11-12",
-    status: "open",
-    createdAt: "2026-11-06",
-  },
-  {
-    id: "w-3",
-    userId: "u-lucas",
-    title: "Camping stove for reading week",
-    description:
-      "Need a small backpacking stove for a 2-night hike. I have my own fuel.",
-    category: "outdoor",
-    budgetPerDay: 4,
-    startDate: "2026-11-20",
-    endDate: "2026-11-22",
-    status: "open",
-    createdAt: "2026-11-04",
-  },
-  {
-    id: "w-4",
-    userId: "u-aiko",
-    title: "Projector for a movie night",
-    description:
-      "Hosting a floor movie night Friday. Anything with HDMI works.",
-    category: "electronics",
-    budgetPerDay: null,
-    startDate: "2026-11-13",
-    endDate: "2026-11-13",
-    status: "open",
-    createdAt: "2026-11-06",
-  },
-];
-
-/** Precomputed suggestions standing in for Gemini output in the mockup. */
-export const mockMatches: Record<string, MatchSuggestion[]> = {
-  "w-1": [
-    {
-      listingId: "l-1",
-      score: 0.94,
-      reason:
-        "Mirrorless with a versatile 16–50mm zoom — well suited to landscapes. Available for your dates and $12/day is under your $15 budget.",
-    },
-    {
-      listingId: "l-8",
-      score: 0.86,
-      reason:
-        "Excellent image quality, but the 50mm prime is better for portraits than wide landscapes. $15/day matches your budget exactly.",
-    },
-  ],
-  "w-2": [
-    {
-      listingId: "l-2",
-      score: 0.97,
-      reason:
-        "Tactile brown switches are among the quieter mechanical options, which fits library use. $3/day is well under budget.",
-    },
-  ],
-  "w-3": [
-    {
-      listingId: "l-3",
-      score: 0.58,
-      reason:
-        "No stoves are listed right now. This tent is from the same category and could complete your trip setup — consider asking the owner if they have a stove too.",
-    },
-  ],
-  "w-4": [],
-};
-
 export const rentalRequests: RentalRequest[] = [
   {
     id: "r-1",
@@ -502,8 +388,4 @@ export function getListing(id: string): Listing | undefined {
 
 export function getCategory(slug: string): Category | undefined {
   return categories.find((c) => c.slug === slug);
-}
-
-export function getWantedPost(id: string): WantedPost | undefined {
-  return wantedPosts.find((w) => w.id === id);
 }

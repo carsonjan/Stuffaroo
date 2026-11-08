@@ -1,10 +1,14 @@
+import logging
 from typing import Any
 from uuid import UUID
 
 import psycopg
 
 from app.models.schemas import ListingDetail
+from app.services import embeddings
 from app.services.profiles import profile_columns, profile_from_row
+
+logger = logging.getLogger(__name__)
 
 LISTING_DETAIL_SELECT = f"""
 select l.id, l.owner_id, l.title, l.description, l.category, l.condition,
@@ -73,3 +77,61 @@ def get_listing(conn: psycopg.Connection, listing_id: UUID) -> ListingDetail | N
         f"{LISTING_DETAIL_SELECT} where l.id = %s", (listing_id,)
     ).fetchone()
     return listing_from_row(row) if row else None
+
+
+def create_listing(
+    conn: psycopg.Connection,
+    *,
+    owner_id: UUID,
+    title: str,
+    description: str,
+    category: str,
+    condition: str,
+    price_per_day_cents: int | None,
+    deposit_cents: int | None,
+    location: str,
+) -> ListingDetail:
+    row = conn.execute(
+        "insert into listings (owner_id, title, description, category, condition,"
+        " price_per_day_cents, deposit_cents, location)"
+        " values (%s, %s, %s, %s, %s, %s, %s, %s) returning id",
+        (
+            owner_id,
+            title,
+            description,
+            category,
+            condition,
+            price_per_day_cents,
+            deposit_cents,
+            location,
+        ),
+    ).fetchone()
+    embed_listing(conn, row["id"], title, category, description)
+    listing = get_listing(conn, row["id"])
+    assert listing is not None
+    return listing
+
+
+def embed_listing(
+    conn: psycopg.Connection,
+    listing_id: UUID,
+    title: str,
+    category: str,
+    description: str,
+) -> bool:
+    """Best effort: a listing without an embedding still saves and matches by keyword."""
+    if not embeddings.is_configured():
+        return False
+    try:
+        [vector] = embeddings.embed_texts(
+            [embeddings.listing_document(title, category, description)],
+            "RETRIEVAL_DOCUMENT",
+        )
+    except embeddings.EmbeddingError as error:
+        logger.warning("Listing %s saved without an embedding: %s", listing_id, error)
+        return False
+    conn.execute(
+        "update listings set embedding = %s::vector where id = %s",
+        (embeddings.to_pgvector(vector), listing_id),
+    )
+    return True

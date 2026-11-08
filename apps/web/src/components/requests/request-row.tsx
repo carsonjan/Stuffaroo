@@ -1,39 +1,82 @@
 "use client";
 
-import { Coins } from "lucide-react";
+import { Coins, LoaderCircle } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
 import { ListingThumb } from "@/components/marketplace/listing-thumb";
 import { RentalStatusBadge } from "@/components/marketplace/status-badge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import type { RentalAction, RentalRequest } from "@/lib/api-types";
 import { formatDateRange } from "@/lib/format";
-import {
-  getListing,
-  getProfile,
-  type RentalRequest,
-  type RentalStatus,
-} from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import { transitionRentalAction } from "./actions";
+
+type Perspective = "owner" | "borrower";
+
+type ActionButton = {
+  action: RentalAction;
+  label: string;
+  variant: "default" | "outline";
+};
+
+/** The transitions docs/api-contract.md allows for this role and status. */
+function allowedActions(
+  perspective: Perspective,
+  status: RentalRequest["status"],
+): ActionButton[] {
+  if (perspective === "owner") {
+    if (status === "pending") {
+      return [
+        { action: "reject", label: "Decline", variant: "outline" },
+        { action: "accept", label: "Accept", variant: "default" },
+      ];
+    }
+    if (status === "accepted") {
+      return [
+        { action: "start", label: "Mark handed over", variant: "outline" },
+      ];
+    }
+    if (status === "active") {
+      return [
+        { action: "complete", label: "Mark returned", variant: "outline" },
+      ];
+    }
+    return [];
+  }
+  return status === "pending"
+    ? [{ action: "cancel", label: "Cancel request", variant: "outline" }]
+    : [];
+}
 
 /**
- * Mockup of the request lifecycle. Transitions only update local state here;
- * the real version validates every transition on the server.
+ * One rental request. Buttons call the API through a server action; the new
+ * status arrives with the revalidated dashboard, so nothing changes until the
+ * API has accepted the transition.
  */
 export function RequestRow({
   request,
   perspective,
 }: {
   request: RentalRequest;
-  perspective: "owner" | "borrower";
+  perspective: Perspective;
 }) {
-  const [status, setStatus] = useState<RentalStatus>(request.status);
-  const listing = getListing(request.listingId);
-  if (!listing) return null;
+  const [isPending, startTransition] = useTransition();
+  const [running, setRunning] = useState<RentalAction | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const { listing } = request;
+  const counterpart =
+    perspective === "owner" ? request.borrower : listing.owner;
+  const buttons = allowedActions(perspective, request.status);
 
-  const counterpart = getProfile(
-    perspective === "owner" ? request.borrowerId : listing.ownerId,
-  );
+  const run = (action: RentalAction) => {
+    setError(null);
+    setRunning(action);
+    startTransition(async () => {
+      const result = await transitionRentalAction(request.id, action);
+      if (!result.ok) setError(result.message);
+    });
+  };
 
   return (
     <li className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
@@ -47,11 +90,11 @@ export function RequestRow({
             >
               {listing.title}
             </Link>
-            <RentalStatusBadge status={status} />
+            <RentalStatusBadge status={request.status} />
           </div>
           <p className="mt-0.5 text-sm text-muted-foreground">
             {perspective === "owner" ? "From" : "Owner:"}{" "}
-            {counterpart?.displayName},{" "}
+            {counterpart.displayName},{" "}
             {formatDateRange(request.startDate, request.endDate)}
           </p>
           {request.message && (
@@ -59,62 +102,37 @@ export function RequestRow({
               &ldquo;{request.message}&rdquo;
             </p>
           )}
+          {error && (
+            <p role="alert" className="mt-2 text-sm text-destructive">
+              {error}
+            </p>
+          )}
         </div>
       </div>
 
       <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">
-        {perspective === "owner" && status === "pending" && (
-          <>
-            <Button
-              variant="outline"
-              size="lg"
-              className="px-3"
-              onClick={() => setStatus("rejected")}
-            >
-              Decline
-            </Button>
-            <Button
-              size="lg"
-              className="px-3"
-              onClick={() => setStatus("accepted")}
-            >
-              Accept
-            </Button>
-          </>
-        )}
-        {perspective === "owner" && status === "accepted" && (
+        {buttons.map((button) => (
           <Button
-            variant="outline"
+            key={button.action}
+            variant={button.variant}
             size="lg"
             className="px-3"
-            onClick={() => setStatus("active")}
+            disabled={isPending}
+            aria-busy={(isPending && running === button.action) || undefined}
+            onClick={() => run(button.action)}
           >
-            Mark handed over
+            {isPending && running === button.action && (
+              <LoaderCircle
+                className="animate-spin motion-reduce:animate-none"
+                data-icon="inline-start"
+              />
+            )}
+            {button.label}
           </Button>
-        )}
-        {perspective === "owner" && status === "active" && (
-          <Button
-            variant="outline"
-            size="lg"
-            className="px-3"
-            onClick={() => setStatus("completed")}
-          >
-            Mark returned
-          </Button>
-        )}
-        {perspective === "borrower" && status === "pending" && (
-          <Button
-            variant="outline"
-            size="lg"
-            className="px-3"
-            onClick={() => setStatus("cancelled")}
-          >
-            Cancel request
-          </Button>
-        )}
+        ))}
         {perspective === "borrower" &&
-          status === "accepted" &&
-          listing.depositAmount !== null && (
+          request.status === "accepted" &&
+          listing.depositCents !== null && (
             <Link
               href={`/marketplace/deposits?request=${request.id}`}
               className={cn(buttonVariants({ size: "lg" }), "px-3")}

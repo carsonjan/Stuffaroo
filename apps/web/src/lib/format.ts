@@ -46,3 +46,10 @@ export function daysBetween(start: string, end: string): number {
     new Date(`${start}T00:00:00Z`).getTime();
   return Math.round(ms / 86_400_000) + 1;
 }
+
+/** A `YYYY-MM-DD` date (UTC) `days` after `from`. */
+export function isoDateAfter(from: Date, days: number): string {
+  const date = new Date(from);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}

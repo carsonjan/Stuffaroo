@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
 from app.core.db import close_pool
-from app.routers import listings, me, profiles, wanted
+from app.routers import listings, me, profiles, rentals, wanted
 
 
 @asynccontextmanager
@@ -29,6 +29,7 @@ app.include_router(me.router)
 app.include_router(listings.router)
 app.include_router(profiles.router)
 app.include_router(wanted.router)
+app.include_router(rentals.router)
 
 
 @app.get("/health")

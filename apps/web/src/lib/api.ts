@@ -6,10 +6,16 @@
 
 import type {
   ListingDetail,
+  ListingInput,
   MatchQuery,
   MatchResult,
   Profile,
   ProfileWithListings,
+  RentalAction,
+  RentalInput,
+  RentalRequest,
+  RentalRole,
+  WantedInput,
   WantedPost,
 } from "./api-types";
 import { getAuth0 } from "./auth0";
@@ -188,4 +194,65 @@ export async function getMe(): Promise<Profile | null> {
       return null;
     throw error;
   }
+}
+
+/** User-facing text for a failed write, for server actions to show inline. */
+export function describeApiError(error: ApiError): string {
+  if (error.status === 401) return "Your session has expired. Sign in again.";
+  if (error.status === 422)
+    return "Some details weren't accepted. Check the form and try again.";
+  return error.detail;
+}
+
+export function createListing(input: ListingInput): Promise<ListingDetail> {
+  return apiFetch("/api/listings", { method: "POST", body: input, auth: true });
+}
+
+export function getMyListings(): Promise<ListingDetail[]> {
+  return apiFetch("/api/me/listings", { auth: true });
+}
+
+export function createWanted(input: WantedInput): Promise<WantedPost> {
+  return apiFetch("/api/wanted", { method: "POST", body: input, auth: true });
+}
+
+export function getMyWanted(): Promise<WantedPost[]> {
+  return apiFetch("/api/me/wanted", { auth: true });
+}
+
+export function createRental(input: RentalInput): Promise<RentalRequest> {
+  return apiFetch("/api/rentals", { method: "POST", body: input, auth: true });
+}
+
+/** owner = incoming requests for my listings; borrower = requests I made. */
+export function getRentals(role: RentalRole): Promise<RentalRequest[]> {
+  return apiFetch("/api/rentals", { query: { role }, auth: true });
+}
+
+/** Returns null when the request doesn't exist or isn't yours (404). */
+export async function getRental(id: string): Promise<RentalRequest | null> {
+  try {
+    return await apiFetch<RentalRequest>(
+      `/api/rentals/${encodeURIComponent(id)}`,
+      { auth: true },
+    );
+  } catch (error) {
+    if (
+      error instanceof ApiError &&
+      (error.status === 404 || error.status === 422)
+    )
+      return null;
+    throw error;
+  }
+}
+
+export function transitionRental(
+  id: string,
+  action: RentalAction,
+): Promise<RentalRequest> {
+  return apiFetch(`/api/rentals/${encodeURIComponent(id)}/transition`, {
+    method: "POST",
+    body: { action },
+    auth: true,
+  });
 }

@@ -6,19 +6,19 @@ Students buy things they only need for a week, and throw out perfectly good stuf
 
 ## Status
 
-The backend is being wired in chunks (see [docs/todo.md](docs/todo.md) and [docs/api-contract.md](docs/api-contract.md)). Browsing, listing detail, profiles, wanted posts and matching now read from the database through the API. Sign-in is wired through Auth0 (it switches on once a tenant is configured; see [docs/handoff-auth0.md](docs/handoff-auth0.md)). Creating listings and requests, and the dashboard, still run on sample data.
+The backend is being wired in chunks (see [docs/todo.md](docs/todo.md) and [docs/api-contract.md](docs/api-contract.md)). The rent and borrow journey runs on the real API and database: browsing, listings, profiles, wanted posts, matching, creating listings and wanted posts, rental requests and the dashboard. Sign-in goes through Auth0 and switches on once a tenant is configured (see [docs/handoff-auth0.md](docs/handoff-auth0.md)). The buy/deals/move-out sections and the Solana deposit demo still use sample or simulated data.
 
 | Area | State |
 | --- | --- |
-| Web app (`apps/web`) | All main screens built and responsive. Data comes from `src/lib/mock-data.ts` and `src/lib/mock-shop.ts` |
-| API (`apps/api`) | FastAPI with read endpoints for listings, profiles and wanted posts, and matching (`/api/matches`, `/api/wanted/{id}/matches`) |
+| Web app (`apps/web`) | All main screens built and responsive. Rent/borrow screens read and write through the API; buy, deals and move-out sections use `src/lib/mock-shop.ts` |
+| API (`apps/api`) | FastAPI: listings, profiles, wanted posts, matching, `/api/me`, and rental requests with a server-enforced lifecycle. See [docs/api-contract.md](docs/api-contract.md) |
 | Database | Tiger Cloud Postgres (pgvector + pgvectorscale). Locally, the same image in Docker. Schema in `apps/api/migrations/`, fictional demo data in `apps/api/app/seed/` |
-| Auth | Auth0 in Next.js; FastAPI verifies the forwarded access token. Off until Auth0 env vars are set. The dashboard still shows a hard-coded sample student |
+| Auth | Auth0 in Next.js; FastAPI verifies the forwarded access token. Off until Auth0 env vars are set |
 | AI matching | Real: hard filters in SQL (availability, category, budget, booked dates, own listings), then Gemini embeddings ranked on Tiger's DiskANN index. Without Gemini configured it falls back to keyword ranking and the UI says so |
 | AI listing drafts | Canned sample response, labelled as a mockup |
 | Solana deposit | Simulated, labelled as simulated. No wallet is contacted |
 
-Forms and buttons only change local state, and their success messages are labelled as mockups. Nothing is saved, and a page reload resets everything.
+Creating things and changing request status needs sign-in. With Auth0 not configured, those screens explain that instead of pretending to work.
 
 ## Features in the mockup
 
@@ -117,11 +117,12 @@ GitHub Actions (`.github/workflows/ci.yml`) runs `pnpm check` and a production b
 
 ## Demo
 
-There is no live demo yet. The mockup lives under `/marketplace` (the root `/` is still the starter page). Locally, start at `/marketplace` and follow the main journey:
+There is no live demo yet. The app lives under `/marketplace` (the root `/` is still the starter page). Locally, with the database seeded and two demo Auth0 users set up (see [docs/handoff-auth0.md](docs/handoff-auth0.md)), for example Maya and Jordan:
 
-1. Browse `/marketplace/browse` and open a listing.
-2. Post a need at `/marketplace/wanted/new` and click "Find matches".
-3. Open `/marketplace/dashboard/requests` to accept or reject a request.
-4. Walk through the deposit at `/marketplace/deposits`.
+1. As Jordan, list an item at `/marketplace/listings/new`.
+2. As Maya, describe a need at `/marketplace/wanted/new` and click "Find matches". The results say whether they were ranked with Gemini embeddings or by keyword.
+3. Open a matching listing and send a request.
+4. As Jordan, accept it at `/marketplace/dashboard/requests`, then mark it handed over and returned.
+5. Optionally walk through the simulated Devnet deposit at `/marketplace/deposits`.
 
-Every result in this flow comes from sample data.
+Listings, people and requests come from the seeded fictional demo data plus whatever you create. The deposit step is simulated and labelled as such.

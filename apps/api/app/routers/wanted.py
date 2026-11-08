@@ -6,6 +6,7 @@ import psycopg
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import Field, model_validator
 
+from app.core.auth import CurrentProfile
 from app.core.db import get_conn
 from app.models.schemas import CamelModel, Category, MatchResult, WantedPost
 from app.services import matching, wanted
@@ -73,4 +74,33 @@ def match_need(query: MatchQuery, conn: Conn) -> MatchResult:
             start_date=query.start_date,
             end_date=query.end_date,
         ),
+    )
+
+
+class WantedCreate(CamelModel):
+    title: str = Field(min_length=3, max_length=120)
+    description: str = Field(max_length=2000)
+    category: Category
+    budget_per_day_cents: int | None = Field(default=None, ge=0, le=100_000)
+    start_date: date
+    end_date: date
+
+    @model_validator(mode="after")
+    def check_dates(self) -> Self:
+        if self.end_date < self.start_date:
+            raise ValueError("endDate must be on or after startDate")
+        return self
+
+
+@router.post("/api/wanted", response_model=WantedPost, status_code=201)
+def create_wanted(body: WantedCreate, me: CurrentProfile, conn: Conn) -> WantedPost:
+    return wanted.create_wanted(
+        conn,
+        user_id=me.id,
+        title=body.title.strip(),
+        description=body.description.strip(),
+        category=body.category,
+        budget_per_day_cents=body.budget_per_day_cents,
+        start_date=body.start_date,
+        end_date=body.end_date,
     )

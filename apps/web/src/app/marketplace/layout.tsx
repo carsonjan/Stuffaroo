@@ -10,8 +10,7 @@ export default function MarketplaceLayout({
   return (
     <div className="flex min-h-dvh flex-col">
       <p className="bg-ink px-4 py-1.5 text-center text-xs text-paper">
-        Design preview: all listings, people and transactions shown are sample
-        data.
+        Demo: the students and listings are fictional, and no real money moves.
       </p>
       <Suspense fallback={<SiteHeader activePath={null} viewer={null} />}>
         <HeaderWithViewer />

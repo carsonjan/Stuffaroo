@@ -1,4 +1,5 @@
-import type { AvailabilityStatus, RentalStatus } from "@/lib/mock-data";
+import type { RentalStatus } from "@/lib/api-types";
+import type { AvailabilityStatus } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
 const pill =
