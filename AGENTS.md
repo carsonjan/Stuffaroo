@@ -1506,3 +1506,8 @@ The project's success depends on demonstrating a real, coherent solution to a st
 Engineering quality matters, but it should support the product rather than become an end in itself.
 
 **Default decision rule:** Choose the simplest maintainable implementation that delivers the requested behavior, preserves working functionality, and can be demonstrated reliably within the hackathon.
+
+<!-- entire-agent:begin -->
+Read .entire/agent-guide.md for this repository's workflow, source inspection, and verification guidance.
+@.entire/agent-guide.md
+<!-- entire-agent:end -->
