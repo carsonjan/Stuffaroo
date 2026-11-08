@@ -122,7 +122,8 @@ def check_gemini() -> None:
     if not embeddings.is_configured():
         bad(
             "not configured (matching will use the keyword fallback)",
-            "set GEMINI_API_KEY (a Google AI Studio key) in apps/api/.env"
+            "put gcp-key.json in apps/api (get it privately from a teammate), "
+            "or set GEMINI_API_KEY in apps/api/.env"
             if os.environ.get("STUFFAROO_CONTAINER")
             else "set GOOGLE_GENAI_USE_VERTEXAI=true and GOOGLE_CLOUD_PROJECT, "
             "or GEMINI_API_KEY, in apps/api/.env",
@@ -144,10 +145,7 @@ def check_gemini() -> None:
         embeddings.embed_texts(["setup check"], "RETRIEVAL_QUERY")
         ok(f"embeddings work ({backend}, {settings.gemini_embedding_model})")
     except embeddings.EmbeddingError as error:
-        bad(
-            f"embeddings failed: {str(error)[:160]}",
-            "enable the Vertex AI API and run `gcloud auth application-default login`",
-        )
+        bad(f"embeddings failed: {str(error)[:160]}", _gemini_fix(str(error), backend))
     if not relevance.is_enabled():
         skip("relevance check is off")
         return
@@ -155,10 +153,44 @@ def check_gemini() -> None:
         _probe_relevance_model()
         ok(f"relevance model works ({settings.gemini_relevance_model})")
     except relevance.RelevanceError as error:
+        message = str(error)
         bad(
-            f"relevance model failed: {str(error)[:160]}",
-            "check GEMINI_RELEVANCE_MODEL / GEMINI_RELEVANCE_LOCATION (text models use 'global')",
+            f"relevance model failed: {message[:160]}",
+            _gemini_fix(message, backend)
+            if _is_access_error(message)
+            else "check GEMINI_RELEVANCE_MODEL / GEMINI_RELEVANCE_LOCATION (text models use 'global')",
         )
+
+
+def _is_access_error(message: str) -> bool:
+    return any(
+        code in message
+        for code in (
+            "401",
+            "402",
+            "403",
+            "RESOURCE_EXHAUSTED",
+            "PERMISSION_DENIED",
+            "credentials",
+        )
+    )
+
+
+def _gemini_fix(message: str, backend: str) -> str:
+    """A fix that matches the backend actually in use, not always the Vertex login."""
+    if backend == "AI Studio key":
+        if "402" in message or "RESOURCE_EXHAUSTED" in message:
+            return (
+                "the AI Studio key is out of credits: top it up, or use Vertex AI by putting "
+                "gcp-key.json in apps/api"
+            )
+        return "check GEMINI_API_KEY in apps/api/.env, or put gcp-key.json in apps/api"
+    if backend.endswith("service-account key"):
+        return (
+            "check gcp-key.json is the current key and its service account has the "
+            "Vertex AI User role on the project, with the Vertex AI API enabled"
+        )
+    return "enable the Vertex AI API and run `gcloud auth application-default login`"
 
 
 def _probe_relevance_model() -> None:
