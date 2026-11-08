@@ -98,6 +98,24 @@ Devpost allows at most 25 tags.
 
 auth0, base-ui, biome, fastapi, gemini, github-actions, google-cloud, lovable, next.js, pgvector, pgvectorscale, pnpm, postgresql, pydantic, pytest, python, react, ruff, shadcn-ui, tailwindcss, tanstack, tiger-data, typescript, vercel, vertex-ai
 
+## Image gallery
+
+Upload these to the Devpost gallery in this order, with the caption under each. All are in `docs/snapshots/` (all well under Devpost's 5 MB limit; the desktop first-screen shots are 1920×1200).
+
+1. `desktop/01-home-fold.jpg`: Home. Buy, rent or request from classmates, with a frosted search and pickup on campus.
+2. `desktop/03-browse-fold.jpg`: Browse with filters for mode, category, price, condition, pickup spot and date.
+3. `desktop/06-listing-detail-fold.jpg`: A listing with pickup times, the seller's rating and a Verified UBC badge.
+4. `desktop/11-post-review.jpg`: Posting an item in four steps: photos, details, price, pickup.
+5. `desktop/08-profile-fold.jpg`: A student's profile with listings, rentals, requests and reviews.
+6. `mobile/01-home-fold.jpg`: The same marketplace on a phone, with a floating bottom nav.
+7. `mobile/12-browse-filters-sheet.jpg`: Mobile filters in a bottom sheet.
+
+![Home](snapshots/desktop/01-home-fold.jpg)
+![Browse](snapshots/desktop/03-browse-fold.jpg)
+![Listing detail](snapshots/desktop/06-listing-detail-fold.jpg)
+![Post an item](snapshots/desktop/11-post-review.jpg)
+![Profile](snapshots/desktop/08-profile-fold.jpg)
+
 ## Try it out
 
 - Live: https://stuffaroo-web.vercel.app/marketplace
