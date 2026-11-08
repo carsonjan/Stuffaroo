@@ -6,14 +6,8 @@ import { ListingThumb } from "@/components/marketplace/listing-thumb";
 import { AvailabilityBadge } from "@/components/marketplace/status-badge";
 import { RequestRow } from "@/components/requests/request-row";
 import { buttonVariants } from "@/components/ui/button";
-import { WantedCard } from "@/components/wanted/wanted-card";
 import { formatMoney, formatPrice } from "@/lib/format";
-import {
-  CURRENT_USER_ID,
-  listings,
-  rentalRequests,
-  wantedPosts,
-} from "@/lib/mock-data";
+import { CURRENT_USER_ID, listings, rentalRequests } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Dashboard" };
@@ -29,7 +23,6 @@ export default function DashboardPage() {
   const upcomingBorrows = outgoing.filter(
     (r) => r.status === "accepted" || r.status === "active",
   );
-  const myWanted = wantedPosts.filter((w) => w.userId === CURRENT_USER_ID);
   const lendsCompleted = incoming.filter(
     (r) => r.status === "completed",
   ).length;
@@ -153,9 +146,14 @@ export default function DashboardPage() {
           linkLabel="Post another"
         />
         <div className="grid gap-4 md:grid-cols-2">
-          {myWanted.map((w) => (
-            <WantedCard key={w.id} post={w} />
-          ))}
+          <p className="text-sm text-muted-foreground">
+            Your own wanted posts show here once sign-in is connected. Until
+            then, see{" "}
+            <Link href="/marketplace/wanted" className="underline">
+              all wanted posts
+            </Link>
+            .
+          </p>
         </div>
       </section>
     </div>

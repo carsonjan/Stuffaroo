@@ -6,15 +6,16 @@ Students buy things they only need for a week, and throw out perfectly good stuf
 
 ## Status
 
-The backend is being wired in chunks (see [docs/todo.md](docs/todo.md) and [docs/api-contract.md](docs/api-contract.md)). Browsing, listing detail and profiles now read from the database through the API. The other screens still run on sample data.
+The backend is being wired in chunks (see [docs/todo.md](docs/todo.md) and [docs/api-contract.md](docs/api-contract.md)). Browsing, listing detail, profiles, wanted posts and matching now read from the database through the API. Sign-in, creating listings and requests, and the dashboard still run on sample data.
 
 | Area | State |
 | --- | --- |
 | Web app (`apps/web`) | All main screens built and responsive. Data comes from `src/lib/mock-data.ts` and `src/lib/mock-shop.ts` |
-| API (`apps/api`) | FastAPI with read endpoints for listings and profiles (`/api/listings`, `/api/profiles/{id}`) |
+| API (`apps/api`) | FastAPI with read endpoints for listings, profiles and wanted posts, and matching (`/api/matches`, `/api/wanted/{id}/matches`) |
 | Database | Tiger Cloud Postgres (pgvector + pgvectorscale). Locally, the same image in Docker. Schema in `apps/api/migrations/`, fictional demo data in `apps/api/app/seed/` |
 | Auth | Not set up. The UI acts as one hard-coded student (`CURRENT_USER_ID`) |
-| AI matching and drafting | Canned sample responses, labelled as mockup or sample output in the UI |
+| AI matching | Real: hard filters in SQL (availability, category, budget, booked dates, own listings), then Gemini embeddings ranked on Tiger's DiskANN index. Without a Gemini key it falls back to keyword ranking and the UI says so |
+| AI listing drafts | Canned sample response, labelled as a mockup |
 | Solana deposit | Simulated, labelled as simulated. No wallet is contacted |
 
 Forms and buttons only change local state, and their success messages are labelled as mockups. Nothing is saved, and a page reload resets everything.
@@ -74,6 +75,7 @@ The API uses Postgres with pgvector and pgvectorscale: a Tiger Cloud service, or
 pnpm db:up        # start timescale/timescaledb-ha:pg17 on localhost:5433
 pnpm db:migrate   # apply apps/api/migrations/*.sql
 pnpm db:seed      # load the fictional demo students, listings and requests
+pnpm db:embed     # embed listings with Gemini (needs GEMINI_API_KEY in apps/api/.env)
 ```
 
 To use Tiger Cloud instead, copy `apps/api/.env.example` to `apps/api/.env` and set `DATABASE_URL` to the service URL (with `sslmode=require`), then run `pnpm db:migrate` and `pnpm db:seed`.

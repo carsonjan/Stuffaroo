@@ -4,7 +4,7 @@ import { HandCoins, Megaphone, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 
 import { WantedCard } from "@/components/wanted/wanted-card";
-import { wantedPosts } from "@/lib/mock-data";
+import type { WantedPost } from "@/lib/api-types";
 import { buyListings, rentListings } from "@/lib/mock-shop";
 import { cn } from "@/lib/utils";
 
@@ -37,7 +37,8 @@ const modes = [
 type Mode = (typeof modes)[number]["key"];
 
 /** The team's Buy / Rent / Request switcher, driving one grid. Buy shows without JavaScript. */
-export function ModeSwitcher() {
+/** `wanted` comes from the API; buy and rent stay on the sample shop data. */
+export function ModeSwitcher({ wanted }: { wanted: WantedPost[] }) {
   const [mode, setMode] = useState<Mode>("buy");
   const active = modes.find((m) => m.key === mode) ?? modes[0];
 
@@ -104,12 +105,13 @@ export function ModeSwitcher() {
         )}
         {mode === "request" && (
           <div className="mt-8 grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-[repeat(3,minmax(0,1fr))]">
-            {wantedPosts
-              .filter((post) => post.status === "open")
-              .slice(0, 3)
-              .map((post) => (
-                <WantedCard key={post.id} post={post} />
-              ))}
+            {wanted.length > 0 ? (
+              wanted
+                .slice(0, 3)
+                .map((post) => <WantedCard key={post.id} post={post} />)
+            ) : (
+              <p className="text-sm text-ink-3">No open requests right now.</p>
+            )}
           </div>
         )}
       </div>

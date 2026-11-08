@@ -4,7 +4,13 @@
  * config, and later auth headers carry the user's access token.
  */
 
-import type { ListingDetail, ProfileWithListings } from "./api-types";
+import type {
+  ListingDetail,
+  MatchQuery,
+  MatchResult,
+  ProfileWithListings,
+  WantedPost,
+} from "./api-types";
 
 const API_URL = process.env.API_URL ?? "http://localhost:8000";
 const TIMEOUT_MS = 8000;
@@ -24,7 +30,16 @@ export const API_UNREACHABLE = 0;
 
 type Query = Record<string, string | boolean | undefined>;
 
-async function apiFetch<T>(path: string, query?: Query): Promise<T> {
+type FetchOptions = {
+  query?: Query;
+  method?: "GET" | "POST";
+  body?: unknown;
+};
+
+async function apiFetch<T>(
+  path: string,
+  { query, method = "GET", body }: FetchOptions = {},
+): Promise<T> {
   const url = new URL(path, API_URL);
   for (const [key, value] of Object.entries(query ?? {})) {
     if (value !== undefined && value !== "")
@@ -34,9 +49,14 @@ async function apiFetch<T>(path: string, query?: Query): Promise<T> {
   let response: Response;
   try {
     response = await fetch(url, {
+      method,
       cache: "no-store",
       signal: AbortSignal.timeout(TIMEOUT_MS),
-      headers: { Accept: "application/json" },
+      headers: {
+        Accept: "application/json",
+        ...(body === undefined ? {} : { "Content-Type": "application/json" }),
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch {
     throw new ApiError(API_UNREACHABLE, "Couldn't reach the Stuffaroo API.");
@@ -73,10 +93,12 @@ export function getListings(
   filters: ListingFilters = {},
 ): Promise<ListingDetail[]> {
   return apiFetch("/api/listings", {
-    q: filters.q,
-    category: filters.category,
-    price: filters.price,
-    include_unavailable: filters.includeUnavailable || undefined,
+    query: {
+      q: filters.q,
+      category: filters.category,
+      price: filters.price,
+      include_unavailable: filters.includeUnavailable || undefined,
+    },
   });
 }
 
@@ -111,4 +133,29 @@ export async function getProfileWithListings(
       return null;
     throw error;
   }
+}
+
+export function getWantedPosts(): Promise<WantedPost[]> {
+  return apiFetch("/api/wanted");
+}
+
+export async function getWantedPost(id: string): Promise<WantedPost | null> {
+  try {
+    return await apiFetch<WantedPost>(`/api/wanted/${encodeURIComponent(id)}`);
+  } catch (error) {
+    if (
+      error instanceof ApiError &&
+      (error.status === 404 || error.status === 422)
+    )
+      return null;
+    throw error;
+  }
+}
+
+export function getWantedMatches(id: string): Promise<MatchResult> {
+  return apiFetch(`/api/wanted/${encodeURIComponent(id)}/matches`);
+}
+
+export function findMatches(query: MatchQuery): Promise<MatchResult> {
+  return apiFetch("/api/matches", { method: "POST", body: query });
 }

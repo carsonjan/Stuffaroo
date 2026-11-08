@@ -35,3 +35,38 @@ export type ProfileWithListings = {
   profile: Profile;
   listings: ListingDetail[];
 };
+
+export type WantedPost = {
+  id: string;
+  userId: string;
+  title: string;
+  description: string;
+  category: CategorySlug;
+  budgetPerDayCents: number | null;
+  startDate: string;
+  endDate: string;
+  status: "open" | "fulfilled" | "closed";
+  createdAt: string;
+  author: Profile;
+};
+
+export type Match = {
+  listing: ListingDetail;
+  /** 0..1, higher is closer. A relative ranking, not a probability. */
+  score: number;
+  reason: string;
+};
+
+export type MatchResult = {
+  /** "keyword" means Gemini embeddings were unavailable for this request. */
+  method: "vector" | "keyword";
+  matches: Match[];
+};
+
+export type MatchQuery = {
+  text: string;
+  category?: CategorySlug;
+  budgetPerDayCents?: number;
+  startDate?: string;
+  endDate?: string;
+};

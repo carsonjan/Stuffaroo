@@ -1,8 +1,7 @@
 "use client";
 
-import { LoaderCircle, Sparkles } from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
+import { LoaderCircle, Search } from "lucide-react";
+import { useActionState } from "react";
 
 import {
   controlClass,
@@ -10,145 +9,105 @@ import {
   MoneyInput,
   NativeSelect,
 } from "@/components/forms/fields";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { MatchList } from "@/components/wanted/match-list";
-import { categories, mockMatches } from "@/lib/mock-data";
-import { cn } from "@/lib/utils";
+import { MatchList, MatchMethodNote } from "@/components/wanted/match-list";
+import { categories } from "@/lib/mock-data";
+import { type FindMatchesState, findMatchesAction } from "./actions";
 
-/** Mockup: "Find matches" reveals canned AI output for the keyboard example. */
+const initialState: FindMatchesState = { status: "idle" };
+
+/** Describe a need and see which real listings fit it right now. */
 export function WantedForm() {
-  const [text, setText] = useState(
-    "I need a mechanical keyboard for three days next week, nothing too loud",
+  const [state, formAction, isPending] = useActionState(
+    findMatchesAction,
+    initialState,
   );
-  const [stage, setStage] = useState<"idle" | "loading" | "parsed">("idle");
-
-  const analyze = () => {
-    setStage("loading");
-    setTimeout(() => setStage("parsed"), 900);
-  };
 
   return (
     <div className="mt-8 flex flex-col gap-8">
-      <div className="rounded-card border bg-card p-2 focus-within:ring-3 focus-within:ring-ring/30">
-        <label htmlFor="need" className="sr-only">
-          Describe what you need
-        </label>
-        <Textarea
-          id="need"
-          rows={3}
-          value={text}
-          onChange={(e) => {
-            setText(e.target.value);
-            setStage("idle");
-          }}
-          className="resize-none border-0 bg-transparent text-base shadow-none focus-visible:ring-0"
-          placeholder="e.g. I need a camera for a weekend trip"
-        />
-        <div className="flex items-center justify-between px-2 pb-1">
-          <span className="text-xs text-muted-foreground">
-            AI reads dates, budget and category from your words
-          </span>
-          <Button
-            type="button"
-            size="lg"
-            className="px-4"
-            onClick={analyze}
-            disabled={stage === "loading" || !text.trim()}
-          >
-            {stage === "loading" ? (
+      <form action={formAction} className="flex flex-col gap-5">
+        <Field label="What do you need?" htmlFor="need">
+          <Textarea
+            id="need"
+            name="text"
+            rows={3}
+            required
+            minLength={3}
+            maxLength={1000}
+            className="resize-none text-base"
+            placeholder="e.g. A camera for a weekend trip, something light"
+          />
+        </Field>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Category" htmlFor="w-category" hint="Optional">
+            <NativeSelect id="w-category" name="category" defaultValue="">
+              <option value="">Any category</option>
+              {categories.map((c) => (
+                <option key={c.slug} value={c.slug}>
+                  {c.name}
+                </option>
+              ))}
+            </NativeSelect>
+          </Field>
+          <Field label="Budget per day" htmlFor="w-budget" hint="Optional">
+            <MoneyInput id="w-budget" name="budget" placeholder="Flexible" />
+          </Field>
+          <Field label="From" htmlFor="w-start" hint="Optional">
+            <input
+              id="w-start"
+              name="startDate"
+              type="date"
+              className={controlClass}
+            />
+          </Field>
+          <Field label="Until" htmlFor="w-end" hint="Optional">
+            <input
+              id="w-end"
+              name="endDate"
+              type="date"
+              className={controlClass}
+            />
+          </Field>
+        </div>
+        <div className="flex items-center justify-end gap-3">
+          {state.status === "error" && (
+            <p role="alert" className="text-sm text-destructive">
+              {state.message}
+            </p>
+          )}
+          <Button type="submit" size="lg" className="px-4" disabled={isPending}>
+            {isPending ? (
               <LoaderCircle
                 className="animate-spin motion-reduce:animate-none"
                 data-icon="inline-start"
               />
             ) : (
-              <Sparkles data-icon="inline-start" />
+              <Search data-icon="inline-start" />
             )}
             Find matches
           </Button>
         </div>
-      </div>
+      </form>
 
-      {stage === "parsed" && (
-        <>
-          <section className="rounded-card border p-5">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Check the details</h2>
-              <span className="text-xs text-muted-foreground italic">
-                Mockup: sample AI extraction
-              </span>
-            </div>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <Field label="Title" htmlFor="w-title" className="sm:col-span-2">
-                <input
-                  id="w-title"
-                  defaultValue="Mechanical keyboard for three days"
-                  className={controlClass}
-                />
-              </Field>
-              <Field label="Category" htmlFor="w-category">
-                <NativeSelect id="w-category" defaultValue="electronics">
-                  {categories.map((c) => (
-                    <option key={c.slug} value={c.slug}>
-                      {c.name}
-                    </option>
-                  ))}
-                </NativeSelect>
-              </Field>
-              <Field label="Budget per day" htmlFor="w-budget" hint="Optional">
-                <MoneyInput id="w-budget" placeholder="Flexible" />
-              </Field>
-              <Field label="From" htmlFor="w-start">
-                <input
-                  id="w-start"
-                  type="date"
-                  defaultValue="2026-11-10"
-                  className={controlClass}
-                />
-              </Field>
-              <Field label="Until" htmlFor="w-end">
-                <input
-                  id="w-end"
-                  type="date"
-                  defaultValue="2026-11-12"
-                  className={controlClass}
-                />
-              </Field>
-            </div>
-          </section>
-
-          <section>
-            <div className="mb-1 flex items-center justify-between gap-4">
-              <h2 className="text-lg font-semibold">Available now</h2>
-              <span className="text-xs text-muted-foreground italic">
-                Mockup: sample matches
-              </span>
-            </div>
-            <p className="mb-4 text-sm text-muted-foreground">
-              Items already listed that fit. Request one directly, or post your
-              wanted so new listings can find you.
-            </p>
-            <MatchList matches={mockMatches["w-2"]} />
-          </section>
-
-          <div className="flex justify-end gap-2 border-t pt-6">
-            <Link
-              href="/marketplace/wanted"
-              className={cn(
-                buttonVariants({ variant: "ghost", size: "lg" }),
-                "px-4",
-              )}
-            >
-              Cancel
-            </Link>
-            <Link
-              href="/marketplace/wanted/w-2"
-              className={cn(buttonVariants({ size: "lg" }), "px-5")}
-            >
-              Post wanted
-            </Link>
+      {state.status === "done" && (
+        <section aria-live="polite">
+          <div className="mb-1 flex items-center justify-between gap-4">
+            <h2 className="text-lg font-semibold">Available now</h2>
+            <MatchMethodNote method={state.result.method} />
           </div>
-        </>
+          <p className="mb-4 text-sm text-muted-foreground">
+            Listed items that are available and fit your category, budget and
+            dates.
+          </p>
+          {state.result.matches.length > 0 ? (
+            <MatchList matches={state.result.matches} />
+          ) : (
+            <p className="rounded-card border border-dashed px-6 py-10 text-center text-sm text-muted-foreground">
+              Nothing listed fits yet. Try a broader description or budget.
+            </p>
+          )}
+        </section>
       )}
     </div>
   );

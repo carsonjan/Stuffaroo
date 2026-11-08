@@ -26,7 +26,7 @@ Settle these before building the matching items below. Each one is a team call, 
 - [x] Write migrations for `profiles`, `listings`, `listing_images`, `wanted_posts`, `rental_requests`, `deposits`. Use the shapes in `mock-data.ts` as the starting point (they were written to match the planned schema).
 - [x] UUID primary keys, foreign keys, indexes on `listings(category, availability_status)` and `rental_requests(listing_id, status)`.
 - [x] Store money as integer cents (AGENTS.md section 6.3). The mock uses whole-dollar numbers, so convert at the boundary.
-- [ ] Seed script with the sample profiles, listings, wanted posts and requests, including at least one incompatible listing so matching visibly filters it out (AGENTS.md section 19.5).
+- [x] Seed script with the sample profiles, listings, wanted posts and requests, including at least one incompatible listing so matching visibly filters it out (AGENTS.md section 19.5).
 
 ### Auth (assigned: see `docs/handoff-auth0.md`)
 - [ ] Auth0 sign-in, sign-out and session in Next.js. Wire the existing "Sign out" item in `site-header.tsx`.
@@ -42,10 +42,10 @@ Settle these before building the matching items below. Each one is a team call, 
 - [x] `GET /api/profiles/{id}` plus the owner's listings for `app/marketplace/profile/[id]/page.tsx`.
 
 ### Wanted posts and matching
-- [ ] `GET /api/wanted`, `GET /api/wanted/{id}`, `POST /api/wanted` for the wanted pages and `wanted-form.tsx`.
-- [ ] `POST /api/matches` (or `GET /api/wanted/{id}/matches`): filter real listings by category, availability, price and dates first, then rank. Return `{listing_id, score, reason}` like `MatchSuggestion`, and drop any ID that is not in the database.
-- [ ] Replace `mockMatches` where it is read (`app/marketplace/wanted/[id]/page.tsx`, `components/wanted/wanted-form.tsx`, `components/wanted/wanted-card.tsx`) and the canned extraction in `wanted-form.tsx`. `match-list.tsx` only renders the matches it is given.
-- [ ] A deterministic fallback (category + keyword) when the AI call fails, labelled as such in the UI.
+- [ ] `POST /api/wanted` (chunk 4). Done: `GET /api/wanted`, `GET /api/wanted/{id}`, for the wanted pages and `wanted-form.tsx`.
+- [x] `POST /api/matches` and `GET /api/wanted/{id}/matches`: filter real listings by category, availability, price and dates first, then rank. Return `{listing_id, score, reason}` like `MatchSuggestion`, and drop any ID that is not in the database.
+- [x] Replace `mockMatches` where it is read (`app/marketplace/wanted/[id]/page.tsx`, `components/wanted/wanted-form.tsx`, `components/wanted/wanted-card.tsx`) and the canned extraction in `wanted-form.tsx`. `match-list.tsx` only renders the matches it is given.
+- [x] A deterministic fallback (category + keyword) when the AI call fails, labelled as such in the UI.
 
 ### Rental requests
 - [ ] `POST /api/rentals` from `components/requests/request-form.tsx`. It currently only sets `submitted`.

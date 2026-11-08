@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     gemini_api_key: str | None = None
     gemini_embedding_model: str = "gemini-embedding-001"
     gemini_timeout_seconds: float = 10.0
+    # Vector matches below this cosine similarity are dropped as unrelated.
+    match_min_similarity: float = 0.55
 
     cors_origins: list[str] = ["http://localhost:3000"]
 

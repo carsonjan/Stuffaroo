@@ -9,13 +9,12 @@ import { Roo } from "@/components/roo";
 import { ModeSwitcher } from "@/components/shop/mode-switcher";
 import { MoveOutDays } from "@/components/shop/move-out-countdown";
 import { buttonVariants } from "@/components/ui/button";
-import { getListings } from "@/lib/api";
-import { categories, wantedPosts } from "@/lib/mock-data";
+import { getListings, getWantedPosts } from "@/lib/api";
+import { categories } from "@/lib/mock-data";
 import { priceDrops } from "@/lib/mock-shop";
 import { cn } from "@/lib/utils";
 
 const popular = ["camera", "tent", "keyboard", "textbook"];
-const firstRequest = wantedPosts.find((post) => post.status === "open");
 
 /** Nomu's quiet white pill: white fill, faint inner edge, ink-3 text. */
 const softPill =
@@ -65,7 +64,9 @@ export default function HomePage() {
 
       {/* Buy / Rent / Request, one grid */}
       <section className="mx-auto max-w-[1200px] px-4 sm:px-10">
-        <ModeSwitcher />
+        <Suspense fallback={<ModeSwitcher wanted={[]} />}>
+          <ModeSwitcherWithWanted />
+        </Suspense>
         <div className="mt-10 flex flex-wrap items-center gap-2">
           <Link
             href="/marketplace/browse"
@@ -127,9 +128,9 @@ export default function HomePage() {
             <h3 className="mt-auto text-2xl leading-tight tracking-[-0.03em] text-ink">
               Classmates are looking for
             </h3>
-            {firstRequest && (
-              <p className="mt-2 text-sm text-ink-3">{firstRequest.title}</p>
-            )}
+            <Suspense fallback={null}>
+              <LatestWantedTitle />
+            </Suspense>
           </Link>
         </div>
       </section>
@@ -198,4 +199,24 @@ function CategoryNav({ counts }: { counts: Map<string, number> | null }) {
       ))}
     </nav>
   );
+}
+
+/** The newest open wanted post's title, or nothing if the API is unavailable. */
+async function LatestWantedTitle() {
+  try {
+    const [latest] = await getWantedPosts();
+    return latest ? (
+      <p className="mt-2 text-sm text-ink-3">{latest.title}</p>
+    ) : null;
+  } catch {
+    return null;
+  }
+}
+
+async function ModeSwitcherWithWanted() {
+  try {
+    return <ModeSwitcher wanted={await getWantedPosts()} />;
+  } catch {
+    return <ModeSwitcher wanted={[]} />;
+  }
 }
