@@ -70,7 +70,7 @@ Stuffaroo is a Next.js web app talking to a FastAPI backend, with everything sto
 
 - **Picking the match cut-off.** Similarity scores sat close together: listings that fit scored about 0.59 to 0.68 and unrelated ones about 0.52 to 0.58. We set the cut-off from real Gemini scores (at least 0.58, and within 0.07 of the best match) and saved those scores as a test.
 - **Bad matches that passed the cut-off.** "Projector for a movie night" still matched a calculator and a keyboard. The Gemini relevance pass fixed that, but a search now takes about 3 seconds instead of 1. The faster lite model dropped listings that should have matched, so we kept the slower one.
-- **Cloud setup on every laptop.** We moved Gemini to a Vertex AI service account so it runs on any teammate's machine and in Docker, and wrote `pnpm check:setup` to report what's connected and how to fix what isn't.
+- **"It works on my machine."** It did not work on our teammate's machine. API keys and cloud credentials worked on one laptop and nowhere else, and around 2 a.m. one teammate's patience ran out before the setup docs did. As a peace offering we moved Gemini to a Vertex AI service account so it runs on any laptop and in Docker, and wrote `pnpm check:setup` to say what's connected and how to fix what isn't. He has since forgiven us. Mostly.
 - **Swapping sample data for the real API.** We built the whole UI on sample data first, then replaced it one piece at a time across several stacked branches, which meant a lot of merging.
 
 ## Accomplishments that we're proud of
@@ -78,6 +78,8 @@ Stuffaroo is a Next.js web app talking to a FastAPI backend, with everything sto
 - **The full flow runs live.** Sign in, list an item, post a need, get AI matches, send a request, accept it, hand it over and get it back, all on real services.
 - **The app is upfront about its AI.** Results say whether Gemini or the keyword fallback ranked them, and the "why this matches" text is built from real listing fields, not written by the model.
 - **Rules live in the server and database.** Ownership, roles, request states and double bookings are checked there, and tests cover them.
+- **It looks like a real product.** We didn't stop at "it works." The polaroid hero collage, the campus map, the sliding mode toggle and the empty and success states all got the same care as the backend.
+- **Roo, our kangaroo.** Stuffaroo has a mascot with a pouch full of lamps and books. Roo greets you on the landing page and turns up as a sticker when you post a listing or send a request. When a search comes up empty, Roo shows up to say "Roo couldn't find that," so even no results come with someone cute.
 
 ## What we learned
 

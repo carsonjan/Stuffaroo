@@ -2,8 +2,7 @@ import { Sticker } from "./sticker";
 
 /**
  * Roo as a static die-cut circle sticker: head and ears, with a lamp and a book
- * peeking out of the pouch. For empty states, success screens and the 404,
- * where the 3D Roo (Home hero only) must not load.
+ * peeking out of the pouch. For empty states and success screens.
  */
 export function RooStickerStatic({
   rotate = -6,
