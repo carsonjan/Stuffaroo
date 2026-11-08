@@ -32,8 +32,11 @@ class Settings(BaseSettings):
     gemini_api_key: str | None = None
     gemini_embedding_model: str = "gemini-embedding-001"
     gemini_timeout_seconds: float = 10.0
-    # Vector matches below this cosine similarity are dropped as unrelated.
-    match_min_similarity: float = 0.55
+    # Vector matches are kept only above this cosine similarity and within
+    # match_max_gap_from_best of the best match for the query. Tuned on real
+    # gemini-embedding-001 scores: good matches ~0.59-0.68, unrelated ~0.52-0.58.
+    match_min_similarity: float = 0.58
+    match_max_gap_from_best: float = 0.07
 
     cors_origins: list[str] = ["http://localhost:3000"]
 

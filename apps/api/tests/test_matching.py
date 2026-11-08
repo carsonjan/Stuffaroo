@@ -33,6 +33,7 @@ def vector_client(
     """Client with 'Gemini' configured (fake embedder) and listings embedded."""
     monkeypatch.setenv("GEMINI_API_KEY", "test-key")
     monkeypatch.setenv("MATCH_MIN_SIMILARITY", "0")
+    monkeypatch.setenv("MATCH_MAX_GAP_FROM_BEST", "1")
     config.get_settings.cache_clear()
     monkeypatch.setattr(embeddings, "embed_texts", fake_embed)
     with psycopg.connect(database_url) as conn:
@@ -158,3 +159,20 @@ def test_gemini_backend_selection() -> None:
         **base, google_genai_use_vertexai=True, gemini_api_key="k"
     )
     assert embeddings.client_options(key_only) == {"api_key": "k"}
+
+
+def test_cut_off_keeps_only_close_matches() -> None:
+    # Real gemini-embedding-001 scores from the seed data.
+    def keep(scores: dict[str, float]) -> set[str]:
+        return matching.close_enough(scores, 0.58, 0.07)
+
+    camera = {"canon": 0.684, "sony": 0.658, "tent": 0.573, "keyboard": 0.566}
+    assert keep(camera) == {"canon", "sony"}
+    calculus = {"textbook": 0.647, "ti84": 0.590, "speaker": 0.526}
+    assert keep(calculus) == {"textbook", "ti84"}
+    tent = {"tent": 0.674, "canon": 0.582, "speaker": 0.577}
+    assert keep(tent) == {"tent"}  # 0.582 clears the floor but is far behind
+    # Nothing fits a bike pannier: every score is noise, so show nothing.
+    bike = {"canon": 0.579, "drill": 0.577, "basketball": 0.572}
+    assert keep(bike) == set()
+    assert keep({}) == set()
