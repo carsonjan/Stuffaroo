@@ -1,4 +1,4 @@
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Check, MessageCircle, Plus } from "lucide-react";
 import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,9 +7,6 @@ import { useAuth } from "@/lib/auth";
 export function AppShell({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const isLanding = useRouterState({
-    select: (state) => state.location.pathname === "/",
-  });
   const name = (user?.user_metadata?.["display_name"] ||
     user?.user_metadata?.["full_name"] ||
     user?.email ||
@@ -20,7 +17,6 @@ export function AppShell({ children }: { children: ReactNode }) {
     .slice(0, 2)
     .map((w) => w[0]?.toUpperCase())
     .join("");
-  if (isLanding) return <>{children}</>;
   return (
     <div className="mx-auto max-w-5xl px-3 py-6 md:py-10">
       <div className="chunky min-h-[80vh] rounded-[2rem] bg-paper px-4 pb-16 pt-5 md:px-7">

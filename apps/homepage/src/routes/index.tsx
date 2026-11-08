@@ -16,6 +16,7 @@ import {
 import roo from "@/assets/roo.png.asset.json";
 import { Button } from "@/components/ui/button";
 
+const MARKETPLACE_URL = "http://localhost:3000/marketplace";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -78,12 +79,12 @@ function Landing() {
               variant="ghost"
               className="hidden font-bold sm:inline-flex"
             >
-              <Link to="/auth">Sign in</Link>
+              <a href={MARKETPLACE_URL}>Sign in</a>
             </Button>
             <Button asChild className="chunky-sm press rounded-xl font-bold">
-              <Link to="/auth">
+              <a href={MARKETPLACE_URL}>
                 Get started <ArrowRight />
-              </Link>
+              </a>
             </Button>
           </nav>
         </div>
@@ -111,9 +112,9 @@ function Landing() {
               size="lg"
               className="chunky press h-12 rounded-xl text-base font-extrabold"
             >
-              <Link to="/auth">
+              <a href={MARKETPLACE_URL}>
                 Join the pouch <ArrowRight />
-              </Link>
+              </a>
             </Button>
           </div>
 
@@ -246,9 +247,9 @@ function Landing() {
           A second home for your stuff. A little love for our planet.
         </p>
         <Button asChild variant="ghost" className="font-bold">
-          <Link to="/post">
+          <a href={MARKETPLACE_URL}>
             Pass it on <ArrowRight />
-          </Link>
+          </a>
         </Button>
       </footer>
     </div>
