@@ -23,7 +23,12 @@ class Settings(BaseSettings):
     auth0_domain: str | None = None
     auth0_audience: str | None = None
 
-    # Gemini: without a key, matching falls back to keyword ranking.
+    # Gemini, either through Vertex AI on a Google Cloud project (uses
+    # Application Default Credentials and the project's billing/credits) or with
+    # an AI Studio API key. With neither, matching falls back to keyword ranking.
+    google_genai_use_vertexai: bool = False
+    google_cloud_project: str | None = None
+    google_cloud_location: str = "us-central1"
     gemini_api_key: str | None = None
     gemini_embedding_model: str = "gemini-embedding-001"
     gemini_timeout_seconds: float = 10.0

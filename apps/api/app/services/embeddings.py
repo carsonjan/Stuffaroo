@@ -2,15 +2,19 @@
 
 Listings are embedded as RETRIEVAL_DOCUMENT and needs as RETRIEVAL_QUERY, both
 at EMBEDDING_DIMENSIONS so they fit the `vector(768)` column and DiskANN index.
+
+Runs through Vertex AI on a Google Cloud project (GOOGLE_GENAI_USE_VERTEXAI=true,
+GOOGLE_CLOUD_PROJECT, Application Default Credentials) or with an AI Studio key
+(GEMINI_API_KEY). Vertex AI wins when both are set.
 """
 
 import math
-from typing import Literal
+from typing import Any, Literal
 
 from google import genai
 from google.genai import types
 
-from app.core.config import EMBEDDING_DIMENSIONS, get_settings
+from app.core.config import EMBEDDING_DIMENSIONS, Settings, get_settings
 
 TaskType = Literal["RETRIEVAL_DOCUMENT", "RETRIEVAL_QUERY"]
 
@@ -19,8 +23,21 @@ class EmbeddingError(RuntimeError):
     """Gemini was configured but the call failed or returned something unusable."""
 
 
+def client_options(settings: Settings) -> dict[str, Any] | None:
+    """genai.Client arguments for the configured backend, or None if neither is set."""
+    if settings.google_genai_use_vertexai and settings.google_cloud_project:
+        return {
+            "vertexai": True,
+            "project": settings.google_cloud_project,
+            "location": settings.google_cloud_location,
+        }
+    if settings.gemini_api_key:
+        return {"api_key": settings.gemini_api_key}
+    return None
+
+
 def is_configured() -> bool:
-    return bool(get_settings().gemini_api_key)
+    return client_options(get_settings()) is not None
 
 
 def _normalize(values: list[float]) -> list[float]:
@@ -34,17 +51,20 @@ def _normalize(values: list[float]) -> list[float]:
 def embed_texts(texts: list[str], task_type: TaskType) -> list[list[float]]:
     """Embed texts with Gemini. Raises EmbeddingError on any failure."""
     settings = get_settings()
-    if not settings.gemini_api_key:
-        raise EmbeddingError("GEMINI_API_KEY is not set")
+    options = client_options(settings)
+    if options is None:
+        raise EmbeddingError("Gemini is not configured (Vertex AI or GEMINI_API_KEY)")
     if not texts:
         return []
-    client = genai.Client(
-        api_key=settings.gemini_api_key,
-        http_options=types.HttpOptions(
-            timeout=int(settings.gemini_timeout_seconds * 1000)
-        ),
-    )
     try:
+        # Creating the Vertex AI client resolves Google Cloud credentials, which
+        # can fail too (for example before `gcloud auth application-default login`).
+        client = genai.Client(
+            **options,
+            http_options=types.HttpOptions(
+                timeout=int(settings.gemini_timeout_seconds * 1000)
+            ),
+        )
         response = client.models.embed_content(
             model=settings.gemini_embedding_model,
             contents=texts,

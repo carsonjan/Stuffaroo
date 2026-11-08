@@ -140,3 +140,21 @@ def test_match_query_validation(client: TestClient) -> None:
         json={"text": "tent", "startDate": "2026-11-22", "endDate": "2026-11-20"},
     )
     assert backwards.status_code == 422
+
+
+def test_gemini_backend_selection() -> None:
+    base = {"_env_file": None}
+    assert embeddings.client_options(config.Settings(**base)) is None
+    vertex = config.Settings(
+        **base, google_genai_use_vertexai=True, google_cloud_project="stuffaroo-demo"
+    )
+    assert embeddings.client_options(vertex) == {
+        "vertexai": True,
+        "project": "stuffaroo-demo",
+        "location": "us-central1",
+    }
+    # Vertex AI needs a project; without one the AI Studio key is used.
+    key_only = config.Settings(
+        **base, google_genai_use_vertexai=True, gemini_api_key="k"
+    )
+    assert embeddings.client_options(key_only) == {"api_key": "k"}
