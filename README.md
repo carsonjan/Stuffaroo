@@ -87,23 +87,48 @@ The web app reads `API_URL` (default `http://localhost:8000`). For sign-in, copy
 
 ### Gemini (matching)
 
-Embeddings run through **Vertex AI on a Google Cloud project**, billed to its credits:
+Embeddings run through **Vertex AI on the `stuffaroo` Google Cloud project**, billed to its credits. Use one of these:
 
-1. In the Google Cloud console, create a project with billing linked (the free trial gives $300 of credits) and enable the **Vertex AI API**.
-2. Install the gcloud CLI and run `gcloud auth application-default login` once.
-3. In `apps/api/.env`, set `GOOGLE_GENAI_USE_VERTEXAI=true` and `GOOGLE_CLOUD_PROJECT=<project id>` (`GOOGLE_CLOUD_LOCATION` defaults to `us-central1`).
-4. Run `pnpm db:embed` to embed the seeded listings.
+**Your own Google login** (teammates added to the project in IAM with the *Agent Platform User* and *Service Usage Consumer* roles):
 
-A Google AI Studio key in `GEMINI_API_KEY` works instead. Without either, matching uses the labelled keyword fallback.
+1. Install the gcloud CLI. On macOS:
+
+   ```sh
+   brew install --cask gcloud-cli
+   ```
+
+   On Linux or Windows, follow https://cloud.google.com/sdk/docs/install. Open a new terminal afterwards and check it with `gcloud --version`.
+
+2. Sign in once, and bill your usage to the project:
+
+   ```sh
+   gcloud auth application-default login
+   gcloud auth application-default set-quota-project stuffaroo
+   ```
+
+3. In `apps/api/.env`, set `GOOGLE_GENAI_USE_VERTEXAI=true` and `GOOGLE_CLOUD_PROJECT=stuffaroo`, and leave `GOOGLE_APPLICATION_CREDENTIALS` empty (`GOOGLE_CLOUD_LOCATION` defaults to `us-central1`).
+
+**Or the service-account key:** put `gcp-key.json` (shared privately, never through git) in `apps/api/` and set `GOOGLE_APPLICATION_CREDENTIALS=gcp-key.json` in `apps/api/.env`. No gcloud needed. This is also what the Docker route uses.
+
+Run `pnpm check:setup` to confirm, and `pnpm db:embed` if any listing has no embedding. A Google AI Studio key in `GEMINI_API_KEY` works instead. Without any of these, matching uses the labelled keyword fallback.
 
 API tests create a throwaway `stuffaroo_test` database on the local server and skip if it isn't running. CI runs them against the same image.
 
 ## Running
 
+With `apps/api/.env` (and `apps/web/.env.local` for sign-in) in place, from the repository root:
+
 ```sh
+pnpm check:setup  # confirm the database, Gemini and Auth0 are connected
 pnpm dev          # web on http://localhost:3000 and API on http://localhost:8000
+```
+
+Then open http://localhost:3000/marketplace (the root `/` is still the starter page).
+
+```sh
 pnpm dev:web      # web only
 pnpm dev:api      # API only
+pnpm api:docker   # API in Docker instead of uv; run `pnpm dev:web` alongside it
 ```
 
 The API health endpoint is at `http://localhost:8000/health`.
