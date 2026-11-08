@@ -1322,6 +1322,10 @@ Track implementation and evidence for sponsor prizes.
 
 Avoid redundant documentation. Prefer updating existing documents.
 
+### docs/entire
+
+Read docs/entire/AGENTS.md for more info.
+
 ---
 
 ## 19. Demo Reliability
