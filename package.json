@@ -8,7 +8,7 @@
     "dev:api": "uv run --directory apps/api fastapi dev app/main.py",
     "lint": "pnpm exec biome check . && uv run --directory apps/api ruff check . && uv run --directory apps/api ruff format --check .",
     "format": "pnpm exec biome check --write . && uv run --directory apps/api ruff check --fix . && uv run --directory apps/api ruff format .",
-    "typecheck": "pnpm --dir apps/web exec tsc --noEmit",
+    "typecheck": "pnpm --dir apps/web exec next typegen && pnpm --dir apps/web exec tsc --noEmit",
     "test": "uv run --directory apps/api python -m pytest",
     "check": "pnpm lint && pnpm typecheck && pnpm test"
   },

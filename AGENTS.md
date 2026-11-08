@@ -22,6 +22,17 @@ The project is being developed by three developers during a 24-hour hackathon.
 
 This document provides instructions for AI coding agents and human contributors.
 
+### 1.1 Current state (updated 2026-11-07)
+
+Check this before assuming anything is wired up.
+
+- **Frontend (`apps/web`):** a clickable mockup of every main screen (marketplace, listing detail, create listing, wanted posts and matches, deals, move-out, dashboard and requests, profiles, deposit demo). All data comes from `src/lib/mock-data.ts` and `src/lib/mock-shop.ts`. Forms and status buttons only change local React state.
+- **Backend (`apps/api`):** FastAPI scaffold with `GET /health` only. No database, auth or AI integration exists yet.
+- **Labelled mockups:** AI drafting, AI matching and the Solana deposit show canned or simulated results and say so in the UI. Keep those labels until the real integration replaces them (sections 2.5 and 19.3).
+- **Signed-in user:** hard-coded as `CURRENT_USER_ID` in `mock-data.ts`.
+- **Auth:** decided as Auth0 in the Next.js app (section 3, Authentication). Not implemented yet. It is assigned to a separate agent through `docs/handoff-auth0.md`. Other agents should not add Auth0 config, packages or env vars.
+- **Next step:** the backend wiring plan and its open decisions are in `docs/todo.md`. When you wire a screen to a real endpoint, remove the matching sample data and tick the item there.
+
 ---
 
 ## 2. Core Engineering Principles
@@ -108,8 +119,9 @@ The following is the intended baseline architecture. Inspect the repository befo
 - Next.js with App Router
 - React
 - TypeScript with strict mode
-- Tailwind CSS
-- Reusable React components
+- Tailwind CSS 4, with design tokens in `src/app/tokens.css` and the design system described in `apps/web/DESIGN.md`
+- shadcn/ui components built on Base UI (`@base-ui/react`) in `src/components/ui/`
+- Lucide icons
 - pnpm package management
 
 Use existing UI libraries and conventions already adopted by the repository.
@@ -145,6 +157,17 @@ AI is intended primarily for semantic matching and other features that provide m
 - Validate model-generated data before using it.
 - Use deterministic filtering and ordinary application logic when sufficient.
 
+### Authentication
+
+Decided: **Auth0, integrated in the Next.js app** with the Auth0 Next.js SDK (`@auth0/nextjs-auth0`). Do not use Supabase Auth or another provider.
+
+- Next.js owns sign-in, sign-out, the callback and the session cookie.
+- FastAPI does not run its own login. It trusts a request only when it carries an Auth0 access token that it verifies itself (signature via the tenant's JWKS, issuer, audience, expiry). It derives the user from the token's `sub` claim.
+- The Next.js server forwards that access token to FastAPI as `Authorization: Bearer <token>`. Never send a user ID from the browser as proof of identity.
+- Auth0 secrets stay server-side. None use the `NEXT_PUBLIC_` prefix.
+
+Setup is deferred to a dedicated agent. The full brief is in `docs/handoff-auth0.md`. Until that work lands, keep using `CURRENT_USER_ID` and do not add Auth0 code, packages or env vars.
+
 ### Optional integrations
 
 Possible integrations include:
@@ -171,7 +194,6 @@ stuffaroo/
 │   │   ├── src/
 │   │   │   ├── app/
 │   │   │   ├── components/
-│   │   │   ├── features/
 │   │   │   └── lib/
 │   │   ├── public/
 │   │   └── package.json
@@ -214,40 +236,32 @@ Create directories only when their contents are necessary.
 
 ### 4.1 Frontend structure
 
-Organize feature-specific code under:
+The frontend groups domain components by folder under `components/`:
 
 ```text
-apps/web/src/features/<feature>/
-```
-
-Examples:
-
-```text
-features/
-├── listings/
-├── requests/
-├── matching/
-├── rentals/
-└── auth/
-```
-
-A feature may contain:
-
-```text
-features/listings/
+apps/web/src/
+├── app/                 # routes and layouts
 ├── components/
-├── hooks/
-├── api.ts
-├── types.ts
-└── utils.ts
+│   ├── ui/              # shadcn/ui primitives
+│   ├── marketplace/     # listing cards, thumbnails, status badges, search prompt
+│   ├── listings/        # listing form
+│   ├── wanted/          # wanted posts and match list
+│   ├── requests/        # rental request form and rows
+│   ├── dashboard/
+│   ├── deposits/        # Solana deposit demo
+│   ├── shop/            # buy listings, deals, bundles, move-out
+│   └── forms/           # shared form fields
+└── lib/                 # sample data, formatting helpers, utils
 ```
+
+Follow this layout. Put new domain components in the matching `components/<domain>/` folder rather than introducing a parallel `features/` tree.
 
 Use:
 
 - `app/` for routes, layouts, and route-level composition.
-- `components/` for genuinely reusable UI components.
-- `features/` for domain-specific functionality.
-- `lib/` for shared infrastructure, API clients, and utilities.
+- `components/ui/` for generic UI primitives.
+- `components/<domain>/` for domain-specific UI.
+- `lib/` for shared infrastructure, API clients, and utilities. Put the API client here when the backend is wired.
 
 Avoid putting substantial business logic directly into route components.
 
@@ -1180,6 +1194,7 @@ When authentication is implemented:
 - Enforce ownership checks server-side.
 - Do not trust client-provided user identity.
 - Do not bypass authorization merely because a route is not linked from the UI.
+- Next.js `proxy.ts` checks are optimistic redirects only. Re-check the session in the page, route handler or server action, and verify the token again in FastAPI.
 
 ### 16.3 Validation
 
@@ -1319,6 +1334,10 @@ Record:
 ### docs/sponsor-evidence.md
 
 Track implementation and evidence for sponsor prizes.
+
+### docs/todo.md
+
+The backend wiring plan, with open decisions and P0/P1/P2 items. Tick items as they land.
 
 Avoid redundant documentation. Prefer updating existing documents.
 
