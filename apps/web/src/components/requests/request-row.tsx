@@ -59,6 +59,14 @@ export function RequestRow({
               &ldquo;{request.message}&rdquo;
             </p>
           )}
+          {status !== request.status && (
+            <p
+              className="mt-1 text-xs text-muted-foreground italic"
+              aria-live="polite"
+            >
+              Mockup: this change isn&apos;t saved and resets on reload.
+            </p>
+          )}
         </div>
       </div>
 
