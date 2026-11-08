@@ -6,6 +6,7 @@ check with a fix for anything wrong. Never prints secret values. Exits 1 if
 any check fails.
 """
 
+import os
 import re
 import sys
 from pathlib import Path
@@ -121,7 +122,10 @@ def check_gemini() -> None:
     if not embeddings.is_configured():
         bad(
             "not configured (matching will use the keyword fallback)",
-            "set GOOGLE_GENAI_USE_VERTEXAI=true and GOOGLE_CLOUD_PROJECT in apps/api/.env",
+            "set GEMINI_API_KEY (a Google AI Studio key) in apps/api/.env"
+            if os.environ.get("STUFFAROO_CONTAINER")
+            else "set GOOGLE_GENAI_USE_VERTEXAI=true and GOOGLE_CLOUD_PROJECT, "
+            "or GEMINI_API_KEY, in apps/api/.env",
         )
         return
     backend = (
@@ -237,6 +241,9 @@ def read_env_file(path: Path) -> dict[str, str]:
 
 def check_auth0_web(api_audience: str | None) -> None:
     print("Auth0 (web: apps/web/.env.local)")
+    if os.environ.get("STUFFAROO_CONTAINER"):
+        skip("not checked inside the API container; run `pnpm check:setup` on the host")
+        return
     if not WEB_ENV.exists():
         bad(
             "apps/web/.env.local not found (the site runs with sign-in off)",

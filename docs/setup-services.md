@@ -53,6 +53,40 @@ Follow [handoff-auth0.md](handoff-auth0.md). In short:
 5. Create the demo users `maya@demo.stuffaroo.dev` and `jordan@demo.stuffaroo.dev` (any password) and mark both **Email Verified**. They take over the seeded profiles on first sign-in.
 6. Run `pnpm check:setup`, then `pnpm dev`, and sign in at http://localhost:3000/marketplace.
 
+## For teammates: run the API in Docker
+
+If it works on one machine but not another, the usual causes are:
+- the other machine has no Tiger URL, because env files aren't shared through git
+- Vertex AI only works with the owner's Google login
+- the values were put in the repo-root `.env`, which nothing reads
+
+The Docker route avoids all of this. You need only Docker and one env file.
+
+1. **Get `apps/api/.env` from a teammate who has it**, privately (a DM or password manager, never git). It must contain:
+   - `DATABASE_URL`: the shared Tiger URL
+   - `GEMINI_API_KEY`: a Google AI Studio key. Containers can't use a personal Google login, so Docker always uses this key instead of Vertex AI.
+   - `AUTH0_DOMAIN` and `AUTH0_AUDIENCE`, once Auth0 is set up
+2. **Check it from inside the container:**
+
+   ```sh
+   pnpm check:setup:docker
+   ```
+
+3. **Run the API** on http://localhost:8000:
+
+   ```sh
+   pnpm api:docker
+   ```
+
+4. **Run the website** in another terminal. This needs Node and pnpm, plus `apps/web/.env.local` for sign-in:
+
+   ```sh
+   pnpm install
+   pnpm dev:web
+   ```
+
+The image never contains secrets. `.dockerignore` excludes `.env`, and the values are passed with `--env-file` when the container starts.
+
 ## Done when
 
 `pnpm check:setup` prints "Everything is set up". Then:
