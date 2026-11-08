@@ -1,3 +1,5 @@
+/* Base rules and the type system. See DESIGN.md. Max font weight anywhere: 500. */
+
 *,
 *::before,
 *::after {
@@ -8,70 +10,55 @@ body {
   overflow-x: clip;
 }
 html {
-  scrollbar-color: var(--color-rule-2) var(--color-paper);
-  scroll-padding-top: var(--space-3xl);
+  scroll-padding-top: 160px;
 }
 body {
   margin: 0;
-  background-color: var(--color-paper);
-  background-image:
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: 80px 80px;
-  background-position: center top;
+  background-color: var(--color-bg);
   color: var(--color-ink);
-  font-family: var(--font-body);
-  font-size: var(--text-md);
-  line-height: 1.56;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  caret-color: var(--color-accent);
+  font-synthesis: none;
 }
 ::selection {
-  background: var(--color-wash);
-  color: var(--color-ink);
+  background: var(--color-ink);
+  color: var(--color-white);
 }
 :focus-visible {
-  outline: 2px solid var(--color-focus);
+  outline: 2px solid var(--color-ink);
   outline-offset: 2px;
 }
 a {
   color: inherit;
   text-decoration-thickness: 1px;
-  text-underline-offset: 0.16em;
+  text-underline-offset: 0.18em;
 }
+
+/* No bold anywhere: reset every element that defaults to bold */
 h1,
 h2,
-h3 {
+h3,
+h4,
+h5,
+h6 {
   margin: 0;
-  font-family: var(--font-display);
   font-weight: 400;
-  font-synthesis: none;
-  letter-spacing: var(--tracking-display);
-  line-height: 1.06;
   overflow-wrap: break-word;
   min-width: 0;
   text-wrap: balance;
 }
-h1 {
-  max-width: 20ch;
-}
-h2 {
-  max-width: 30ch;
-}
-h3 {
-  max-width: 40ch;
-}
-.lead {
-  font-size: var(--text-lead);
-  line-height: 1.45;
-  max-width: 52ch;
+b,
+strong,
+th,
+dt {
+  font-weight: 500;
 }
 p {
   margin: 0;
   text-wrap: pretty;
-}
-p:not([class]) {
-  max-width: 65ch;
 }
 img,
 video {
@@ -97,11 +84,8 @@ textarea {
   max-width: var(--container);
   margin-inline: auto;
   padding-inline: var(--gutter);
-  box-sizing: border-box;
 }
-.num,
-.figure,
-td.num {
+.num {
   font-variant-numeric: tabular-nums;
 }
 .visually-hidden {
@@ -112,46 +96,160 @@ td.num {
   clip-path: inset(50%);
   white-space: nowrap;
 }
-[data-slot][data-alt] {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(
-    160deg,
-    var(--color-paper-2, var(--color-paper)),
-    var(--color-paper-3, var(--color-paper))
-  );
+
+/*
+ * Type tiers (Emblematica structure, light weights). Fluid between 375px and 1280px.
+ * display 52→96 · statement 34→64 · h2 26→36 · h3 20→22
+ */
+.t-display {
+  font-size: clamp(3.25rem, 2.11rem + 4.86vw, 6rem);
+  font-weight: 500;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
 }
-[data-slot][data-alt] > img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 1;
+.t-statement {
+  font-size: clamp(2.125rem, 1.35rem + 3.31vw, 4rem);
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  max-width: 22ch;
 }
-[data-slot][data-alt]:has(> img) > :not(img):not([data-keep]) {
-  /* biome-ignore lint/complexity/noImportantStyles: hides fallback content once an image is present */
-  display: none !important;
+.t-h2 {
+  font-size: clamp(1.625rem, 1.37rem + 1.1vw, 2.25rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
 }
-/* biome-ignore-start lint/complexity/noImportantStyles: reduced-motion must override component animations */
+.t-h3 {
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+}
+.t-body {
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  max-width: 60ch;
+}
+.t-card-title {
+  font-size: 0.875rem;
+  font-weight: 300;
+  line-height: 1.35;
+}
+.t-price {
+  font-size: 0.9375rem;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.t-unit {
+  font-size: 0.8125rem;
+  font-weight: 300;
+  color: var(--color-ink-2);
+  letter-spacing: 0;
+}
+.t-meta {
+  font-size: 0.6875rem;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.t-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.t-label-lg {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+@media (min-width: 768px) {
+  .t-h3 {
+    font-size: 1.375rem;
+  }
+  .t-price {
+    font-size: 1rem;
+  }
+  .t-label {
+    font-size: 0.75rem;
+  }
+  .t-label-lg {
+    font-size: 0.875rem;
+  }
+}
+
+/* Surfaces kept for screens not yet rebuilt */
+.bento,
+.interior-grid {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-tile);
+}
+
+/* Press feedback */
+.press {
+  transition: transform var(--dur-hover) var(--ease-out);
+}
+.press:active {
+  transform: scale(0.97);
+}
+
+/* Entrances */
+@keyframes settle-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+.settle-in {
+  animation: settle-in var(--dur-enter) var(--ease-out) backwards;
+}
+
+/* Hide scrollbars on horizontal carousels; they scroll by touch, wheel and the arrow buttons */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Stickers wobble on hover */
+.sticker {
+  transform: rotate(var(--sticker-rotate, 0deg));
+  transition: transform var(--dur-hover) var(--ease-out);
+}
+.sticker:hover {
+  transform: rotate(calc(var(--sticker-rotate, 0deg) + 3deg)) scale(1.03);
+}
+
+/* biome-ignore-start lint/complexity/noImportantStyles: reduced motion must override component animations */
 @media (prefers-reduced-motion: reduce) {
-  *:not(.keep-motion),
-  *:not(.keep-motion)::before,
-  *:not(.keep-motion)::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+  .sticker:hover {
+    transform: rotate(var(--sticker-rotate, 0deg)) !important;
+  }
+  .press:active {
+    transform: none !important;
+  }
 }
-/* biome-ignore-end lint/complexity/noImportantStyles: reduced-motion must override component animations */
-.wordmark {
-  font-family: var(--font-outlier);
-  font-weight: 700;
-  font-synthesis: none;
-  letter-spacing: -0.015em;
-  line-height: 1;
-}
+/* biome-ignore-end lint/complexity/noImportantStyles: reduced motion must override component animations */
+
+/* The wordmark's "aroo" hops on hover (Logo). Reduced motion cuts it to nothing via the rule above. */
 @keyframes hop {
   0% {
     transform: translateY(0);
@@ -169,49 +267,49 @@ td.num {
     transform: translateY(0);
   }
 }
-/* Nomu's bento card as one element: a 16px white rim around a pale interior with a faint inner edge */
-.bento {
-  border: 16px solid var(--color-paper-2);
-  border-radius: 56px;
-  background-color: var(--color-interior);
-  box-shadow: var(--interior-edge), var(--shadow-card);
+
+/* Roo peeking over the hero search (components/roo.tsx). Reduced motion settles every one instantly. */
+.roo-rise {
+  animation: roo-rise 900ms var(--ease-out) 350ms backwards;
 }
-@media (max-width: 40rem) {
-  .bento {
-    border-width: 10px;
-    border-radius: 36px;
+.roo-paws {
+  animation: roo-paws 420ms var(--ease-out) 950ms backwards;
+}
+.roo-lift {
+  transition: transform 360ms var(--ease-out);
+}
+.group\/peek:focus-within .roo-lift {
+  transform: translateY(-5px);
+}
+.roo-blink {
+  animation: roo-blink 5.2s infinite;
+}
+.roo-ear-l,
+.roo-ear-r {
+  transform-box: view-box;
+}
+.roo-ear-l {
+  transform-origin: 50px 42px;
+  animation: roo-ear-l 6s ease-in-out 2s infinite;
+}
+.roo-ear-r {
+  transform-origin: 70px 42px;
+  animation: roo-ear-r 7.5s ease-in-out 3.5s infinite;
+}
+@keyframes roo-rise {
+  from {
+    transform: translateY(44px);
   }
 }
-.interior-grid {
-  background-color: var(--color-interior);
-  background-image:
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: 24px 24px;
-}
-/* Roo, the team's kangaroo: hop, ear wiggle and blink; still under reduced motion */
-@keyframes roo-hop {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  40%,
-  60% {
-    transform: translateY(-10px);
-  }
-}
-@keyframes roo-wiggle {
-  0%,
-  100% {
-    transform: rotate(0deg);
-  }
-  50% {
-    transform: rotate(-8deg);
+@keyframes roo-paws {
+  from {
+    transform: translateY(6px);
+    opacity: 0;
   }
 }
 @keyframes roo-blink {
   0%,
-  92%,
+  93%,
   100% {
     transform: scaleY(1);
   }
@@ -219,92 +317,29 @@ td.num {
     transform: scaleY(0.1);
   }
 }
-.roo-hop {
-  animation: roo-hop 2.4s var(--ease-in-out) infinite;
-  transform-origin: bottom center;
-}
-.roo-ear-l,
-.roo-ear-r {
-  transform-box: fill-box;
-  transform-origin: bottom center;
-  animation: roo-wiggle 2.4s var(--ease-in-out) infinite;
-}
-.roo-ear-r {
-  animation-direction: reverse;
-}
-.roo-eye {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: roo-blink 4s infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  .roo-hop,
-  .roo-ear-l,
-  .roo-ear-r,
-  .roo-eye {
-    animation: none;
+@keyframes roo-ear-l {
+  0%,
+  86%,
+  100% {
+    transform: rotate(0deg);
+  }
+  90% {
+    transform: rotate(-10deg);
+  }
+  94% {
+    transform: rotate(4deg);
   }
 }
-
-/* Apple-style interaction layer */
-/* Response: feedback on pointer-down, instant */
-.press {
-  transition: transform var(--dur-micro) var(--ease-out);
-}
-.press:active {
-  transform: scale(0.97);
-  transition-duration: 80ms;
-}
-/* Lift toward the pointer on a critically damped spring; press back down on contact */
-.lift {
-  transition: transform var(--dur-spring) var(--spring);
-}
-.lift:hover {
-  transform: translateY(-4px);
-}
-.lift:active {
-  transform: translateY(-1px) scale(0.98);
-  transition: transform 80ms var(--ease-out);
-}
-/* Materialize from the source: the bubble grows out of Roo */
-@keyframes materialize {
-  from {
-    opacity: 0;
-    transform: scale(0.86);
+@keyframes roo-ear-r {
+  0%,
+  88%,
+  100% {
+    transform: rotate(0deg);
   }
-}
-.materialize {
-  animation: materialize var(--dur-spring-bounce) var(--spring-bounce) 320ms
-    backwards;
-}
-@keyframes settle-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
+  92% {
+    transform: rotate(9deg);
   }
-}
-.settle-in {
-  animation: settle-in var(--dur-spring) var(--spring) backwards;
-}
-
-/* Tracking is size-specific: small text opens up slightly, display stays tight */
-.text-xs {
-  letter-spacing: 0.01em;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .lift:hover,
-  .lift:active,
-  .press:active {
-    transform: none;
-  }
-  .materialize,
-  .settle-in {
-    animation: fade-in 200ms ease backwards;
-  }
-}
-@keyframes fade-in {
-  from {
-    opacity: 0;
+  96% {
+    transform: rotate(-3deg);
   }
 }

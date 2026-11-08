@@ -1,18 +1,18 @@
 "use client";
 
 import {
-  ChevronDown,
   Coins,
-  HandCoins,
+  Heart,
   LayoutDashboard,
   LogOut,
   Megaphone,
-  Menu,
+  Search,
   ShoppingBag,
+  Tag,
   User,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -25,38 +25,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { navCategories } from "@/lib/categories";
 import { cn } from "@/lib/utils";
 import type { Viewer } from "@/lib/viewer";
 
 import { Logo } from "./logo";
 
-const navItems = [
-  { href: "/marketplace/browse", label: "Browse" },
-  { href: "/marketplace/deals", label: "Deals" },
-  { href: "/marketplace/wanted", label: "Wanted" },
-  { href: "/marketplace/move-out", label: "Move-out" },
-];
-
-/** The team's Post menu: three ways to put something on Stuffaroo. */
+/** Three ways to put something on Stuffaroo, in the Post menu. */
 const postOptions = [
   {
     href: "/marketplace/listings/new",
     label: "Sell an item",
-    hint: "Set a price and pickup date",
-    icon: ShoppingBag,
+    hint: "Set a price and a pickup spot",
+    icon: Tag,
   },
   {
     href: "/marketplace/listings/new",
     label: "Rent something out",
-    hint: "Per day or per term, with a deposit",
-    icon: HandCoins,
+    hint: "A daily rate plus a deposit",
+    icon: ShoppingBag,
   },
   {
     href: "/marketplace/wanted/new",
@@ -68,10 +55,20 @@ const postOptions = [
 
 /** Reads the current path; render inside <Suspense> with <SiteHeader activePath={null} viewer={null} /> as fallback. */
 export function SiteHeaderWithPath({ viewer }: { viewer: Viewer }) {
-  return <SiteHeader activePath={usePathname()} viewer={viewer} />;
+  const params = useSearchParams();
+  const query = params.toString();
+  return (
+    <SiteHeader
+      activePath={`${usePathname()}${query ? `?${query}` : ""}`}
+      viewer={viewer}
+    />
+  );
 }
 
-/** `viewer` is null while the session is still loading. */
+/**
+ * Depop's header: logo left, search as the dominant element, actions right, then a
+ * quiet text row of categories. `viewer` is null while the session is loading.
+ */
 export function SiteHeader({
   activePath,
   viewer,
@@ -80,80 +77,85 @@ export function SiteHeader({
   viewer: Viewer | null;
 }) {
   const loginHref = `/auth/login?returnTo=${encodeURIComponent(activePath ?? "/marketplace")}`;
-  const isActive = (href: string) =>
-    activePath !== null &&
-    (activePath === href || activePath.startsWith(`${href}/`));
 
   return (
-    <header className="sticky top-0 z-[300] h-[104px] px-3 pt-4 sm:px-4">
-      <div className="site-nav-pill mx-auto flex h-20 max-w-[1170px] items-center gap-6 rounded-pill bg-paper-2 py-4 pr-4 pl-8 shadow-float">
+    <header className="sticky top-0 z-[var(--z-sticky)] border-b border-line bg-bg/95 backdrop-blur-md">
+      <div className="container flex h-16 items-center gap-4 md:h-[72px] md:gap-8">
         <Link
           href="/marketplace"
-          className="shrink-0 rounded-small text-ink"
+          className="shrink-0 rounded-badge"
           aria-label="Stuffaroo home"
         >
-          <Logo hop className="text-[1.75rem]" />
+          <Logo />
         </Link>
 
-        <nav
-          className="hidden flex-1 items-center justify-center gap-6 md:flex"
-          aria-label="Main"
+        <form
+          action="/marketplace/browse"
+          className="hidden h-11 max-w-[640px] flex-1 items-center gap-2.5 rounded-pill bg-surface px-4 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink md:mx-auto md:flex"
         >
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={isActive(item.href) ? "page" : undefined}
-              className={cn(
-                "rounded-small text-base font-medium text-ink underline-offset-[6px] hover:underline",
-                isActive(item.href) && "underline decoration-1",
-              )}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+          <Search className="size-4 shrink-0 text-ink-2" aria-hidden />
+          <label htmlFor="header-search" className="visually-hidden">
+            Search Stuffaroo
+          </label>
+          <input
+            id="header-search"
+            name="q"
+            placeholder="Search items, course codes or classmates"
+            className="h-full min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-ink-3"
+          />
+        </form>
 
         <div className="ml-auto flex items-center gap-1.5 md:ml-0">
+          {viewer?.status === "signed-out" && (
+            // Plain <a>: /auth/login is an Auth0 route handler, not a page.
+            <a
+              href={loginHref}
+              className={cn(buttonVariants({ variant: "ghost" }), "px-3")}
+            >
+              Sign in
+            </a>
+          )}
+          {viewer?.status === "unconfigured" && (
+            <span className="t-meta hidden text-ink-3 lg:inline">
+              Sign-in off in this demo
+            </span>
+          )}
+
+          <Link
+            href="/marketplace/dashboard"
+            aria-label="Saved items"
+            className="hidden size-10 items-center justify-center rounded-full text-ink transition-colors duration-200 hover:bg-surface md:flex"
+          >
+            <Heart className="size-[18px]" strokeWidth={1.5} aria-hidden />
+          </Link>
+
           <DropdownMenu>
             <DropdownMenuTrigger
-              render={<Button size="lg" className="hidden sm:inline-flex" />}
+              render={
+                <Button variant="brand" className="hidden md:inline-flex" />
+              }
             >
-              Post <ChevronDown data-icon="inline-end" aria-hidden />
+              Post an item
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-72 p-2">
               {postOptions.map(({ href, label, hint, icon: Icon }) => (
                 <DropdownMenuItem
                   key={label}
                   render={<Link href={href} />}
-                  className="items-start gap-3 rounded-[14px] px-3 py-2.5"
+                  className="items-start gap-3 rounded-img px-3 py-2.5"
                 >
-                  <Icon className="mt-0.5 size-4 shrink-0" />
-                  <span className="flex flex-col">
-                    <span className="text-sm font-medium text-ink">
-                      {label}
+                  <Icon className="mt-0.5 size-4 shrink-0" strokeWidth={1.5} />
+                  <span className="flex flex-col gap-1">
+                    <span className="t-label text-ink">{label}</span>
+                    <span className="text-[0.8125rem] font-light text-ink-2">
+                      {hint}
                     </span>
-                    <span className="text-xs text-ink-3">{hint}</span>
                   </span>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {viewer?.status === "unconfigured" && (
-            <span className="hidden text-xs text-ink-3 lg:inline">
-              Sign-in not configured
-            </span>
-          )}
-          {viewer?.status === "signed-out" && (
-            // Plain <a>: /auth/login is an Auth0 route handler, not a page.
-            <a
-              href={loginHref}
-              className={cn(buttonVariants({ variant: "outline" }), "px-4")}
-            >
-              Sign in
-            </a>
-          )}
           {viewer?.status === "signed-in" && (
             <DropdownMenu>
               <DropdownMenuTrigger
@@ -161,13 +163,13 @@ export function SiteHeader({
                   <Button
                     variant="ghost"
                     size="icon-lg"
-                    className="size-12 hover:bg-paper-3"
+                    className="ml-1"
                     aria-label="Account menu"
                   />
                 }
               >
                 <Avatar>
-                  <AvatarFallback className="bg-tint-blue text-xs font-medium text-ink">
+                  <AvatarFallback className="bg-surface-2 text-[0.6875rem] font-medium text-ink">
                     {viewer.initials}
                   </AvatarFallback>
                 </Avatar>
@@ -175,11 +177,9 @@ export function SiteHeader({
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuGroup>
                   <DropdownMenuLabel>
-                    <div className="font-medium text-foreground">
-                      {viewer.name}
-                    </div>
+                    <div className="font-medium text-ink">{viewer.name}</div>
                     {viewer.profile?.campus && (
-                      <div className="text-xs font-normal">
+                      <div className="text-xs font-normal text-ink-2">
                         {viewer.profile.campus}
                       </div>
                     )}
@@ -214,84 +214,48 @@ export function SiteHeader({
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-
-          <Sheet>
-            <SheetTrigger
-              render={
-                <Button
-                  variant="ghost"
-                  size="icon-lg"
-                  className="size-12 hover:bg-paper-3 md:hidden"
-                  aria-label="Open menu"
-                />
-              }
-            >
-              <Menu />
-            </SheetTrigger>
-            <SheetContent side="right" className="w-72">
-              <SheetHeader>
-                <SheetTitle>
-                  <Logo />
-                </SheetTitle>
-              </SheetHeader>
-              <nav className="flex flex-col gap-1 px-4" aria-label="Mobile">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    aria-current={isActive(item.href) ? "page" : undefined}
-                    className={cn(
-                      "rounded-small px-3 py-2.5 text-base text-ink-3 hover:text-ink-2",
-                      isActive(item.href) &&
-                        "bg-paper-3 font-medium text-ink-2",
-                    )}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-                <p className="mt-5 px-3 text-sm text-ink-3">Post</p>
-                {postOptions.map(({ href, label, icon: Icon }) => (
-                  <Link
-                    key={label}
-                    href={href}
-                    className="flex items-center gap-3 rounded-small px-3 py-2.5 text-base text-ink-2 hover:bg-paper-3"
-                  >
-                    <Icon className="size-4" aria-hidden /> {label}
-                  </Link>
-                ))}
-                <Link
-                  href="/marketplace/dashboard"
-                  className="mt-4 rounded-small px-3 py-2.5 text-base text-ink-3 hover:text-ink-2"
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  href="/marketplace/deposits"
-                  className="rounded-small px-3 py-2.5 text-base text-ink-3 hover:text-ink-2"
-                >
-                  Deposits
-                </Link>
-                {viewer?.status === "signed-out" && (
-                  <a
-                    href={loginHref}
-                    className="rounded-small px-3 py-2.5 text-base text-ink-2 hover:bg-paper-3"
-                  >
-                    Sign in
-                  </a>
-                )}
-                {viewer?.status === "signed-in" && (
-                  <a
-                    href="/auth/logout"
-                    className="rounded-small px-3 py-2.5 text-base text-ink-3 hover:text-ink-2"
-                  >
-                    Sign out
-                  </a>
-                )}
-              </nav>
-            </SheetContent>
-          </Sheet>
         </div>
       </div>
+
+      {/* Mobile: search gets its own full-width row */}
+      <form action="/marketplace/browse" className="container pb-3 md:hidden">
+        <div className="flex h-11 items-center gap-2.5 rounded-pill bg-surface px-4 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink">
+          <Search className="size-4 shrink-0 text-ink-2" aria-hidden />
+          <label htmlFor="header-search-mobile" className="visually-hidden">
+            Search Stuffaroo
+          </label>
+          <input
+            id="header-search-mobile"
+            name="q"
+            placeholder="Search items or course codes"
+            className="h-full min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-ink-3"
+          />
+        </div>
+      </form>
+
+      <nav aria-label="Categories" className="container">
+        <ul className="no-scrollbar -mx-[var(--gutter)] flex gap-6 overflow-x-auto px-[var(--gutter)] md:justify-center md:gap-8">
+          {navCategories.map((c) => {
+            const active = activePath?.endsWith(
+              c.href.split("/marketplace")[1],
+            );
+            return (
+              <li key={c.label} className="shrink-0">
+                <Link
+                  href={c.href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "t-label flex h-10 items-center border-b border-transparent text-ink-2 transition-colors duration-200 hover:text-ink",
+                    active && "border-ink text-ink",
+                  )}
+                >
+                  {c.label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
     </header>
   );
 }

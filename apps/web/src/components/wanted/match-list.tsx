@@ -38,7 +38,7 @@ export function MatchList({ matches }: { matches: Match[] }) {
                     {listing.location}, from {listing.owner.displayName}
                   </p>
                 </div>
-                <span className="shrink-0 font-semibold">
+                <span className="shrink-0 font-medium">
                   {formatPriceCents(listing.pricePerDayCents)}
                 </span>
               </div>

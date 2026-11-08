@@ -1,15 +1,8 @@
 export default function ProfileLoading() {
   return (
-    <div
-      className="mx-auto max-w-[1200px] px-4 py-10 sm:px-10"
-      aria-busy="true"
-    >
-      <div className="h-32 animate-pulse rounded-card bg-muted motion-reduce:animate-none" />
-      <div className="mt-12 grid grid-cols-[repeat(2,minmax(0,1fr))] gap-x-4 gap-y-10 lg:grid-cols-[repeat(3,minmax(0,1fr))]">
-        <div className="aspect-[4/5] animate-pulse rounded-card bg-muted motion-reduce:animate-none" />
-        <div className="aspect-[4/5] animate-pulse rounded-card bg-muted motion-reduce:animate-none" />
-        <div className="aspect-[4/5] animate-pulse rounded-card bg-muted motion-reduce:animate-none" />
-      </div>
+    <div className="container pt-6 md:pt-10" aria-busy="true">
+      <div className="h-64 rounded-tile bg-surface" />
+      <div className="mt-8 h-12 w-96 max-w-full rounded-pill bg-surface" />
     </div>
   );
 }

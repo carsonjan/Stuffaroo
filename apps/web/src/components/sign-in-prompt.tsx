@@ -23,27 +23,30 @@ export function SignInPrompt({
   return (
     <div
       className={cn(
-        "flex flex-col items-center rounded-card border border-dashed px-6 py-10 text-center",
+        "flex flex-col items-center rounded-card bg-surface px-6 py-10 text-center",
         className,
       )}
     >
-      <LogIn className="size-7 text-muted-foreground" aria-hidden />
-      <h2 className="mt-3 text-lg font-semibold">{title}</h2>
+      <LogIn className="size-6 text-ink-2" strokeWidth={1.5} aria-hidden />
+      <h2 className="t-h3 mt-3">{title}</h2>
       {status === "signed-out" ? (
         <>
-          <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+          <p className="mt-1 max-w-sm text-[0.875rem] font-light text-ink-2">
             {description}
           </p>
           {/* Plain <a>: /auth/login is an Auth0 route handler, not a page. */}
           <a
             href={`/auth/login?returnTo=${encodeURIComponent(returnTo)}`}
-            className={cn(buttonVariants({ size: "lg" }), "mt-5 px-4")}
+            className={cn(
+              buttonVariants({ variant: "brand", size: "lg" }),
+              "mt-5",
+            )}
           >
             Sign in
           </a>
         </>
       ) : (
-        <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+        <p className="mt-1 max-w-sm text-[0.875rem] font-light text-ink-2">
           Sign-in isn&apos;t configured for this deployment yet, so this
           isn&apos;t available.
         </p>

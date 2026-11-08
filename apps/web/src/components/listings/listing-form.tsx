@@ -157,7 +157,7 @@ export function ListingForm() {
 
         {/* Details */}
         <section className="flex flex-col gap-5">
-          <h2 className="text-lg font-semibold">Details</h2>
+          <h2 className="text-lg font-medium">Details</h2>
           <Field label="Title" htmlFor="title">
             <input
               id="title"
@@ -245,7 +245,7 @@ export function ListingForm() {
 
         {/* Pricing */}
         <section className="flex flex-col gap-5">
-          <h2 className="text-lg font-semibold">Pricing & pickup</h2>
+          <h2 className="text-lg font-medium">Pricing & pickup</h2>
           <input type="hidden" name="pricing" value={draft.pricing} />
           <div
             className="flex flex-wrap gap-2"
@@ -364,7 +364,7 @@ export function ListingForm() {
               {draft.location}, {draft.condition}
             </p>
             <div className="flex items-baseline justify-between pt-2">
-              <span className="font-semibold">{formatPrice(price)}</span>
+              <span className="font-medium">{formatPrice(price)}</span>
               <span className="text-xs text-muted-foreground">
                 Deposit {formatMoney(deposit)}
               </span>

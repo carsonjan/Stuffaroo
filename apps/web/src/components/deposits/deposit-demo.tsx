@@ -83,7 +83,7 @@ export function DepositDemo({
       <div className="flex flex-col gap-6">
         {/* Summary */}
         <section className="rounded-card border bg-card p-5">
-          <h2 className="text-lg font-semibold">Deposit for {itemTitle}</h2>
+          <h2 className="text-lg font-medium">Deposit for {itemTitle}</h2>
           <dl className="mt-4 grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
             <Detail label="Owner" value={ownerName} />
             <Detail

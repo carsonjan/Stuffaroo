@@ -1,55 +1,66 @@
-import { Search, SearchX } from "lucide-react";
+import { X } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
-import { ApiErrorState } from "@/components/api-error-state";
-import { ListingCard } from "@/components/marketplace/listing-card";
+import { FilterPanel } from "@/components/browse/filter-panel";
+import { FiltersSheet } from "@/components/browse/filters-sheet";
+import { SortMenu } from "@/components/browse/sort-menu";
+import { ListingTile, RequestTile } from "@/components/ds/listing-tile";
+import { ModeToggle } from "@/components/ds/mode-toggle";
+import { RooStickerStatic } from "@/components/ds/roo-sticker-static";
 import { buttonVariants } from "@/components/ui/button";
-import { ApiError, getListings } from "@/lib/api";
-import type { ListingDetail } from "@/lib/api-types";
-import { categories } from "@/lib/categories";
+import { ApiError, getListings, getWantedPosts } from "@/lib/api";
+import type { ListingDetail, WantedPost } from "@/lib/api-types";
+import {
+  activeFilters,
+  type BrowseFilters,
+  browseHref,
+  filterItems,
+  filterRequests,
+  fromApi,
+  nearestFrom,
+  parseFilters,
+  type Sort,
+  sortItems,
+  sorts,
+  withoutApiDuplicates,
+} from "@/lib/browse";
+import {
+  catalog,
+  getSpot,
+  type Mode,
+  modes,
+  sampleRequests,
+} from "@/lib/catalog";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Browse" };
 
-const priceFilters = [
-  { value: "", label: "Any price" },
-  { value: "free", label: "Free to borrow" },
-  { value: "5", label: "Under $5/day" },
-  { value: "10", label: "Under $10/day" },
-] as const;
+const gridClass =
+  "grid grid-cols-2 gap-x-3.5 gap-y-8 md:grid-cols-3 md:gap-x-4 xl:grid-cols-4";
 
-function firstValue(value: string | string[] | undefined): string {
-  return Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
-}
-
-export default function MarketplacePage({
+export default function BrowsePage({
   searchParams,
 }: PageProps<"/marketplace/browse">) {
   return (
-    <Suspense fallback={<MarketplaceSkeleton />}>
-      <MarketplaceBrowser searchParams={searchParams} />
+    <Suspense fallback={<BrowseSkeleton />}>
+      <Browse searchParams={searchParams} />
     </Suspense>
   );
 }
 
-function MarketplaceSkeleton() {
+function BrowseSkeleton() {
   return (
-    <div
-      className="mx-auto max-w-[1200px] px-4 py-10 sm:px-10"
-      aria-busy="true"
-    >
-      <div className="h-9 w-72 animate-pulse motion-reduce:animate-none rounded-small bg-muted" />
-      <div className="mt-8 grid gap-8 md:grid-cols-[200px_1fr]">
-        <div className="hidden h-80 animate-pulse motion-reduce:animate-none rounded-card bg-muted md:block" />
-        <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-x-4 gap-y-10 lg:grid-cols-[repeat(3,minmax(0,1fr))]">
-          {Array.from({ length: 6 }, (_, i) => (
-            <div
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders
-              key={i}
-              className="aspect-[4/5] animate-pulse motion-reduce:animate-none rounded-card bg-muted"
-            />
+    <div className="container pt-6 md:pt-10" aria-busy="true">
+      <div className="h-9 w-48 rounded-pill bg-surface" />
+      <div className="mt-6 h-12 w-80 max-w-full rounded-pill bg-surface" />
+      <div className="mt-8 grid gap-10 lg:grid-cols-[220px_minmax(0,1fr)]">
+        <div className="hidden h-96 rounded-card bg-surface lg:block" />
+        <div className={gridClass}>
+          {Array.from({ length: 8 }, (_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
+            <div key={i} className="aspect-[4/5] rounded-thumb bg-surface" />
           ))}
         </div>
       </div>
@@ -57,176 +68,184 @@ function MarketplaceSkeleton() {
   );
 }
 
-async function MarketplaceBrowser({
-  searchParams,
-}: Pick<PageProps<"/marketplace/browse">, "searchParams">) {
-  const params = await searchParams;
-  const q = firstValue(params.q).trim();
-  const categoryParam = firstValue(params.category);
-  const category = categories.some((c) => c.slug === categoryParam)
-    ? categoryParam
-    : "";
-  const priceParam = firstValue(params.price);
-  const price = priceFilters.some((p) => p.value === priceParam)
-    ? priceParam
-    : "";
-  const showUnavailable = firstValue(params.all) === "1";
-
-  let results: ListingDetail[] = [];
-  let loadError: string | null = null;
+async function loadListings(
+  f: BrowseFilters,
+): Promise<{ listings: ListingDetail[]; failed: boolean }> {
   try {
-    results = await getListings({
-      q,
-      category,
-      price,
-      includeUnavailable: showUnavailable,
-    });
+    const q = [f.q, f.course].filter(Boolean).join(" ");
+    return {
+      listings: await getListings({ q, category: f.category ?? undefined }),
+      failed: false,
+    };
   } catch (error) {
     if (!(error instanceof ApiError)) throw error;
-    loadError = error.detail;
+    return { listings: [], failed: true };
   }
+}
 
-  const hrefWith = (next: Record<string, string>) => {
-    const merged = {
-      q,
-      category,
-      price,
-      all: showUnavailable ? "1" : "",
-      ...next,
-    };
-    const qs = new URLSearchParams(
-      Object.entries(merged).filter(([, v]) => v),
-    ).toString();
-    return qs ? `/marketplace/browse?${qs}` : "/marketplace/browse";
+async function loadWanted(): Promise<WantedPost[]> {
+  try {
+    const posts = await getWantedPosts();
+    return posts.length > 0 ? posts : sampleRequests();
+  } catch {
+    return sampleRequests();
+  }
+}
+
+async function Browse({
+  searchParams,
+}: Pick<PageProps<"/marketplace/browse">, "searchParams">) {
+  const f = parseFilters(await searchParams);
+  const [{ listings, failed }, wanted] = await Promise.all([
+    loadListings(f),
+    loadWanted(),
+  ]);
+  const now = new Date();
+
+  // Catalog items are matched locally; API listings were already matched on q by the API.
+  // Demo items that duplicate a real API listing (same first two words) give way to it.
+  const pool = [
+    ...withoutApiDuplicates(catalog, listings).map((item) => ({
+      item,
+      textFiltered: false,
+    })),
+    ...listings.map((l) => ({ item: fromApi(l, now), textFiltered: true })),
+  ];
+  const itemsFor = (mode: Mode | null) =>
+    sortItems(filterItems(pool, { ...f, mode }, now), f);
+  const requests = filterRequests(wanted, f);
+
+  const counts: Record<Mode, number> = {
+    buy: itemsFor("buy").length,
+    rent: itemsFor("rent").length,
+    request: requests.length,
   };
+  const items = f.mode === "request" ? [] : itemsFor(f.mode);
+  const total = f.mode === "request" ? requests.length : items.length;
+  const pills = activeFilters(f);
+  const filterCount = pills.filter((p) => p.key !== "q").length;
+
+  const sortHrefs = Object.fromEntries(
+    sorts.map((s) => [s.key, browseHref(f, { sort: s.key })]),
+  ) as Record<Sort, string>;
 
   return (
-    <div className="mx-auto max-w-[1200px] px-4 py-10 sm:px-10">
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h1 className="text-2xl">Browse the marketplace</h1>
-          <p className="mt-1 text-muted-foreground">
-            Borrow or rent from students on campus.
-          </p>
-        </div>
-        <form
-          action="/marketplace/browse"
-          className="flex w-full items-center gap-2 rounded-field border border-rule-field bg-paper-2 px-4 focus-within:ring-3 focus-within:ring-ring/30 md:w-80"
-        >
-          {category && <input type="hidden" name="category" value={category} />}
-          {price && <input type="hidden" name="price" value={price} />}
-          {showUnavailable && <input type="hidden" name="all" value="1" />}
-          <Search
-            className="size-4 shrink-0 text-muted-foreground"
-            aria-hidden
-          />
-          <label htmlFor="market-search" className="sr-only">
-            Search items
-          </label>
-          <input
-            id="market-search"
-            name="q"
-            defaultValue={q}
-            placeholder="Search items"
-            className="h-11 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-          />
-        </form>
+    <div className="container pt-6 md:pt-10">
+      <div className="flex flex-col gap-2">
+        <p className="t-label text-ink-2">
+          {f.mode === "request" ? "Requests" : "Browse"}
+        </p>
+        <h1 className="t-h2">
+          {f.q
+            ? `Results for “${f.q}”`
+            : f.mode === "request"
+              ? "Wanted by classmates"
+              : f.mode === "rent"
+                ? "Rent from classmates"
+                : f.mode === "buy"
+                  ? "Buy from classmates"
+                  : "Buy and rent on campus"}
+        </h1>
       </div>
 
-      <div className="mt-8 grid gap-8 md:grid-cols-[200px_1fr]">
-        <aside className="flex flex-col gap-6" aria-label="Filters">
-          <div>
-            <h2 className="mb-2 text-sm font-medium text-ink-2">Category</h2>
-            <div className="flex flex-wrap gap-1.5 md:flex-col md:gap-0.5">
-              <FilterLink href={hrefWith({ category: "" })} active={!category}>
-                All categories
-              </FilterLink>
-              {categories.map((c) => (
-                <FilterLink
-                  key={c.slug}
-                  href={hrefWith({ category: c.slug })}
-                  active={category === c.slug}
-                >
-                  {c.name}
-                </FilterLink>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h2 className="mb-2 text-sm font-medium text-ink-2">Price</h2>
-            <div className="flex flex-wrap gap-1.5 md:flex-col md:gap-0.5">
-              {priceFilters.map((p) => (
-                <FilterLink
-                  key={p.value}
-                  href={hrefWith({ price: p.value })}
-                  active={price === p.value}
-                >
-                  {p.label}
-                </FilterLink>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h2 className="mb-2 text-sm font-medium text-ink-2">
-              Availability
-            </h2>
-            <FilterLink
-              href={hrefWith({ all: showUnavailable ? "" : "1" })}
-              active={showUnavailable}
+      <div className="mt-6 flex flex-wrap items-center gap-2 md:mt-8">
+        <ModeToggle
+          active={f.mode}
+          counts={counts}
+          hrefs={
+            Object.fromEntries(
+              modes.map(({ key }) => [
+                key,
+                browseHref(f, { mode: f.mode === key ? null : key }),
+              ]),
+            ) as Record<Mode, string>
+          }
+        />
+        <div className="ml-auto flex items-center gap-2">
+          <FiltersSheet count={filterCount} results={total}>
+            <FilterPanel filters={f} idPrefix="sheet" />
+          </FiltersSheet>
+          {f.mode !== "request" && (
+            <SortMenu
+              active={f.sort}
+              hrefs={sortHrefs}
+              nearestLabel={`Nearest to ${getSpot(nearestFrom(f)).name}`}
+            />
+          )}
+        </div>
+      </div>
+
+      {pills.length > 0 && (
+        <ul
+          className="mt-4 flex flex-wrap items-center gap-2"
+          aria-label="Active filters"
+        >
+          {pills.map((pill) => (
+            <li key={pill.key}>
+              <Link
+                href={pill.href}
+                scroll={false}
+                className="t-label press flex h-8 items-center gap-1.5 rounded-pill bg-surface pr-2.5 pl-3.5 text-ink transition-colors duration-200 hover:bg-surface-2"
+              >
+                {pill.label}
+                <X className="size-3.5" strokeWidth={1.75} aria-hidden />
+                <span className="visually-hidden">Remove filter</span>
+              </Link>
+            </li>
+          ))}
+          <li>
+            <Link
+              href={browseHref(f, {
+                q: "",
+                course: "",
+                category: null,
+                condition: null,
+                spot: null,
+                min: null,
+                max: null,
+                free: false,
+                date: null,
+              })}
+              scroll={false}
+              className="t-label flex h-8 items-center px-2 text-ink-2 underline-offset-4 hover:text-ink hover:underline"
             >
-              Include on loan / paused
-            </FilterLink>
-          </div>
+              Clear all
+            </Link>
+          </li>
+        </ul>
+      )}
+
+      <div className="mt-8 grid grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[220px_minmax(0,1fr)]">
+        <aside
+          aria-label="Filters"
+          className="hidden self-start lg:sticky lg:top-[140px] lg:block"
+        >
+          <FilterPanel filters={f} idPrefix="rail" />
         </aside>
 
-        <section aria-live="polite">
-          {loadError !== null ? (
-            <ApiErrorState detail={loadError} />
+        <section aria-live="polite" aria-label="Results">
+          <p className="t-meta mb-5 text-ink-2">
+            {total} {total === 1 ? "result" : "results"}
+            {failed && " · Some listings couldn’t load right now"}
+          </p>
+          {total === 0 ? (
+            <EmptyState f={f} />
+          ) : f.mode === "request" ? (
+            <ul key="request" className={cn(gridClass, "settle-in")}>
+              {requests.map((post) => (
+                <li key={post.id}>
+                  <RequestTile post={post} />
+                </li>
+              ))}
+            </ul>
           ) : (
-            <>
-              <p className="mb-4 text-sm text-muted-foreground">
-                {results.length} {results.length === 1 ? "item" : "items"}
-                {q && <> for &ldquo;{q}&rdquo;</>}
-              </p>
-              {results.length > 0 ? (
-                <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-x-4 gap-y-10 lg:grid-cols-[repeat(3,minmax(0,1fr))]">
-                  {results.map((listing) => (
-                    <ListingCard key={listing.id} listing={listing} />
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center rounded-card border border-dashed px-6 py-16 text-center">
-                  <SearchX
-                    className="size-8 text-muted-foreground"
-                    aria-hidden
-                  />
-                  <h2 className="mt-4 text-lg font-semibold">
-                    Nothing listed yet
-                  </h2>
-                  <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-                    Post a wanted request and we&apos;ll let students with
-                    matching items know.
-                  </p>
-                  <div className="mt-5 flex gap-2">
-                    <Link
-                      href="/marketplace/wanted/new"
-                      className={cn(buttonVariants({ size: "lg" }), "px-4")}
-                    >
-                      Post a wanted
-                    </Link>
-                    <Link
-                      href="/marketplace/browse"
-                      className={cn(
-                        buttonVariants({ variant: "outline", size: "lg" }),
-                        "px-4",
-                      )}
-                    >
-                      Clear filters
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </>
+            <ul key={f.mode ?? "all"} className={cn(gridClass, "settle-in")}>
+              {items.map((item) => (
+                <li key={item.id}>
+                  <ListingTile item={item} />
+                </li>
+              ))}
+            </ul>
           )}
         </section>
       </div>
@@ -234,28 +253,42 @@ async function MarketplaceBrowser({
   );
 }
 
-function FilterLink({
-  href,
-  active,
-  children,
-}: {
-  href: string;
-  active: boolean;
-  children: React.ReactNode;
-}) {
+function EmptyState({ f }: { f: BrowseFilters }) {
   return (
-    <Link
-      href={href}
-      scroll={false}
-      aria-current={active ? "true" : undefined}
-      className={cn(
-        "rounded-small px-2.5 py-1.5 text-sm transition-colors max-md:border",
-        active
-          ? "bg-paper-3 font-medium text-ink-2 max-md:border-transparent"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground",
-      )}
-    >
-      {children}
-    </Link>
+    <div className="flex flex-col items-center rounded-tile bg-surface px-6 py-16 text-center md:py-24">
+      <RooStickerStatic rotate={-6} size={96} />
+      <p className="t-statement mt-8 text-center">Roo couldn’t find that.</p>
+      <p className="t-body mt-4 text-ink-2">
+        {f.mode === "request"
+          ? "No classmates are asking for this yet."
+          : "Ask for it and classmates who have one will see your request."}
+      </p>
+      <div className="mt-8 flex flex-wrap justify-center gap-2">
+        {f.mode !== "request" && (
+          <Link
+            href="/marketplace/wanted/new"
+            className={buttonVariants({ variant: "brand", size: "lg" })}
+          >
+            Ask for it
+          </Link>
+        )}
+        <Link
+          href={browseHref(f, {
+            q: "",
+            course: "",
+            category: null,
+            condition: null,
+            spot: null,
+            min: null,
+            max: null,
+            free: false,
+            date: null,
+          })}
+          className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
+        >
+          Clear filters
+        </Link>
+      </div>
+    </div>
   );
 }

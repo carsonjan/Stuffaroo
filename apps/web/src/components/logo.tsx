@@ -1,34 +1,24 @@
 import { cn } from "@/lib/utils";
 
 /**
- * The wordmark: "Stuff" in ink, "aroo" in orange, both in Fredoka 700.
- * With `hop`, "aroo" hops when the mark is hovered. Read as one label: "Stuffaroo".
+ * The wordmark: "Stuffaroo" in Gluten 900, sentence case. Size it with a text-* class.
+ * "aroo" hops when the mark is hovered (still under prefers-reduced-motion).
+ * Read as one word: the halves are aria-hidden behind the label.
  */
-export function Logo({
-  className,
-  hop = false,
-}: {
-  className?: string;
-  hop?: boolean;
-}) {
+export function Logo({ className }: { className?: string }) {
   return (
     <span
+      role="img"
+      aria-label="Stuffaroo"
       className={cn(
-        "group/logo inline-flex items-baseline text-2xl leading-none",
+        "group/logo font-wordmark inline-flex items-baseline text-[1.5rem] leading-none font-black tracking-[-0.06em] text-ink",
         className,
       )}
-      aria-label="Stuffaroo"
-      role="img"
     >
-      <span className="wordmark text-ink" aria-hidden>
-        Stuff
-      </span>
+      <span aria-hidden>Stuff</span>
       <span
-        className={cn(
-          "wordmark inline-block text-signal-deep",
-          hop && "group-hover/logo:animate-[hop_560ms_var(--ease-out)]",
-        )}
         aria-hidden
+        className="inline-block text-roo group-hover/logo:animate-[hop_560ms_var(--ease-out)]"
       >
         aroo
       </span>

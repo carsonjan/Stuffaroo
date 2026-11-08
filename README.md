@@ -4,38 +4,52 @@ A campus marketplace where students buy, sell, rent and borrow things from each 
 
 Students buy things they only need for a week, and throw out perfectly good stuff at move-out. Stuffaroo keeps those items on campus: list what you own, post what you need, and let matching connect the two.
 
+## Live demo
+
+- Marketplace: https://stuffaroo-web.vercel.app/marketplace
+- API: https://stuffaroo-api.vercel.app (health check at `/health`)
+
+Both run on the real services: Tiger Cloud for the database, Gemini on Vertex AI for matching, and Auth0 for sign-in.
+
 ## Status
 
-The backend is being wired in chunks (see [docs/todo.md](docs/todo.md) and [docs/api-contract.md](docs/api-contract.md)). The rent and borrow journey runs on the real API and database: browsing, listings, profiles, wanted posts, matching, creating listings and wanted posts, rental requests and the dashboard. Sign-in goes through Auth0 and switches on once a tenant is configured (see [docs/handoff-auth0.md](docs/handoff-auth0.md)). The buy/deals/move-out sections and the Solana deposit demo still use sample or simulated data.
+The rent and borrow journey runs end to end on the real API and database: browsing, listings, profiles, wanted posts, AI matching, creating listings and wanted posts, rental requests and the dashboard. Sign-in goes through Auth0 (see [docs/handoff-auth0.md](docs/handoff-auth0.md)). The buy/deals/move-out sections, AI listing drafts and the Solana deposit demo still use sample or simulated data, and are labelled that way. Remaining work is in [docs/todo.md](docs/todo.md).
 
 | Area | State |
 | --- | --- |
+| Landing page (`apps/homepage`) | Marketing homepage built with Lovable (TanStack Start). Its buttons link to the marketplace |
 | Web app (`apps/web`) | All main screens built and responsive. Rent/borrow screens read and write through the API; buy, deals and move-out sections use `src/lib/mock-shop.ts` |
 | API (`apps/api`) | FastAPI: listings, profiles, wanted posts, matching, `/api/me`, and rental requests with a server-enforced lifecycle. See [docs/api-contract.md](docs/api-contract.md) |
-| Database | Tiger Cloud Postgres (pgvector + pgvectorscale). Locally, the same image in Docker. Schema in `apps/api/migrations/`, fictional demo data in `apps/api/app/seed/` |
-| Auth | Auth0 in Next.js; FastAPI verifies the forwarded access token. Off until Auth0 env vars are set |
-| AI matching | Real: hard filters in SQL (availability, category, budget, booked dates, own listings), then Gemini embeddings ranked on Tiger's DiskANN index. Without Gemini configured it falls back to keyword ranking and the UI says so |
+| Database | Tiger Cloud Postgres (pgvector + pgvectorscale), live behind the deployed API. Locally, the same image in Docker. Schema in `apps/api/migrations/`, fictional demo data in `apps/api/app/seed/` |
+| Auth | Auth0 in Next.js; FastAPI verifies the forwarded access token. Configured on the deployed site; locally it stays off until the Auth0 env vars are set |
+| AI matching | Real, and live on Vertex AI: hard filters in SQL (availability, category, budget, booked dates, own listings), then Gemini embeddings ranked on Tiger's DiskANN index, then a Gemini relevance check that can only remove candidates. Without Gemini configured it falls back to keyword ranking and the UI says so |
 | AI listing drafts | Canned sample response, labelled as a mockup |
 | Solana deposit | Uses your real accepted request and its deposit amount, but the transfer itself is simulated and labelled as such. No wallet is contacted |
+| Deployment | Vercel: `stuffaroo-web` from `apps/web` and `stuffaroo-api` from `apps/api` |
 
-Creating things and changing request status needs sign-in. With Auth0 not configured, those screens explain that instead of pretending to work.
+Creating things and changing request status needs sign-in. Where Auth0 is not configured (a fresh local checkout), those screens explain that instead of pretending to work.
 
-## Features in the mockup
+## Features
 
-- **Home** (`/marketplace`): value proposition, featured listings, categories, deals and move-out highlights.
+- **Landing page** (`apps/homepage`, `/`): the public homepage, with links into the marketplace.
+- **Marketplace home** (`/marketplace`): value proposition, featured listings, categories, deals and move-out highlights.
 - **Browse** (`/marketplace/browse`): browse listings, search by name, filter by category and price.
 - **Listing detail** (`/marketplace/listings/[id]`): item info, owner, availability and a borrow/rent request form.
-- **Create listing** (`/marketplace/listings/new`): listing form with a "Draft with AI" helper.
-- **Wanted posts** (`/marketplace/wanted`, `/marketplace/wanted/new`, `/marketplace/wanted/[id]`): describe what you need and see matching listings with a reason for each match.
-- **Deals and move-out** (`/marketplace/deals`, `/marketplace/move-out`): price drops, bundles and a countdown to move-out day.
+- **Create listing** (`/marketplace/listings/new`): listing form that saves to the API and embeds the new listing for matching. Its "Draft with AI" helper is still a labelled mockup.
+- **Wanted posts** (`/marketplace/wanted`, `/marketplace/wanted/new`, `/marketplace/wanted/[id]`): describe what you need in your own words and see matching listings with a reason for each match. Results say whether they were ranked with Gemini or by the keyword fallback.
+- **Deals and move-out** (`/marketplace/deals`, `/marketplace/move-out`): price drops, bundles and a countdown to move-out day (sample data).
 - **Dashboard** (`/marketplace/dashboard`, `/marketplace/dashboard/requests`): your listings and incoming and outgoing rental requests, with accept, reject, cancel, "mark handed over" and "mark returned" actions.
 - **Profiles** (`/marketplace/profile/[id]`): public student profile with their listings.
-- **Deposit demo** (`/marketplace/deposits`): walkthrough of a Solana Devnet deposit transfer.
+- **Deposit demo** (`/marketplace/deposits`): walkthrough of a Solana Devnet deposit for an accepted request. The transfer is simulated.
 
 ## Tech stack
 
+- **Landing page:** TanStack Start, React, Tailwind CSS, generated with Lovable
 - **Web:** Next.js 16 (App Router), React 19, TypeScript (strict), Tailwind CSS 4, shadcn/ui components on Base UI, Lucide icons
-- **API:** Python 3.12, FastAPI, Pydantic, uv, pytest
+- **API:** Python 3.12, FastAPI, Pydantic, psycopg, uv, pytest
+- **Data and AI:** Tiger Cloud Postgres with pgvector and pgvectorscale (DiskANN); Gemini embeddings (`gemini-embedding-001`) and a Gemini relevance check on Vertex AI, via `google-genai`
+- **Auth:** Auth0 (`@auth0/nextjs-auth0` v4), with RS256 tokens verified in FastAPI
+- **Hosting:** Vercel for the web app and the API
 - **Tooling:** pnpm workspaces, Biome (TS/CSS/JSON), Ruff (Python), Lefthook pre-commit hooks
 
 The visual design system (colours, type, spacing tokens) is documented in [apps/web/DESIGN.md](apps/web/DESIGN.md).
@@ -44,16 +58,19 @@ The visual design system (colours, type, spacing tokens) is documented in [apps/
 
 ```text
 apps/
+  homepage/       landing page (TanStack Start, generated with Lovable)
   web/            Next.js frontend
     src/app/          routes
     src/components/   UI, grouped by domain (marketplace, listings, wanted, requests, ...)
     src/lib/          API client, auth, categories, formatting, buy/deals sample data
   api/            FastAPI backend
-    app/              main.py, routers/, services/, models/, core/
+    app/              main.py, routers/, services/, models/, core/, seed/
+    migrations/       SQL schema
     tests/
 docs/
   api-contract.md       API endpoints and rules
   todo.md               remaining work
+  setup-services.md     switching on Tiger Cloud, Gemini and Auth0
   handoff-auth0.md      Auth0 setup and demo accounts
   sponsor-evidence.md   what each sponsor technology powers, and what's verified
 ```
@@ -123,7 +140,15 @@ pnpm check:setup  # confirm the database, Gemini and Auth0 are connected
 pnpm dev          # web on http://localhost:3000 and API on http://localhost:8000
 ```
 
-Then open http://localhost:3000/marketplace (the root `/` is still the starter page).
+Then open http://localhost:3000/marketplace (the root `/` of the Next.js app is still the starter page; the landing page is the separate `apps/homepage` app).
+
+To run the landing page and the marketplace together:
+
+```sh
+./run.sh          # pnpm dev plus the homepage dev server
+```
+
+The homepage's buttons point at `http://localhost:3000/marketplace`.
 
 ```sh
 pnpm dev:web      # web only
@@ -149,7 +174,7 @@ GitHub Actions (`.github/workflows/ci.yml`) runs `pnpm check` and a production b
 
 ## Demo
 
-There is no live demo yet. The app lives under `/marketplace` (the root `/` is still the starter page). Locally, with the database seeded and two demo Auth0 users set up (see [docs/handoff-auth0.md](docs/handoff-auth0.md)), for example Maya and Jordan:
+Use the live site at https://stuffaroo-web.vercel.app/marketplace, or run it locally with the database seeded. With two demo Auth0 users (see [docs/handoff-auth0.md](docs/handoff-auth0.md)), for example Maya and Jordan:
 
 1. As Jordan, list an item at `/marketplace/listings/new`.
 2. As Maya, describe a need at `/marketplace/wanted/new` and click "Find matches". The results say whether they were ranked with Gemini embeddings or by keyword.

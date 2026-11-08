@@ -1,65 +1,75 @@
 import Link from "next/link";
 
+import { spots } from "@/lib/catalog";
+
 import { Logo } from "./logo";
 
 const linkClass =
-  "rounded-small text-sm whitespace-nowrap text-ink-3 underline-offset-4 transition-colors hover:text-ink hover:underline";
+  "text-[0.875rem] font-light text-ink-2 transition-colors duration-200 hover:text-ink";
 
+/** No repeated nav: what Stuffaroo is, how it works, safety, the pickup spots, and the demo note. */
 export function SiteFooter() {
   return (
-    <footer className="mt-[160px] border-t border-pebble bg-paper-2">
-      <div className="mx-auto grid max-w-[1200px] gap-12 px-4 pt-16 pb-12 sm:grid-cols-[minmax(0,1fr)_auto] sm:px-10">
+    <footer className="mt-[var(--section-gap)] border-t border-line pb-28 md:pb-0">
+      <div className="container grid gap-12 pt-14 pb-12 md:grid-cols-[minmax(0,1.3fr)_repeat(4,minmax(0,1fr))] md:gap-8">
         <div className="flex flex-col gap-4">
-          <Link
-            href="/marketplace"
-            className="w-fit rounded-small"
-            aria-label="Stuffaroo home"
-          >
-            <Logo hop className="text-[3.5rem]" />
-          </Link>
-          <p className="max-w-[32ch] text-sm text-ink-3">
-            Stuff that hops between students. Buy less, share more.
+          <Logo className="text-[1.75rem]" />
+          <p className="max-w-[30ch] text-[0.875rem] font-light text-ink-2">
+            A campus marketplace for UBC. Buy, rent or ask classmates for the
+            things you need this week.
           </p>
         </div>
-        <div className="grid grid-cols-[repeat(2,auto)] gap-x-12 gap-y-8 sm:grid-cols-[repeat(3,auto)]">
-          <nav aria-label="Marketplace" className="flex flex-col gap-3">
-            <h3 className="text-[13px] leading-5 font-semibold tracking-normal text-ink">
-              Marketplace
-            </h3>
-            <Link href="/marketplace/browse" className={linkClass}>
-              Browse
+        <FooterCol title="About">
+          <p className={linkClass}>
+            Built by UBC students. Things move a few hundred metres instead of
+            to the landfill.
+          </p>
+        </FooterCol>
+        <FooterCol title="How it works">
+          <p className={linkClass}>Find it or ask for it.</p>
+          <p className={linkClass}>Message and pick a time.</p>
+          <p className={linkClass}>Meet at a campus spot, then rate.</p>
+        </FooterCol>
+        <FooterCol title="Safety">
+          <p className={linkClass}>UBC-verified accounts only.</p>
+          <p className={linkClass}>Meet in public campus spots.</p>
+          <Link href="/marketplace/deposits" className={linkClass}>
+            How deposits work
+          </Link>
+        </FooterCol>
+        <FooterCol title="Campus spots">
+          {spots.map((s) => (
+            <Link
+              key={s.slug}
+              href={`/marketplace/browse?spot=${s.slug}`}
+              className={linkClass}
+            >
+              {s.name}
             </Link>
-            <Link href="/marketplace/deals" className={linkClass}>
-              Deals
-            </Link>
-            <Link href="/marketplace/move-out" className={linkClass}>
-              Move-out
-            </Link>
-            <Link href="/marketplace/wanted" className={linkClass}>
-              Wanted posts
-            </Link>
-          </nav>
-          <nav aria-label="Post" className="flex flex-col gap-3">
-            <h3 className="text-[13px] leading-5 font-semibold tracking-normal text-ink">
-              Post
-            </h3>
-            <Link href="/marketplace/listings/new" className={linkClass}>
-              Lend an item
-            </Link>
-            <Link href="/marketplace/wanted/new" className={linkClass}>
-              Post a request
-            </Link>
-          </nav>
-          <nav aria-label="Demo" className="flex flex-col gap-3">
-            <h3 className="text-[13px] leading-5 font-semibold tracking-normal text-ink">
-              Demo
-            </h3>
-            <Link href="/marketplace/deposits" className={linkClass}>
-              Deposit demo
-            </Link>
-          </nav>
-        </div>
+          ))}
+        </FooterCol>
+      </div>
+      <div className="container flex flex-col gap-2 border-t border-line py-6 md:flex-row md:justify-between">
+        <p className="t-meta text-ink-2">Demo info</p>
+        <p className="t-meta text-ink-2">
+          Students and listings are fictional. No real money moves.
+        </p>
       </div>
     </footer>
+  );
+}
+
+function FooterCol({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-3">
+      <h3 className="t-label text-ink">{title}</h3>
+      {children}
+    </div>
   );
 }
