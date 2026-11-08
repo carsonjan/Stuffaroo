@@ -548,6 +548,54 @@ Do not model an elaborate production dispute-resolution system unless specifical
 
 For demo shortcuts, document any known limitations.
 
+
+### 7.6 Product Differentiation and Scope Discipline
+
+Stuffaroo is not intended to be a generic Facebook Marketplace clone.
+
+Its central value proposition is helping students access, reuse, and
+exchange physical items through campus-specific supply-demand matching,
+including temporary borrowing/rental and potentially future-dated
+availability (e.g., semester-end move-out handovers).
+
+When implementing or proposing features, agents MUST:
+
+1. **Protect the differentiator.**
+   Prioritize the request-to-listing matching workflow over generic
+   marketplace enhancements such as reviews, feeds, or elaborate profiles.
+
+2. **Optimize for demonstrated value, not feature count.**
+   A complete flow between two users is more valuable than several
+   isolated features or attractive but nonfunctional UI screens.
+
+3. **Make AI materially useful.**
+   AI should interpret real user needs and help match them against
+   available inventory. Do not introduce AI merely to generate decorative
+   text, summaries, or superficial personalization.
+
+4. **Keep constraints meaningful.**
+   Matching must respect applicable hard constraints, including
+   transaction type, price, and availability. Semantic similarity alone
+   must not override incompatible requirements.
+
+5. **Prioritize campus-specific use cases.**
+   Favor implementation decisions that support temporary student needs,
+   limited budgets, semester transitions, and reuse of existing items.
+
+6. **Resist scope expansion.**
+   Do not independently implement gamification, advanced messaging,
+   reputation systems, complex recommendation infrastructure, or
+   additional marketplaces unless explicitly assigned.
+
+7. **Treat blockchain as optional infrastructure.**
+   Smart-contract deposits may provide valuable functionality and
+   sponsor-prize eligibility, but must never block the core marketplace
+   workflow or require every demo user to own a crypto wallet.
+
+When choosing between implementations of comparable effort, prefer the
+one that makes Stuffaroo's unique value more visible to a first-time
+user or hackathon judge.
+
 ---
 
 ## 8. AI Implementation Guidelines
@@ -1321,6 +1369,74 @@ As the hackathon approaches completion:
 - Ensure setup instructions work.
 
 Do not trade a stable core product for a last-minute optional feature.
+
+### 19.5 Demo-Driven Acceptance Criteria
+
+HackCamp judges evaluate problem relevance, innovation, technical
+implementation, design, and presentation. Historical recognized projects
+suggest that a memorable, functioning core interaction is more valuable
+than production-level completeness.
+
+The team targets a demo of approximately four minutes.
+
+#### Canonical Demo Scenario
+
+The application should support a coherent scenario involving two students:
+
+1. Student A creates a listing for an item, specifying relevant
+   transaction terms and availability.
+2. Student B describes an item they need using natural language,
+   including relevant constraints such as budget or duration.
+3. Stuffaroo interprets the request and searches actual persisted
+   listings, rather than returning hardcoded match results.
+4. The system identifies compatible listings and provides an
+   understandable reason for each match.
+5. Student B requests an exchange, rental, or borrowing arrangement.
+6. Student A accepts, and the application reflects the updated
+   transaction state.
+
+Future-dated handovers and on-chain deposits may extend this scenario
+if implemented, but they must not be prerequisites for the core flow.
+
+#### Engineering Acceptance Criteria
+
+For any feature contributing to this scenario:
+
+- Prefer vertical slices that connect frontend, API, and persistence
+  over isolated implementation of entire architectural layers.
+- Demonstrate real state transitions, not merely screens that simulate
+  successful actions.
+- Include at least one incompatible listing in test/demo data to
+  establish that matching respects constraints.
+- Ensure AI-generated match explanations are grounded in actual
+  listing attributes. Never fabricate listing details or compatibility.
+- Keep seed/demo data reproducible and clearly distinguish it from
+  hardcoded application behavior.
+- Make critical flows resilient to failure of optional sponsor services.
+- Prefer deterministic and testable behavior for essential operations.
+- Verify the experience through the real application interface, not
+  solely through unit tests or API responses.
+
+#### Prioritization Under Time Pressure
+
+If time is limited, prioritize in this order:
+
+1. A working, end-to-end marketplace exchange scenario.
+2. A meaningful, demonstrable AI matching capability.
+3. Clear UI/UX and reliable demo execution.
+4. One genuinely useful differentiating enhancement.
+5. Optional sponsor integrations and secondary features.
+
+Features that cannot be completed and demonstrated coherently should
+be deferred rather than partially integrated into the critical path.
+
+A feature is not considered demo-ready merely because its code exists.
+It must be reachable, functional, and understandable in the deployed
+or locally running application.
+
+Agents should communicate when a proposed implementation adds
+complexity without materially improving the core demo, technical
+substance, or explicitly targeted sponsor eligibility.
 
 ---
 
