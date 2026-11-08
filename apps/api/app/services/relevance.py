@@ -12,13 +12,12 @@ against the shortlist before use. It can only remove candidates, never add.
 
 import json
 
-from google import genai
 from google.genai import types
 from pydantic import BaseModel
 
 from app.core.config import get_settings
 from app.models.schemas import ListingDetail
-from app.services.embeddings import client_options
+from app.services.embeddings import EmbeddingError, client_options, make_client
 
 SYSTEM_INSTRUCTION = (
     "You check a campus lending marketplace's search results. Given a student's "
@@ -69,18 +68,12 @@ def fitting_indices(need: str, listings: list[ListingDetail]) -> set[int]:
     if not listings:
         return set()
     settings = get_settings()
-    options = client_options(settings)
-    if options is None:
-        raise RelevanceError("Gemini is not configured")
-    if options.get("vertexai"):
-        options = {**options, "location": settings.gemini_relevance_location}
     try:
-        client = genai.Client(
-            **options,
-            http_options=types.HttpOptions(
-                timeout=int(settings.gemini_timeout_seconds * 1000)
-            ),
-        )
+        # Current text models are served from a different Vertex location.
+        client = make_client(settings, location=settings.gemini_relevance_location)
+    except EmbeddingError as error:
+        raise RelevanceError(str(error)) from error
+    try:
         response = client.models.generate_content(
             model=settings.gemini_relevance_model,
             contents=_prompt(need, listings),

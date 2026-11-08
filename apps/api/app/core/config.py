@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     google_genai_use_vertexai: bool = False
     google_cloud_project: str | None = None
     google_cloud_location: str = "us-central1"
+    # Service-account key file for Vertex AI, relative to apps/api. Lets any
+    # machine (and the Docker image) use the project without a personal
+    # Google login. Without it, Vertex AI uses Application Default Credentials.
+    google_application_credentials: str | None = None
     gemini_api_key: str | None = None
     gemini_embedding_model: str = "gemini-embedding-001"
     gemini_timeout_seconds: float = 10.0

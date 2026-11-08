@@ -128,8 +128,15 @@ def check_gemini() -> None:
             "or GEMINI_API_KEY, in apps/api/.env",
         )
         return
+    key = embeddings.credentials_path(settings)
+    if key is not None and not key.exists():
+        bad(
+            f"service-account key not found at {key}",
+            "put gcp-key.json in apps/api (get it privately from a teammate)",
+        )
     backend = (
-        f"Vertex AI, project {settings.google_cloud_project}"
+        f"Vertex AI, project {settings.google_cloud_project}, "
+        + ("service-account key" if key is not None else "your Google login")
         if settings.google_genai_use_vertexai and settings.google_cloud_project
         else "AI Studio key"
     )

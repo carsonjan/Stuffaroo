@@ -6,18 +6,24 @@ All values go in local files that git ignores: `apps/api/.env` and `apps/web/.en
 
 ## 1. Gemini (Vertex AI)
 
-Already done on the `stuffaroo` Google Cloud project. For a new machine:
+Gemini runs on Vertex AI in the `stuffaroo` Google Cloud project, billed to its credits. The API authenticates with the **`stuffaroo-api` service account** (role: Vertex AI User), so it works on any machine and in Docker without a personal Google login.
+
+1. Get the key file **`apps/api/gcp-key.json`** privately from a teammate who has it. Never commit it or paste it in chat; git and Docker both ignore it.
+2. In `apps/api/.env`:
+
+   ```dotenv
+   GOOGLE_GENAI_USE_VERTEXAI=true
+   GOOGLE_CLOUD_PROJECT=stuffaroo
+   GOOGLE_APPLICATION_CREDENTIALS=gcp-key.json
+   ```
+
+**Project owners:** to create a new key, for example after revoking a leaked one, run:
 
 ```sh
-gcloud auth application-default login
+gcloud iam service-accounts keys create apps/api/gcp-key.json --iam-account stuffaroo-api@stuffaroo.iam.gserviceaccount.com
 ```
 
-`apps/api/.env`:
-
-```dotenv
-GOOGLE_GENAI_USE_VERTEXAI=true
-GOOGLE_CLOUD_PROJECT=stuffaroo
-```
+Delete old keys in the Cloud console: IAM & Admin → Service accounts → stuffaroo-api → Keys.
 
 ## 2. Tiger Cloud (database)
 
@@ -57,35 +63,36 @@ Follow [handoff-auth0.md](handoff-auth0.md). In short:
 
 If it works on one machine but not another, the usual causes are:
 - the other machine has no Tiger URL, because env files aren't shared through git
-- Vertex AI only works with the owner's Google login
+- Gemini was using the owner's personal Google login
 - the values were put in the repo-root `.env`, which nothing reads
 
-The Docker route avoids all of this. You need only Docker and one env file.
+With Docker, you need only Docker and two files, both shared privately (DM or password manager, never git):
 
-1. **Get `apps/api/.env` from a teammate who has it**, privately (a DM or password manager, never git). It must contain:
-   - `DATABASE_URL`: the shared Tiger URL
-   - `GEMINI_API_KEY`: a Google AI Studio key. Containers can't use a personal Google login, so Docker always uses this key instead of Vertex AI.
-   - `AUTH0_DOMAIN` and `AUTH0_AUDIENCE`, once Auth0 is set up
-2. **Check it from inside the container:**
+- **`apps/api/.env`**, with `DATABASE_URL` (the Tiger URL), the Gemini settings above, and `AUTH0_DOMAIN` / `AUTH0_AUDIENCE` once Auth0 is set up
+- **`apps/api/gcp-key.json`**, the service-account key for Gemini
+
+Then:
+
+1. **Check everything from inside the container:**
 
    ```sh
    pnpm check:setup:docker
    ```
 
-3. **Run the API** on http://localhost:8000:
+2. **Run the API** on http://localhost:8000:
 
    ```sh
    pnpm api:docker
    ```
 
-4. **Run the website** in another terminal. This needs Node and pnpm, plus `apps/web/.env.local` for sign-in:
+3. **Run the website** in another terminal. This needs Node and pnpm, plus `apps/web/.env.local` for sign-in:
 
    ```sh
    pnpm install
    pnpm dev:web
    ```
 
-The image never contains secrets. `.dockerignore` excludes `.env`, and the values are passed with `--env-file` when the container starts.
+The image never contains secrets. `.dockerignore` excludes `.env` and `gcp-key.json`; `scripts/api-docker.sh` passes the env file and mounts the key read-only when the container starts.
 
 ## Done when
 
