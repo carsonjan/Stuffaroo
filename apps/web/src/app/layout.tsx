@@ -16,6 +16,8 @@ const gluten = Gluten({
 });
 
 export const metadata: Metadata = {
+  // Resolves the opengraph-image / twitter-image URLs to absolute ones.
+  metadataBase: new URL(process.env.APP_BASE_URL ?? "http://localhost:3000"),
   title: {
     default: "Stuffaroo: buy, rent and request from UBC classmates",
     template: "%s · Stuffaroo",

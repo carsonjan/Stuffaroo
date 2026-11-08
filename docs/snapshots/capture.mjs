@@ -34,7 +34,9 @@ const devices = {
   },
 };
 
-const hideDevUi = `nextjs-portal, [data-nextjs-toast], #__next-build-watcher { display: none !important; }`;
+// Hide the Next dev UI and the "Demo · Students and listings are fictional" banner
+// (the first <p> in the marketplace layout) so captures show only the product.
+const hideDevUi = `nextjs-portal, [data-nextjs-toast], #__next-build-watcher, .min-h-dvh > p.bg-ink:first-child { display: none !important; }`;
 
 async function settle(page) {
   // Scroll through once so lazy images load and scroll effects run, then back to top

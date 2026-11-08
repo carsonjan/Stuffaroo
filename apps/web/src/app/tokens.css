@@ -29,7 +29,7 @@
   --color-holo-b: #cdb4ff;
   --color-holo-c: #ffc6e5;
 
-  /* Roo's fur, for the static Roo sticker (empty states, success screens, 404) only */
+  /* Roo's fur, for the static Roo sticker (empty states and success screens) only */
   --color-roo-fur: #e8894a;
   --color-roo-belly: #f9dcc0;
   --color-roo-ear: #f7b3a1;
@@ -151,6 +151,8 @@
 
   --z-sticky: 300;
   --z-nav: 400;
+  /* Portaled popups (menus, selects, dialogs, sheets) sit above the sticky header and bottom nav */
+  --z-overlay: 500;
 }
 
 @media (max-width: 767px) {

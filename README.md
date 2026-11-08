@@ -2,14 +2,71 @@
 
 A campus marketplace where students buy, sell, rent and borrow things from each other. Built for HackCamp 2026.
 
+**Live at [stuffaroo.shop](https://stuffaroo.shop)** · [Marketplace](https://stuffaroo.shop/marketplace) · [Demo video](docs/demo/stuffaroo-demo.mp4)
+
+[![Stuffaroo marketplace home](docs/snapshots/desktop/01-home-fold.jpg)](https://stuffaroo.shop/marketplace)
+
+**Tech Stack:**
+
+![Next.js](https://img.shields.io/badge/Next.js_16-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React_19-149ECA?style=for-the-badge&logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Python](https://img.shields.io/badge/Python_3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![uv](https://img.shields.io/badge/uv-DE5FE9?style=for-the-badge&logo=uv&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/Tiger_Data_Postgres-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![pgvector](https://img.shields.io/badge/pgvector-336791?style=for-the-badge&logo=postgresql&logoColor=white)
+![Gemini](https://img.shields.io/badge/Google_Gemini-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white)
+![Auth0](https://img.shields.io/badge/Auth0-EB5424?style=for-the-badge&logo=auth0&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker_Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Nginx](https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=nginx&logoColor=white)
+![Vultr](https://img.shields.io/badge/Vultr-007BFC?style=for-the-badge&logo=vultr&logoColor=white)
+
+**CI Status:**
+
+[![CI](https://img.shields.io/github/actions/workflow/status/carsonjan/Stuffaroo/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=Lint%2C%20Typecheck%2C%20Test%2C%20Build)](https://github.com/carsonjan/Stuffaroo/actions/workflows/ci.yml)
+[![Website](https://img.shields.io/website?url=https%3A%2F%2Fstuffaroo.shop&style=for-the-badge&label=stuffaroo.shop)](https://stuffaroo.shop)
+
 Students buy things they only need for a week, and throw out perfectly good stuff at move-out. Stuffaroo keeps those items on campus: list what you own, post what you need, and let matching connect the two.
 
 ## Live demo
 
-- Marketplace: https://stuffaroo-web.vercel.app/marketplace
-- API: https://stuffaroo-api.vercel.app (health check at `/health`)
+- Homepage: https://stuffaroo.shop
+- Marketplace: https://stuffaroo.shop/marketplace
 
-Both run on the real services: Tiger Cloud for the database, Gemini on Vertex AI for matching, and Auth0 for sign-in.
+Everything runs on one Vultr server and talks to the real services: Tiger Data for the database, Gemini for matching, and Auth0 for sign-in.
+
+## How it works
+
+![Architecture: Nginx on a Vultr VPS routes to the React homepage and the Next.js marketplace, which use Auth0, Tiger Data and Gemini](diagrams/overview-v1.png)
+
+1. **Nginx** on the Vultr VPS terminates HTTPS for `stuffaroo.shop` (Certbot keeps the certificate renewed) and routes by path: `/marketplace`, `/auth` and `/_next` go to the Next.js marketplace, and everything else goes to the homepage.
+2. **The homepage** (React + Vite) is the public landing page. Its "Get started" buttons send students into the marketplace.
+3. **Sign-in** goes through **Auth0**. The browser is redirected to Auth0 to log in, and the Next.js server keeps the session and forwards the access token to the API.
+4. **The marketplace** (Next.js) renders pages on the server and calls the **FastAPI** business-logic service over the private Docker network. FastAPI verifies the Auth0 token on every write and enforces the rental request lifecycle.
+5. **Tiger Data** (Postgres + pgvector + pgvectorscale) stores listings, wanted posts, profiles and requests, along with an embedding for every listing.
+6. **Google Gemini** embeds new listings and wanted posts. Matching first applies hard filters in SQL (availability, category, budget, booked dates), then ranks candidates by vector similarity on Tiger's DiskANN index, and finally asks Gemini to drop any that don't fit.
+
+All five containers (Nginx, Certbot, homepage, marketplace and API) are defined in [`compose.yaml`](compose.yaml). Only ports 80 and 443 are public.
+
+## Screenshots
+
+| Browse | Listing detail |
+| --- | --- |
+| [![Browse listings with filters](docs/snapshots/desktop/03-browse-fold.jpg)](docs/snapshots/desktop/03-browse.jpg) | [![Listing detail with the rent request form](docs/snapshots/desktop/06-listing-detail-fold.jpg)](docs/snapshots/desktop/06-listing-detail.jpg) |
+| **Student profile** | **Post an item** |
+| [![Public student profile](docs/snapshots/desktop/08-profile-fold.jpg)](docs/snapshots/desktop/08-profile.jpg) | [![Posting an item with photos](docs/snapshots/desktop/10-post-photos.jpg)](docs/snapshots/desktop/10-post-photos.jpg) |
+
+<p>
+  <img src="docs/snapshots/mobile/01-home-fold.jpg" width="24%" alt="Mobile home">
+  <img src="docs/snapshots/mobile/03-browse-fold.jpg" width="24%" alt="Mobile browse">
+  <img src="docs/snapshots/mobile/12-browse-filters-sheet.jpg" width="24%" alt="Mobile filters sheet">
+  <img src="docs/snapshots/mobile/06-listing-detail-fold.jpg" width="24%" alt="Mobile listing detail">
+</p>
+
+More screenshots are in [`docs/snapshots`](docs/snapshots).
 
 ## Status
 
@@ -25,7 +82,7 @@ The rent and borrow journey runs end to end on the real API and database: browsi
 | AI matching | Real, and live on Vertex AI: hard filters in SQL (availability, category, budget, booked dates, own listings), then Gemini embeddings ranked on Tiger's DiskANN index, then a Gemini relevance check that can only remove candidates. Without Gemini configured it falls back to keyword ranking and the UI says so |
 | AI listing drafts | Canned sample response, labelled as a mockup |
 | Solana deposit | Uses your real accepted request and its deposit amount, but the transfer itself is simulated and labelled as such. No wallet is contacted |
-| Deployment | Vercel: `stuffaroo-web` from `apps/web` and `stuffaroo-api` from `apps/api` |
+| Deployment | Docker Compose on a Vultr VPS behind Nginx and Certbot, live at https://stuffaroo.shop (see [Deploying to Vultr](#deploying-to-vultr)) |
 
 Creating things and changing request status needs sign-in. Where Auth0 is not configured (a fresh local checkout), those screens explain that instead of pretending to work.
 
@@ -44,12 +101,12 @@ Creating things and changing request status needs sign-in. Where Auth0 is not co
 
 ## Tech stack
 
-- **Landing page:** TanStack Start, React, Tailwind CSS, generated with Lovable
+- **Landing page:** TanStack Start (React + Vite), Tailwind CSS, generated with Lovable
 - **Web:** Next.js 16 (App Router), React 19, TypeScript (strict), Tailwind CSS 4, shadcn/ui components on Base UI, Lucide icons
 - **API:** Python 3.12, FastAPI, Pydantic, psycopg, uv, pytest
 - **Data and AI:** Tiger Cloud Postgres with pgvector and pgvectorscale (DiskANN); Gemini embeddings (`gemini-embedding-001`) and a Gemini relevance check on Vertex AI, via `google-genai`
 - **Auth:** Auth0 (`@auth0/nextjs-auth0` v4), with RS256 tokens verified in FastAPI
-- **Hosting:** Vercel for the web app and the API
+- **Hosting:** Vultr VPS running Docker Compose, with Nginx and Certbot (Let's Encrypt) in front
 - **Tooling:** pnpm workspaces, Biome (TS/CSS/JSON), Ruff (Python), Lefthook pre-commit hooks
 
 The visual design system (colours, type, spacing tokens) is documented in [apps/web/DESIGN.md](apps/web/DESIGN.md).
@@ -196,7 +253,7 @@ GitHub Actions (`.github/workflows/ci.yml`) runs `pnpm check` and a production b
 
 ## Demo
 
-Use the live site at https://stuffaroo-web.vercel.app/marketplace, or run it locally with the database seeded. With two demo Auth0 users (see [docs/handoff-auth0.md](docs/handoff-auth0.md)), for example Maya and Jordan:
+Use the live site at https://stuffaroo.shop/marketplace, or run it locally with the database seeded. With two demo Auth0 users (see [docs/handoff-auth0.md](docs/handoff-auth0.md)), for example Maya and Jordan:
 
 1. As Jordan, list an item at `/marketplace/listings/new`.
 2. As Maya, describe a need at `/marketplace/wanted/new` and click "Find matches". The results say whether they were ranked with Gemini embeddings or by keyword.
