@@ -14,7 +14,7 @@ The backend is being wired in chunks (see [docs/todo.md](docs/todo.md) and [docs
 | API (`apps/api`) | FastAPI with read endpoints for listings, profiles and wanted posts, and matching (`/api/matches`, `/api/wanted/{id}/matches`) |
 | Database | Tiger Cloud Postgres (pgvector + pgvectorscale). Locally, the same image in Docker. Schema in `apps/api/migrations/`, fictional demo data in `apps/api/app/seed/` |
 | Auth | Auth0 in Next.js; FastAPI verifies the forwarded access token. Off until Auth0 env vars are set. The dashboard still shows a hard-coded sample student |
-| AI matching | Real: hard filters in SQL (availability, category, budget, booked dates, own listings), then Gemini embeddings ranked on Tiger's DiskANN index. Without a Gemini key it falls back to keyword ranking and the UI says so |
+| AI matching | Real: hard filters in SQL (availability, category, budget, booked dates, own listings), then Gemini embeddings ranked on Tiger's DiskANN index. Without Gemini configured it falls back to keyword ranking and the UI says so |
 | AI listing drafts | Canned sample response, labelled as a mockup |
 | Solana deposit | Simulated, labelled as simulated. No wallet is contacted |
 
@@ -75,12 +75,23 @@ The API uses Postgres with pgvector and pgvectorscale: a Tiger Cloud service, or
 pnpm db:up        # start timescale/timescaledb-ha:pg17 on localhost:5433
 pnpm db:migrate   # apply apps/api/migrations/*.sql
 pnpm db:seed      # load the fictional demo students, listings and requests
-pnpm db:embed     # embed listings with Gemini (needs GEMINI_API_KEY in apps/api/.env)
+pnpm db:embed     # embed listings with Gemini (needs Gemini set up in apps/api/.env)
 ```
 
 To use Tiger Cloud instead, copy `apps/api/.env.example` to `apps/api/.env` and set `DATABASE_URL` to the service URL (with `sslmode=require`), then run `pnpm db:migrate` and `pnpm db:seed`.
 
 The web app reads `API_URL` (default `http://localhost:8000`). For sign-in, copy `apps/web/.env.example` to `apps/web/.env.local` and follow [docs/handoff-auth0.md](docs/handoff-auth0.md).
+
+### Gemini (matching)
+
+Embeddings run through **Vertex AI on a Google Cloud project**, billed to its credits:
+
+1. In the Google Cloud console, create a project with billing linked (the free trial gives $300 of credits) and enable the **Vertex AI API**.
+2. Install the gcloud CLI and run `gcloud auth application-default login` once.
+3. In `apps/api/.env`, set `GOOGLE_GENAI_USE_VERTEXAI=true` and `GOOGLE_CLOUD_PROJECT=<project id>` (`GOOGLE_CLOUD_LOCATION` defaults to `us-central1`).
+4. Run `pnpm db:embed` to embed the seeded listings.
+
+A Google AI Studio key in `GEMINI_API_KEY` works instead. Without either, matching uses the labelled keyword fallback.
 
 API tests create a throwaway `stuffaroo_test` database on the local server and skip if it isn't running. CI runs them against the same image.
 

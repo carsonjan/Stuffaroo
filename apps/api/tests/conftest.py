@@ -57,8 +57,17 @@ def client(database_url: str, monkeypatch: pytest.MonkeyPatch) -> Iterator[TestC
             "truncate deposits, rental_requests, wanted_posts, listing_images, listings, profiles cascade"
         )
         seed(conn, json.loads(DATA_FILE.read_text()))
+    # Tests never read apps/api/.env, so real Gemini/Auth0 settings there are ignored.
+    monkeypatch.setitem(config.Settings.model_config, "env_file", None)
+    for name in (
+        "GEMINI_API_KEY",
+        "GOOGLE_GENAI_USE_VERTEXAI",
+        "GOOGLE_CLOUD_PROJECT",
+        "AUTH0_DOMAIN",
+        "AUTH0_AUDIENCE",
+    ):
+        monkeypatch.delenv(name, raising=False)
     monkeypatch.setenv("DATABASE_URL", database_url)
-    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     config.get_settings.cache_clear()
     db.close_pool()
     from app.main import app

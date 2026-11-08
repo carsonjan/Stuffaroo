@@ -1,8 +1,8 @@
 """Embed every listing that has no embedding yet.
 
-Run with `uv run python -m app.embed_listings` (or `pnpm db:embed`) after seeding,
-once GEMINI_API_KEY is set. New listings created through the API are embedded
-when they are created.
+Run with `uv run python -m app.embed_listings` (or `pnpm db:embed`) after
+seeding, once Gemini is configured (Vertex AI or GEMINI_API_KEY). New listings
+created through the API are embedded when they are created.
 """
 
 import psycopg
@@ -38,7 +38,10 @@ def embed_missing(conn: psycopg.Connection) -> int:
 
 def main() -> None:
     if not embeddings.is_configured():
-        raise SystemExit("GEMINI_API_KEY is not set; nothing embedded.")
+        raise SystemExit(
+            "Gemini is not configured (set GOOGLE_GENAI_USE_VERTEXAI + GOOGLE_CLOUD_PROJECT,"
+            " or GEMINI_API_KEY); nothing embedded."
+        )
     with psycopg.connect(get_settings().database_url) as conn:
         count = embed_missing(conn)
     print(f"Embedded {count} listings.")
