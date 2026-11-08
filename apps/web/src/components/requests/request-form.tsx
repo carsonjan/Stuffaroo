@@ -33,6 +33,9 @@ export function RequestForm({ listing }: { listing: Listing }) {
           {formatDateRange(start, end)}. You&apos;ll get a notification when the
           owner responds.
         </p>
+        <p className="mt-2 text-xs text-muted-foreground italic">
+          Mockup: nothing was sent.
+        </p>
         <Link
           href="/dashboard/requests"
           className={cn(

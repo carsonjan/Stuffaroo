@@ -115,7 +115,7 @@ export default async function WantedDetailPage({
               and pickup location.
             </p>
           </div>
-          <span className="hidden shrink-0 rounded-pill border px-2.5 py-0.5 text-xs text-muted-foreground sm:inline">
+          <span className="shrink-0 rounded-pill border px-2.5 py-0.5 text-xs text-muted-foreground">
             AI-ranked sample output
           </span>
         </div>
@@ -126,8 +126,7 @@ export default async function WantedDetailPage({
             <PackageOpen className="size-8 text-muted-foreground" aria-hidden />
             <p className="mt-4 font-medium">No listings match yet</p>
             <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-              We only suggest items that are actually listed and available.
-              We&apos;ll keep checking as new items come in.
+              Nothing in the sample data fits this post yet.
             </p>
           </div>
         )}

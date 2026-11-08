@@ -14,10 +14,10 @@ The frontend is a clickable mockup running on sample data. The backend is a Fast
 | API (`apps/api`) | FastAPI app with `GET /health` and CORS for `localhost:3000` |
 | Database | Not set up |
 | Auth | Not set up. The UI acts as one hard-coded student (`CURRENT_USER_ID`) |
-| AI matching and drafting | Canned sample responses, labelled "Mockup" in the UI |
+| AI matching and drafting | Canned sample responses, labelled as mockup or sample output in the UI |
 | Solana deposit | Simulated, labelled as simulated. No wallet is contacted |
 
-Forms and buttons only change local state. Nothing is saved, and a page reload resets everything.
+Forms and buttons only change local state, and their success messages are labelled as mockups. Nothing is saved, and a page reload resets everything.
 
 ## Features in the mockup
 
@@ -26,7 +26,7 @@ Forms and buttons only change local state. Nothing is saved, and a page reload r
 - **Create listing** (`/listings/new`): listing form with a "Draft with AI" helper.
 - **Wanted posts** (`/wanted`, `/wanted/new`, `/wanted/[id]`): describe what you need and see matching listings with a reason for each match.
 - **Deals and move-out** (`/deals`, `/move-out`): price drops, bundles and a countdown to move-out day.
-- **Dashboard** (`/dashboard`, `/dashboard/requests`): your listings and incoming and outgoing rental requests, with accept, reject, cancel, start and complete actions.
+- **Dashboard** (`/dashboard`, `/dashboard/requests`): your listings and incoming and outgoing rental requests, with accept, reject, cancel, "mark handed over" and "mark returned" actions.
 - **Profiles** (`/profile/[id]`): public student profile with their listings.
 - **Deposit demo** (`/deposits`): walkthrough of a Solana Devnet deposit transfer.
 
@@ -83,7 +83,9 @@ The API health endpoint is at `http://localhost:8000/health`.
 pnpm check        # lint, type check and tests
 ```
 
-`pnpm typecheck` uses the route types Next.js generates (`PageProps`, `LayoutProps`). On a fresh checkout, run `pnpm dev:web` or `pnpm --dir apps/web build` once before type checking.
+`pnpm typecheck` runs `next typegen` first, so the route types (`PageProps`, `LayoutProps`) exist on a fresh checkout.
+
+GitHub Actions (`.github/workflows/ci.yml`) runs `pnpm check` and a production build of the web app on every pull request and on pushes to `main`.
 
 ## Demo
 

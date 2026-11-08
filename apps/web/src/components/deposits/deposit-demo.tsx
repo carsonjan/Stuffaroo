@@ -141,8 +141,8 @@ export function DepositDemo({
                     aria-hidden
                   />
                   {stage === "signing"
-                    ? "Waiting for wallet approval…"
-                    : "Waiting for Devnet confirmation…"}
+                    ? "Simulating wallet approval…"
+                    : "Simulating Devnet confirmation…"}
                 </div>
               )}
               {stage === "simulated" && (
@@ -205,10 +205,7 @@ export function DepositDemo({
                 <li key={step.key} className="flex gap-3">
                   {done ? (
                     <CircleCheck
-                      className={cn(
-                        "mt-0.5 size-4 shrink-0",
-                        step.key === "simulated" ? "text-ink-3" : "text-accent",
-                      )}
+                      className={cn("mt-0.5 size-4 shrink-0", "text-ink-3")}
                       aria-hidden
                     />
                   ) : current ? (
@@ -230,7 +227,7 @@ export function DepositDemo({
                       )}
                     >
                       {step.label}
-                      {done && step.key === "simulated" && (
+                      {done && (
                         <span className="ml-1.5 text-xs font-normal text-ink-3">
                           (simulated)
                         </span>

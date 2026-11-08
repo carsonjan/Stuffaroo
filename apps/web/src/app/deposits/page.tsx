@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { DepositDemo } from "@/components/deposits/deposit-demo";
@@ -39,8 +40,11 @@ async function DepositForRequest({
   searchParams,
 }: Pick<PageProps<"/deposits">, "searchParams">) {
   const { request: requestId } = await searchParams;
-  const request =
-    rentalRequests.find((r) => r.id === requestId) ?? rentalRequests[0];
+  // No ?request= shows the first sample request; an unknown id is a 404, not a different item.
+  const request = requestId
+    ? rentalRequests.find((r) => r.id === requestId)
+    : rentalRequests[0];
+  if (!request) notFound();
   const listing = getListing(request.listingId);
   const owner = listing ? getProfile(listing.ownerId) : undefined;
   if (!listing || !owner) return null;

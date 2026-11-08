@@ -52,7 +52,7 @@ export default function HomePage() {
           {popular.map((term) => (
             <Link
               key={term}
-              href={`/marketplace?q=${term}`}
+              href={`/marketplace?q=${encodeURIComponent(term)}`}
               className={cn(softPill, "press px-4 py-1.5 text-sm")}
             >
               {term}

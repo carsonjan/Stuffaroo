@@ -118,7 +118,12 @@ export function WantedForm() {
           </section>
 
           <section>
-            <h2 className="mb-1 text-lg font-semibold">Available now</h2>
+            <div className="mb-1 flex items-center justify-between gap-4">
+              <h2 className="text-lg font-semibold">Available now</h2>
+              <span className="text-xs text-muted-foreground italic">
+                Mockup: sample matches
+              </span>
+            </div>
             <p className="mb-4 text-sm text-muted-foreground">
               Items already listed that fit. Request one directly, or post your
               wanted so new listings can find you.

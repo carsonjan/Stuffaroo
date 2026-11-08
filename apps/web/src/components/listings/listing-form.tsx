@@ -79,6 +79,9 @@ export function ListingForm() {
         <p className="mt-1 text-muted-foreground">
           We&apos;ll let you know when someone requests it.
         </p>
+        <p className="mt-2 text-xs text-muted-foreground italic">
+          Mockup: nothing was saved.
+        </p>
         <div className="mt-6 flex gap-2">
           <Link
             href="/dashboard"
