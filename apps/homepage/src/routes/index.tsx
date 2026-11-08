@@ -13,7 +13,6 @@ import {
   ShoppingBag,
   Sparkles,
 } from "lucide-react";
-import campus from "@/assets/campus-still-life.jpg";
 import roo from "@/assets/roo.png.asset.json";
 import { Button } from "@/components/ui/button";
 
@@ -52,7 +51,14 @@ const categories = [
 
 function Landing() {
   return (
-    <div className="min-h-screen bg-paper">
+    <div
+      className="min-h-screen bg-paper"
+      style={{
+        backgroundImage: "url(/doodle-pattern.jpg)",
+        backgroundRepeat: "repeat",
+        backgroundSize: "420px",
+      }}
+    >
       <div className="bg-ink px-4 py-2 text-center text-xs font-bold text-paper">
         Less waste. More campus life.{" "}
         <span className="ml-1 text-butter">That’s the Stuffaroo way.</span>
@@ -85,15 +91,6 @@ function Landing() {
 
       <main>
         <section className="relative isolate overflow-hidden px-5 pb-12 pt-12 text-center md:pt-16">
-          <img
-            src={campus}
-            alt="Textbooks, headphones and student essentials arranged on a peach tabletop"
-            width={1600}
-            height={1008}
-            fetchPriority="high"
-            className="absolute inset-0 -z-20 h-full w-full object-cover object-top"
-          />
-          <div className="absolute inset-0 -z-10 bg-paper/45" />
           <p className="mb-3 text-xs font-extrabold uppercase tracking-widest text-brick">
             Small campus. Big pouch.
           </p>
