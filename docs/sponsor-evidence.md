@@ -53,11 +53,16 @@ Students describe needs in their own words ("something to film a club event"). K
 With Gemini configured, match results show "Ranked with Gemini embeddings".
 
 ### Evidence
-Tests use a deterministic fake embedder for the vector path, the failure-to-keyword fallback, embedding on create, and backend selection (`test_matching.py`, `test_rentals.py`).
+- **Live on Vertex AI** (project `stuffaroo`, `us-central1`): all 12 seeded listings are embedded with `gemini-embedding-001`, and matching returns `method: "vector"`.
+- **Cut-off tuned on real scores.** Fitting listings score about 0.59–0.68 and unrelated ones about 0.52–0.58, so a match must score at least 0.58 *and* be within 0.07 of the best match. Across 9 sample needs, each kept only the fitting listings:
+  - camera → Canon, Sony
+  - first-year calculus → textbook, TI-84
+  - soup → Instant Pot
+  - groceries on a bike → nothing, because nothing fits
+- Tests use a deterministic fake embedder for the vector path, the failure-to-keyword fallback, embedding on create and backend selection. `test_cut_off_keeps_only_close_matches` replays the real scores (`test_matching.py`, `test_rentals.py`).
 
 ### Limitations
-- **Not yet verified with live Vertex AI.** The first real call reached Google with valid credentials, but the project's Vertex AI ("Agent Platform") API wasn't enabled yet.
-- The 0.55 similarity floor is a starting guess, to tune once real embeddings exist.
+- **Similarity can't tell shared tech words from fit.** The seeded "Projector for a movie night" post says "anything with HDMI works", which pulls the calculator and keyboard up to 0.61–0.62, above the cut-off. A Gemini relevance check on the top candidates would fix this; it isn't built.
 - AI listing drafts are still a labelled mockup.
 
 ## Sponsor: Auth0
