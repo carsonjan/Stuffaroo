@@ -58,6 +58,16 @@ export function ListingForm() {
   const [generating, setGenerating] = useState(false);
   const [aiFilled, setAiFilled] = useState(false);
   const [published, setPublished] = useState(false);
+  // Mockup: only the file names are kept, to show what was picked. Nothing is uploaded.
+  const [photoNames, setPhotoNames] = useState<string[]>([]);
+  const pickPhotos = (files: FileList | null) => {
+    if (!files) return;
+    const names = Array.from(files)
+      .filter((f) => f.type.startsWith("image/"))
+      .map((f) => f.name);
+    // Names double as list keys, so drop duplicates.
+    setPhotoNames([...new Set(names)].slice(0, 5));
+  };
 
   const update = <K extends keyof Draft>(key: K, value: Draft[K]) =>
     setDraft((d) => ({ ...d, [key]: value }));
@@ -233,6 +243,11 @@ export function ListingForm() {
           >
             <label
               htmlFor="photos"
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                pickPhotos(e.dataTransfer.files);
+              }}
               className="flex cursor-pointer flex-col items-center gap-2 rounded-card border border-dashed bg-card px-6 py-8 text-center text-sm text-muted-foreground hover:border-rule-2 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-focus"
             >
               <ImagePlus className="size-6" aria-hidden />
@@ -248,8 +263,23 @@ export function ListingForm() {
                 accept="image/*"
                 multiple
                 className="sr-only"
+                onChange={(e) => pickPhotos(e.target.files)}
               />
             </label>
+            {photoNames.length > 0 && (
+              <div className="mt-2 text-sm" aria-live="polite">
+                <ul className="flex flex-col gap-0.5">
+                  {photoNames.map((name) => (
+                    <li key={name} className="truncate">
+                      {name}
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-1 text-xs text-muted-foreground italic">
+                  Mockup: photos are not uploaded or saved.
+                </p>
+              </div>
+            )}
           </Field>
         </section>
 
