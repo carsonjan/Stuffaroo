@@ -43,15 +43,7 @@ function ListingPage() {
     },
   });
   if (isLoading) return <p className="text-muted-foreground">Loading…</p>;
-  if (!l)
-    return (
-      <p>
-        That item has hopped away.{" "}
-        <Link to="/browse" className="font-bold text-brick">
-          Browse more
-        </Link>
-      </p>
-    );
+  if (!l) return <p>That item has hopped away.</p>;
   const d = discount(l);
   const isMine = user?.id === l.seller_id;
 

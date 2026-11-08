@@ -8,160 +8,134 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root";
-import { Route as AuthRouteImport } from "./routes/auth";
-import { Route as BrowseRouteImport } from "./routes/browse";
-import { Route as IndexRouteImport } from "./routes/index";
-import { Route as ListingIdRouteImport } from "./routes/listing.$id";
-import { Route as MessagesRouteImport } from "./routes/messages";
-import { Route as PostRouteImport } from "./routes/post";
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as MessagesRouteImport } from './routes/messages'
+import { Route as PostRouteImport } from './routes/post'
+import { Route as ListingIdRouteImport } from './routes/listing.$id'
 
 const IndexRoute = IndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AuthRoute = AuthRouteImport.update({
-  id: "/auth",
-  path: "/auth",
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
-} as any);
-const BrowseRoute = BrowseRouteImport.update({
-  id: "/browse",
-  path: "/browse",
-  getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const MessagesRoute = MessagesRouteImport.update({
-  id: "/messages",
-  path: "/messages",
+  id: '/messages',
+  path: '/messages',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const PostRoute = PostRouteImport.update({
-  id: "/post",
-  path: "/post",
+  id: '/post',
+  path: '/post',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ListingIdRoute = ListingIdRouteImport.update({
-  id: "/listing/$id",
-  path: "/listing/$id",
+  id: '/listing/$id',
+  path: '/listing/$id',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute;
-  "/auth": typeof AuthRoute;
-  "/browse": typeof BrowseRoute;
-  "/messages": typeof MessagesRoute;
-  "/post": typeof PostRoute;
-  "/listing/$id": typeof ListingIdRoute;
+  '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/messages': typeof MessagesRoute
+  '/post': typeof PostRoute
+  '/listing/$id': typeof ListingIdRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute;
-  "/auth": typeof AuthRoute;
-  "/browse": typeof BrowseRoute;
-  "/messages": typeof MessagesRoute;
-  "/post": typeof PostRoute;
-  "/listing/$id": typeof ListingIdRoute;
+  '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/messages': typeof MessagesRoute
+  '/post': typeof PostRoute
+  '/listing/$id': typeof ListingIdRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  "/": typeof IndexRoute;
-  "/auth": typeof AuthRoute;
-  "/browse": typeof BrowseRoute;
-  "/messages": typeof MessagesRoute;
-  "/post": typeof PostRoute;
-  "/listing/$id": typeof ListingIdRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/messages': typeof MessagesRoute
+  '/post': typeof PostRoute
+  '/listing/$id': typeof ListingIdRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: "/" | "/auth" | "/browse" | "/messages" | "/post" | "/listing/$id";
-  fileRoutesByTo: FileRoutesByTo;
-  to: "/" | "/auth" | "/browse" | "/messages" | "/post" | "/listing/$id";
-  id:
-    | "__root__"
-    | "/"
-    | "/auth"
-    | "/browse"
-    | "/messages"
-    | "/post"
-    | "/listing/$id";
-  fileRoutesById: FileRoutesById;
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/' | '/auth' | '/messages' | '/post' | '/listing/$id'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '/auth' | '/messages' | '/post' | '/listing/$id'
+  id: '__root__' | '/' | '/auth' | '/messages' | '/post' | '/listing/$id'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  AuthRoute: typeof AuthRoute;
-  BrowseRoute: typeof BrowseRoute;
-  MessagesRoute: typeof MessagesRoute;
-  PostRoute: typeof PostRoute;
-  ListingIdRoute: typeof ListingIdRoute;
+  IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
+  MessagesRoute: typeof MessagesRoute
+  PostRoute: typeof PostRoute
+  ListingIdRoute: typeof ListingIdRoute
 }
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/auth": {
-      id: "/auth";
-      path: "/auth";
-      fullPath: "/auth";
-      preLoaderRoute: typeof AuthRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/browse": {
-      id: "/browse";
-      path: "/browse";
-      fullPath: "/browse";
-      preLoaderRoute: typeof BrowseRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/messages": {
-      id: "/messages";
-      path: "/messages";
-      fullPath: "/messages";
-      preLoaderRoute: typeof MessagesRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/post": {
-      id: "/post";
-      path: "/post";
-      fullPath: "/post";
-      preLoaderRoute: typeof PostRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/listing/$id": {
-      id: "/listing/$id";
-      path: "/listing/$id";
-      fullPath: "/listing/$id";
-      preLoaderRoute: typeof ListingIdRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/messages': {
+      id: '/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof MessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/post': {
+      id: '/post'
+      path: '/post'
+      fullPath: '/post'
+      preLoaderRoute: typeof PostRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/listing/$id': {
+      id: '/listing/$id'
+      path: '/listing/$id'
+      fullPath: '/listing/$id'
+      preLoaderRoute: typeof ListingIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
-  BrowseRoute: BrowseRoute,
   MessagesRoute: MessagesRoute,
   PostRoute: PostRoute,
   ListingIdRoute: ListingIdRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
-import type { getRouter } from "./router.tsx";
-import type { startInstance } from "./start.ts";
-
-declare module "@tanstack/react-start" {
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
   interface Register {
-    ssr: true;
-    router: Awaited<ReturnType<typeof getRouter>>;
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>;
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }

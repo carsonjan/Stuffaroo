@@ -72,13 +72,6 @@ function Landing() {
               variant="ghost"
               className="hidden font-bold sm:inline-flex"
             >
-              <Link to="/browse">Explore the pouch</Link>
-            </Button>
-            <Button
-              asChild
-              variant="ghost"
-              className="hidden font-bold sm:inline-flex"
-            >
               <Link to="/auth">Sign in</Link>
             </Button>
             <Button asChild className="chunky-sm press rounded-xl font-bold">
@@ -124,14 +117,6 @@ function Landing() {
               <Link to="/auth">
                 Join the pouch <ArrowRight />
               </Link>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              size="lg"
-              className="chunky-sm press h-12 rounded-xl bg-paper text-base font-bold"
-            >
-              <Link to="/browse">Take a look</Link>
             </Button>
           </div>
 
@@ -191,15 +176,13 @@ function Landing() {
           </p>
           <div className="mx-auto mt-6 flex max-w-4xl flex-wrap justify-center gap-x-9 gap-y-5 md:justify-between">
             {categories.map(({ name, icon: Icon }) => (
-              <Link
+              <div
                 key={name}
-                to="/browse"
-                search={{ category: name }}
-                className="flex items-center gap-2 font-display text-lg font-bold transition-colors hover:text-brick"
+                className="flex items-center gap-2 font-display text-lg font-bold"
               >
                 <Icon className="size-5" />
                 {name}
-              </Link>
+              </div>
             ))}
           </div>
         </section>
@@ -256,15 +239,6 @@ function Landing() {
             Find something you love, message a classmate and arrange a pickup.
             Good stuff doesn’t have to travel far.
           </p>
-          <Button
-            asChild
-            size="lg"
-            className="chunky press mt-6 h-12 rounded-xl font-extrabold"
-          >
-            <Link to="/browse">
-              Explore Stuffaroo <ArrowRight />
-            </Link>
-          </Button>
         </section>
       </main>
       <footer className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-7">

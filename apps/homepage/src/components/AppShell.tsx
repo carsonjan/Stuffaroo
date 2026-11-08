@@ -25,19 +25,10 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="mx-auto max-w-5xl px-3 py-6 md:py-10">
       <div className="chunky min-h-[80vh] rounded-[2rem] bg-paper px-4 pb-16 pt-5 md:px-7">
         <header className="mb-6 flex items-center justify-between gap-3">
-          <Link
-            to="/"
-            className="font-display text-3xl font-extrabold tracking-tight"
-          >
+          <Link to="/" className="font-display text-3xl font-extrabold tracking-tight">
             Stuff<span className="text-brick">aroo</span>
           </Link>
           <nav className="flex items-center gap-2">
-            <Link
-              to="/browse"
-              className="hidden rounded-full px-3 py-1 text-sm font-bold hover:bg-muted sm:block"
-            >
-              Browse
-            </Link>
             {user ? (
               <>
                 <Link
