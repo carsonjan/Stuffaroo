@@ -101,6 +101,25 @@ def tokens(text: str) -> list[str]:
     return list(dict.fromkeys(w for w in words if len(w) >= 3 and w not in STOPWORDS))
 
 
+def close_enough(
+    similarity: dict[UUID, float], floor: float, max_gap: float
+) -> set[UUID]:
+    """IDs worth showing: above an absolute floor and near the best match.
+
+    With Gemini embeddings, unrelated listings still score around 0.52-0.58,
+    so the floor alone lets noise through; the gap drops anything far behind
+    the best match for this query. A need with no good match returns nothing.
+    """
+    if not similarity:
+        return set()
+    best = max(similarity.values())
+    return {
+        listing_id
+        for listing_id, score in similarity.items()
+        if score >= floor and best - score <= max_gap
+    }
+
+
 def _vector_matches(conn: psycopg.Connection, need: Need) -> list[Match]:
     [query_vector] = embeddings.embed_texts([need.text], "RETRIEVAL_QUERY")
     where, params = _filters(need)
@@ -113,12 +132,15 @@ def _vector_matches(conn: psycopg.Connection, need: Need) -> list[Match]:
     ).fetchall()
     # Similarity is computed separately so the ORDER BY above can use the index.
     similarity = _similarities(conn, vector, [row["id"] for row in rows])
-    floor = get_settings().match_min_similarity
+    settings = get_settings()
+    keep = close_enough(
+        similarity, settings.match_min_similarity, settings.match_max_gap_from_best
+    )
     matches = []
     for row in rows:
-        score = similarity.get(row["id"], 0.0)
-        if score < floor:
+        if row["id"] not in keep:
             continue
+        score = similarity[row["id"]]
         listing = listing_from_row(row)
         matches.append(
             Match(
