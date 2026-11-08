@@ -151,6 +151,8 @@
 
   --z-sticky: 300;
   --z-nav: 400;
+  /* Portaled popups (menus, selects, dialogs, sheets) sit above the sticky header and bottom nav */
+  --z-overlay: 500;
 }
 
 @media (max-width: 767px) {

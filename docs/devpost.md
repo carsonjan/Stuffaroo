@@ -118,6 +118,25 @@ Upload these to the Devpost gallery in this order, with the caption under each. 
 ![Post an item](snapshots/desktop/11-post-review.jpg)
 ![Profile](snapshots/desktop/08-profile-fold.jpg)
 
+## Demo video
+
+Devpost's "Video demo link" field only takes a YouTube, Vimeo or Youku URL, not a file. Upload `docs/demo/stuffaroo-demo.mp4` (2:11, 1920×1200, 16 MB, no audio) as unlisted or public, then paste the link into that field.
+
+Suggested title: **Stuffaroo: buy, rent and borrow on campus (web demo)**
+
+Suggested description:
+
+> A walkthrough of the Stuffaroo web app, signed in as a demo student. Browse the marketplace, switch between Buy, Rent and Request, filter by category, and open a listing. Then post a camera for rent in four steps (photos, details, price, pickup) and see it go live on the dashboard. Last, list a Nintendo Switch for sale. Students and listings are fictional. Sale listings end on a demo screen for now, and "Draft it for me" is a mockup of the planned AI assistant.
+
+What it shows, in order:
+
+1. Home with the Buy/Rent/Request toggle, listings, categories and the campus pickup map.
+2. Search, then browse with the Rent and Cameras filters.
+3. A listing offered both ways, switching between Buy and Rent.
+4. The account menu and an empty dashboard for a new account.
+5. Renting out a Sony a6000 at $12/day with a $100 deposit. It publishes through the API and shows up as an active listing.
+6. Selling a Nintendo Switch OLED for $220, which ends on the demo success screen.
+
 ## Try it out
 
 - Live: https://stuffaroo-web.vercel.app/marketplace

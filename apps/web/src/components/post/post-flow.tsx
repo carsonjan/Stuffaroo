@@ -19,7 +19,6 @@ import {
   useState,
 } from "react";
 
-import { RooStickerStatic } from "@/components/ds/roo-sticker-static";
 import { Sticker } from "@/components/ds/sticker";
 import {
   type CreateListingState,
@@ -66,8 +65,11 @@ const aiSample: Partial<Draft> = {
   condition: "Like new",
 };
 
-const field =
-  "w-full min-w-0 rounded-pill bg-surface px-5 text-[1rem] text-ink outline-none placeholder:text-ink-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
+// `cn` only joins classes (no Tailwind merging), so the radius lives outside the
+// base: inputs are pills, the multi-line description gets the card radius.
+const fieldBase =
+  "w-full min-w-0 bg-surface px-5 text-[1rem] text-ink outline-none placeholder:text-ink-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
+const field = `${fieldBase} rounded-pill`;
 
 /**
  * Posting an item in four steps inside one centred card: photos (1–8, cropped
@@ -596,7 +598,7 @@ function DetailsStep({ draft, update }: StepProps) {
           rows={5}
           onChange={(e) => update("description", e.target.value)}
           placeholder="What's included, any quirks, how you'd like it back."
-          className={cn(field, "rounded-card px-5 py-4 leading-relaxed")}
+          className={cn(fieldBase, "rounded-card py-4 leading-relaxed")}
         />
       </div>
     </div>
@@ -827,16 +829,11 @@ function Row({ label, value }: { label: string; value: string }) {
 function Posted({ draft }: { draft: Draft }) {
   return (
     <div className="relative mx-auto w-full max-w-[680px] rounded-tile bg-surface px-6 pt-20 pb-10 text-center md:px-12">
-      <RooStickerStatic
-        size={88}
-        rotate={-8}
-        className="absolute -top-10 left-1/2 -translate-x-[130%]"
-      />
       <Sticker
         variant="burst"
         fill="lime"
         rotate={10}
-        className="absolute -top-8 left-1/2 size-[104px] translate-x-[20%]"
+        className="absolute -top-10 left-1/2 size-[104px] -translate-x-1/2"
       >
         Posted!
       </Sticker>
