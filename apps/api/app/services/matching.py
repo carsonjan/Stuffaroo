@@ -18,7 +18,7 @@ import psycopg
 
 from app.core.config import get_settings
 from app.models.schemas import ListingDetail, Match, MatchResult
-from app.services import embeddings
+from app.services import embeddings, relevance
 from app.services.listings import LISTING_DETAIL_SELECT, listing_from_row
 
 logger = logging.getLogger(__name__)
@@ -150,7 +150,20 @@ def _vector_matches(conn: psycopg.Connection, need: Need) -> list[Match]:
             )
         )
     matches.sort(key=lambda m: m.score, reverse=True)
-    return matches[:MAX_MATCHES]
+    return _drop_irrelevant(need, matches[:MAX_MATCHES])
+
+
+def _drop_irrelevant(need: Need, shortlist: list[Match]) -> list[Match]:
+    """Ask Gemini which shortlisted listings really meet the need. It can only
+    remove candidates; if the check fails, the similarity cut-off result stands."""
+    if not shortlist or not relevance.is_enabled():
+        return shortlist
+    try:
+        fitting = relevance.fitting_indices(need.text, [m.listing for m in shortlist])
+    except relevance.RelevanceError as error:
+        logger.warning("Relevance check skipped: %s", error)
+        return shortlist
+    return [match for index, match in enumerate(shortlist) if index in fitting]
 
 
 def _similarities(
