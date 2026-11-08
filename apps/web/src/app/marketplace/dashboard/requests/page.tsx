@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
+import { ApiErrorState } from "@/components/api-error-state";
 import { RequestRow } from "@/components/requests/request-row";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  CURRENT_USER_ID,
-  listings,
-  type RentalRequest,
-  rentalRequests,
-} from "@/lib/mock-data";
+import { ApiError, getRentals } from "@/lib/api";
+import type { RentalRequest } from "@/lib/api-types";
+import { getViewer } from "@/lib/viewer";
 
 export const metadata: Metadata = { title: "Requests" };
 
@@ -33,13 +31,19 @@ async function RequestTabs({
   searchParams,
 }: Pick<PageProps<"/marketplace/dashboard/requests">, "searchParams">) {
   const { tab } = await searchParams;
-  const myListingIds = new Set(
-    listings.filter((l) => l.ownerId === CURRENT_USER_ID).map((l) => l.id),
-  );
-  const incoming = rentalRequests.filter((r) => myListingIds.has(r.listingId));
-  const outgoing = rentalRequests.filter(
-    (r) => r.borrowerId === CURRENT_USER_ID,
-  );
+  // The layout shows the sign-in prompt; skip the API calls behind it.
+  if ((await getViewer()).status !== "signed-in") return null;
+  let incoming: RentalRequest[];
+  let outgoing: RentalRequest[];
+  try {
+    [incoming, outgoing] = await Promise.all([
+      getRentals("owner"),
+      getRentals("borrower"),
+    ]);
+  } catch (error) {
+    if (!(error instanceof ApiError)) throw error;
+    return <ApiErrorState detail={error.detail} />;
+  }
 
   return (
     <Tabs defaultValue={tab === "outgoing" ? "outgoing" : "incoming"}>

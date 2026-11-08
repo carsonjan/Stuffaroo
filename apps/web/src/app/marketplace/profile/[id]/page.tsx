@@ -1,20 +1,22 @@
-import { MapPin, Star } from "lucide-react";
+import { MapPin } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { ApiErrorState } from "@/components/api-error-state";
 import { ListingCard } from "@/components/marketplace/listing-card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { getProfile, listings, profiles } from "@/lib/mock-data";
-
-export function generateStaticParams() {
-  return profiles.map(({ id }) => ({ id }));
-}
+import { ApiError, getProfileWithListings } from "@/lib/api";
+import type { ProfileWithListings } from "@/lib/api-types";
 
 export async function generateMetadata({
   params,
 }: PageProps<"/marketplace/profile/[id]">): Promise<Metadata> {
-  const profile = getProfile((await params).id);
-  return { title: profile?.displayName ?? "Profile" };
+  try {
+    const data = await getProfileWithListings((await params).id);
+    return { title: data?.profile.displayName ?? "Profile" };
+  } catch {
+    return { title: "Profile" };
+  }
 }
 
 const joinedFormatter = new Intl.DateTimeFormat("en-US", {
@@ -27,10 +29,19 @@ export default async function ProfilePage({
   params,
 }: PageProps<"/marketplace/profile/[id]">) {
   const { id } = await params;
-  const profile = getProfile(id);
-  if (!profile) notFound();
-
-  const theirListings = listings.filter((l) => l.ownerId === profile.id);
+  let data: ProfileWithListings | null;
+  try {
+    data = await getProfileWithListings(id);
+  } catch (error) {
+    if (!(error instanceof ApiError)) throw error;
+    return (
+      <div className="mx-auto max-w-[1200px] px-4 py-10 sm:px-10">
+        <ApiErrorState detail={error.detail} />
+      </div>
+    );
+  }
+  if (!data) notFound();
+  const { profile, listings } = data;
 
   return (
     <div className="mx-auto max-w-[1200px] px-4 py-10 sm:px-10">
@@ -42,37 +53,35 @@ export default async function ProfilePage({
         </Avatar>
         <div className="flex-1">
           <h1 className="text-2xl font-semibold">{profile.displayName}</h1>
-          <p className="mt-1 text-muted-foreground">{profile.program}</p>
+          {profile.program && (
+            <p className="mt-1 text-muted-foreground">{profile.program}</p>
+          )}
           <p className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
-            <MapPin className="size-4" aria-hidden /> {profile.campus}, joined{" "}
-            {joinedFormatter.format(new Date(profile.joined))}
+            <MapPin className="size-4" aria-hidden />
+            {profile.campus ? `${profile.campus}, joined` : "Joined"}{" "}
+            {joinedFormatter.format(new Date(profile.joinedAt))}
           </p>
         </div>
-        <dl className="flex gap-8">
-          <div>
-            <dt className="text-xs text-muted-foreground">Rating</dt>
-            <dd className="mt-1 flex items-center gap-1 font-display text-2xl">
-              <Star className="size-5 fill-ink-2 text-ink-2" aria-hidden />{" "}
-              {profile.rating.toFixed(1)}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-xs text-muted-foreground">Lends</dt>
-            <dd className="mt-1 font-display text-2xl">
-              {profile.completedLends}
-            </dd>
-          </div>
+        <dl>
+          <dt className="text-xs text-muted-foreground">Completed lends</dt>
+          <dd className="mt-1 font-display text-2xl">
+            {profile.completedLends}
+          </dd>
         </dl>
       </div>
 
       <h2 className="mt-12 mb-6 text-xl font-semibold">
         Listings from {profile.displayName.split(" ")[0]}
       </h2>
-      <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-x-4 gap-y-10 lg:grid-cols-[repeat(3,minmax(0,1fr))]">
-        {theirListings.map((l) => (
-          <ListingCard key={l.id} listing={l} />
-        ))}
-      </div>
+      {listings.length > 0 ? (
+        <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-x-4 gap-y-10 lg:grid-cols-[repeat(3,minmax(0,1fr))]">
+          {listings.map((l) => (
+            <ListingCard key={l.id} listing={l} />
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">No listings yet.</p>
+      )}
     </div>
   );
 }

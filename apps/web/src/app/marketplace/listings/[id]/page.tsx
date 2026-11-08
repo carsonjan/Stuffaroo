@@ -1,53 +1,62 @@
-import { MapPin, ShieldCheck, Star } from "lucide-react";
+import { MapPin, ShieldCheck } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-
+import { ApiErrorState } from "@/components/api-error-state";
 import { ListingCard } from "@/components/marketplace/listing-card";
 import { ListingThumb } from "@/components/marketplace/listing-thumb";
 import { AvailabilityBadge } from "@/components/marketplace/status-badge";
 import { RequestForm } from "@/components/requests/request-form";
+import { SignInPrompt } from "@/components/sign-in-prompt";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
-import { formatMoney, formatPrice } from "@/lib/format";
-import {
-  CURRENT_USER_ID,
-  getCategory,
-  getListing,
-  getProfile,
-  listings,
-} from "@/lib/mock-data";
+import { ApiError, getListing, getListings } from "@/lib/api";
+import type { ListingDetail } from "@/lib/api-types";
+import { getCategory } from "@/lib/categories";
+import { formatMoneyCents, formatPriceCents, isoDateAfter } from "@/lib/format";
 import { cn } from "@/lib/utils";
-
-export function generateStaticParams() {
-  return listings.map(({ id }) => ({ id }));
-}
+import { getViewer } from "@/lib/viewer";
 
 export async function generateMetadata({
   params,
 }: PageProps<"/marketplace/listings/[id]">): Promise<Metadata> {
-  const listing = getListing((await params).id);
-  return { title: listing?.title ?? "Listing" };
+  try {
+    const listing = await getListing((await params).id);
+    return { title: listing?.title ?? "Listing" };
+  } catch {
+    return { title: "Listing" };
+  }
 }
 
 export default async function ListingPage({
   params,
 }: PageProps<"/marketplace/listings/[id]">) {
   const { id } = await params;
-  const listing = getListing(id);
+  let listing: ListingDetail | null;
+  let similar: ListingDetail[] = [];
+  try {
+    listing = await getListing(id);
+    if (listing) {
+      similar = (await getListings({ category: listing.category }))
+        .filter((l) => l.id !== id)
+        .slice(0, 3);
+    }
+  } catch (error) {
+    if (!(error instanceof ApiError)) throw error;
+    return (
+      <div className="mx-auto max-w-[1200px] px-4 py-8 sm:px-10">
+        <ApiErrorState detail={error.detail} />
+      </div>
+    );
+  }
   if (!listing) notFound();
 
-  const owner = getProfile(listing.ownerId);
+  const { owner } = listing;
   const category = getCategory(listing.category);
-  const isOwn = listing.ownerId === CURRENT_USER_ID;
-  const similar = listings
-    .filter(
-      (l) =>
-        l.category === listing.category &&
-        l.id !== listing.id &&
-        l.availability === "available",
-    )
-    .slice(0, 3);
+  const viewer = await getViewer();
+  const isOwn =
+    viewer.status === "signed-in" && viewer.profile?.id === listing.ownerId;
+  const now = new Date();
 
   return (
     <div className="mx-auto max-w-[1200px] px-4 py-8 sm:px-10">
@@ -90,10 +99,13 @@ export default async function ListingPage({
             </p>
 
             <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-4 rounded-card border bg-card p-5 sm:grid-cols-4">
-              <Detail label="Price" value={formatPrice(listing.pricePerDay)} />
+              <Detail
+                label="Price"
+                value={formatPriceCents(listing.pricePerDayCents)}
+              />
               <Detail
                 label="Deposit"
-                value={formatMoney(listing.depositAmount)}
+                value={formatMoneyCents(listing.depositCents)}
               />
               <Detail label="Condition" value={listing.condition} />
               <Detail label="Pickup" value={listing.location} />
@@ -105,11 +117,11 @@ export default async function ListingPage({
           <div className="rounded-card border bg-card p-5">
             <div className="flex items-baseline justify-between">
               <span className="text-2xl font-semibold">
-                {formatPrice(listing.pricePerDay)}
+                {formatPriceCents(listing.pricePerDayCents)}
               </span>
-              {listing.depositAmount !== null && (
+              {listing.depositCents !== null && (
                 <span className="text-sm text-muted-foreground">
-                  + {formatMoney(listing.depositAmount)} refundable deposit
+                  + {formatMoneyCents(listing.depositCents)} refundable deposit
                 </span>
               )}
             </div>
@@ -131,7 +143,22 @@ export default async function ListingPage({
                   </Link>
                 </div>
               ) : listing.availability === "available" ? (
-                <RequestForm listing={listing} />
+                viewer.status === "signed-in" ? (
+                  <RequestForm
+                    listing={listing}
+                    minDate={isoDateAfter(now, 0)}
+                    defaultStart={isoDateAfter(now, 1)}
+                    defaultEnd={isoDateAfter(now, 3)}
+                  />
+                ) : (
+                  <SignInPrompt
+                    className="px-4 py-6"
+                    status={viewer.status}
+                    returnTo={`/marketplace/listings/${listing.id}`}
+                    title={`Sign in to ${listing.pricePerDayCents === null ? "borrow" : "rent"} this`}
+                    description="Requests go to the owner from your account, so sign in first."
+                  />
+                )
               ) : (
                 <div className="border-t pt-4 text-sm text-muted-foreground">
                   This item isn&apos;t available right now. Post a wanted
@@ -167,15 +194,9 @@ export default async function ListingPage({
                 </p>
               </div>
               <div className="text-right text-sm">
-                <p className="flex items-center justify-end gap-1 font-medium">
-                  <Star
-                    className="size-3.5 fill-ink-2 text-ink-2"
-                    aria-hidden
-                  />{" "}
-                  {owner.rating.toFixed(1)}
-                </p>
+                <p className="font-medium">{owner.completedLends}</p>
                 <p className="text-xs text-muted-foreground">
-                  {owner.completedLends} lends
+                  {owner.completedLends === 1 ? "lend" : "lends"}
                 </p>
               </div>
             </Link>

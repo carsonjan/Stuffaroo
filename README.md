@@ -6,18 +6,19 @@ Students buy things they only need for a week, and throw out perfectly good stuf
 
 ## Status
 
-The frontend is a clickable mockup running on sample data. The backend is a FastAPI scaffold with only a health endpoint, and nothing is wired together yet. See [docs/todo.md](docs/todo.md) for the backend wiring plan.
+The backend is being wired in chunks (see [docs/todo.md](docs/todo.md) and [docs/api-contract.md](docs/api-contract.md)). The rent and borrow journey runs on the real API and database: browsing, listings, profiles, wanted posts, matching, creating listings and wanted posts, rental requests and the dashboard. Sign-in goes through Auth0 and switches on once a tenant is configured (see [docs/handoff-auth0.md](docs/handoff-auth0.md)). The buy/deals/move-out sections and the Solana deposit demo still use sample or simulated data.
 
 | Area | State |
 | --- | --- |
-| Web app (`apps/web`) | All main screens built and responsive. Data comes from `src/lib/mock-data.ts` and `src/lib/mock-shop.ts` |
-| API (`apps/api`) | FastAPI app with `GET /health` and CORS for `localhost:3000` |
-| Database | Not set up |
-| Auth | Not set up. The UI acts as one hard-coded student (`CURRENT_USER_ID`) |
-| AI matching and drafting | Canned sample responses, labelled as mockup or sample output in the UI |
-| Solana deposit | Simulated, labelled as simulated. No wallet is contacted |
+| Web app (`apps/web`) | All main screens built and responsive. Rent/borrow screens read and write through the API; buy, deals and move-out sections use `src/lib/mock-shop.ts` |
+| API (`apps/api`) | FastAPI: listings, profiles, wanted posts, matching, `/api/me`, and rental requests with a server-enforced lifecycle. See [docs/api-contract.md](docs/api-contract.md) |
+| Database | Tiger Cloud Postgres (pgvector + pgvectorscale). Locally, the same image in Docker. Schema in `apps/api/migrations/`, fictional demo data in `apps/api/app/seed/` |
+| Auth | Auth0 in Next.js; FastAPI verifies the forwarded access token. Off until Auth0 env vars are set |
+| AI matching | Real: hard filters in SQL (availability, category, budget, booked dates, own listings), then Gemini embeddings ranked on Tiger's DiskANN index. Without Gemini configured it falls back to keyword ranking and the UI says so |
+| AI listing drafts | Canned sample response, labelled as a mockup |
+| Solana deposit | Uses your real accepted request and its deposit amount, but the transfer itself is simulated and labelled as such. No wallet is contacted |
 
-Forms and buttons only change local state, and their success messages are labelled as mockups. Nothing is saved, and a page reload resets everything.
+Creating things and changing request status needs sign-in. With Auth0 not configured, those screens explain that instead of pretending to work.
 
 ## Features in the mockup
 
@@ -46,12 +47,15 @@ apps/
   web/            Next.js frontend
     src/app/          routes
     src/components/   UI, grouped by domain (marketplace, listings, wanted, requests, ...)
-    src/lib/          sample data and formatting helpers
+    src/lib/          API client, auth, categories, formatting, buy/deals sample data
   api/            FastAPI backend
     app/              main.py, routers/, services/, models/, core/
     tests/
 docs/
-  todo.md         backend wiring plan
+  api-contract.md       API endpoints and rules
+  todo.md               remaining work
+  handoff-auth0.md      Auth0 setup and demo accounts
+  sponsor-evidence.md   what each sponsor technology powers, and what's verified
 ```
 
 ## Setup
@@ -66,7 +70,33 @@ pnpm exec lefthook install
 
 The workspace approves the `lefthook` installation script in `pnpm-workspace.yaml`; `sharp` and `unrs-resolver` remain denied as in the original web setup. Review other packages individually if pnpm requests approval.
 
-No environment variables are needed yet.
+### Database
+
+The API uses Postgres with pgvector and pgvectorscale: a Tiger Cloud service, or the same image locally in Docker.
+
+```sh
+pnpm db:up        # start timescale/timescaledb-ha:pg17 on localhost:5433
+pnpm db:migrate   # apply apps/api/migrations/*.sql
+pnpm db:seed      # load the fictional demo students, listings and requests
+pnpm db:embed     # embed listings with Gemini (needs Gemini set up in apps/api/.env)
+```
+
+To use Tiger Cloud instead, copy `apps/api/.env.example` to `apps/api/.env` and set `DATABASE_URL` to the service URL (with `sslmode=require`), then run `pnpm db:migrate` and `pnpm db:seed`.
+
+The web app reads `API_URL` (default `http://localhost:8000`). For sign-in, copy `apps/web/.env.example` to `apps/web/.env.local` and follow [docs/handoff-auth0.md](docs/handoff-auth0.md).
+
+### Gemini (matching)
+
+Embeddings run through **Vertex AI on a Google Cloud project**, billed to its credits:
+
+1. In the Google Cloud console, create a project with billing linked (the free trial gives $300 of credits) and enable the **Vertex AI API**.
+2. Install the gcloud CLI and run `gcloud auth application-default login` once.
+3. In `apps/api/.env`, set `GOOGLE_GENAI_USE_VERTEXAI=true` and `GOOGLE_CLOUD_PROJECT=<project id>` (`GOOGLE_CLOUD_LOCATION` defaults to `us-central1`).
+4. Run `pnpm db:embed` to embed the seeded listings.
+
+A Google AI Studio key in `GEMINI_API_KEY` works instead. Without either, matching uses the labelled keyword fallback.
+
+API tests create a throwaway `stuffaroo_test` database on the local server and skip if it isn't running. CI runs them against the same image.
 
 ## Running
 
@@ -90,11 +120,12 @@ GitHub Actions (`.github/workflows/ci.yml`) runs `pnpm check` and a production b
 
 ## Demo
 
-There is no live demo yet. The mockup lives under `/marketplace` (the root `/` is still the starter page). Locally, start at `/marketplace` and follow the main journey:
+There is no live demo yet. The app lives under `/marketplace` (the root `/` is still the starter page). Locally, with the database seeded and two demo Auth0 users set up (see [docs/handoff-auth0.md](docs/handoff-auth0.md)), for example Maya and Jordan:
 
-1. Browse `/marketplace/browse` and open a listing.
-2. Post a need at `/marketplace/wanted/new` and click "Find matches".
-3. Open `/marketplace/dashboard/requests` to accept or reject a request.
-4. Walk through the deposit at `/marketplace/deposits`.
+1. As Jordan, list an item at `/marketplace/listings/new`.
+2. As Maya, describe a need at `/marketplace/wanted/new` and click "Find matches". The results say whether they were ranked with Gemini embeddings or by keyword.
+3. Open a matching listing and send a request.
+4. As Jordan, accept it at `/marketplace/dashboard/requests`, then mark it handed over and returned.
+5. Optionally walk through the simulated Devnet deposit at `/marketplace/deposits`.
 
-Every result in this flow comes from sample data.
+Listings, people and requests come from the seeded fictional demo data plus whatever you create. The deposit step is simulated and labelled as such.

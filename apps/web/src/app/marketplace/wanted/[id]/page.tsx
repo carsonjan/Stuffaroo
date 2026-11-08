@@ -2,45 +2,51 @@ import { Calendar, Megaphone, PackageOpen, Wallet } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-
+import { ApiErrorState } from "@/components/api-error-state";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
-import { MatchList } from "@/components/wanted/match-list";
-import { formatDateRange } from "@/lib/format";
-import {
-  CURRENT_USER_ID,
-  getCategory,
-  getProfile,
-  getWantedPost,
-  mockMatches,
-  wantedPosts,
-} from "@/lib/mock-data";
+import { MatchList, MatchMethodNote } from "@/components/wanted/match-list";
+import { ApiError, getWantedMatches, getWantedPost } from "@/lib/api";
+import type { MatchResult, WantedPost } from "@/lib/api-types";
+import { getCategory } from "@/lib/categories";
+import { formatDateRange, formatPriceCents } from "@/lib/format";
 import { cn } from "@/lib/utils";
-
-export function generateStaticParams() {
-  return wantedPosts.map(({ id }) => ({ id }));
-}
+import { getViewerProfileId } from "@/lib/viewer";
 
 export async function generateMetadata({
   params,
 }: PageProps<"/marketplace/wanted/[id]">): Promise<Metadata> {
-  const post = getWantedPost((await params).id);
-  return { title: post?.title ?? "Wanted" };
+  try {
+    const post = await getWantedPost((await params).id);
+    return { title: post?.title ?? "Wanted" };
+  } catch {
+    return { title: "Wanted" };
+  }
 }
 
 export default async function WantedDetailPage({
   params,
 }: PageProps<"/marketplace/wanted/[id]">) {
   const { id } = await params;
-  const post = getWantedPost(id);
+  let post: WantedPost | null;
+  let result: MatchResult = { method: "keyword", matches: [] };
+  try {
+    post = await getWantedPost(id);
+    if (post) result = await getWantedMatches(id);
+  } catch (error) {
+    if (!(error instanceof ApiError)) throw error;
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-10">
+        <ApiErrorState detail={error.detail} />
+      </div>
+    );
+  }
   if (!post) notFound();
 
-  const author = getProfile(post.userId);
+  const { author } = post;
   const category = getCategory(post.category);
-  const matches = [...(mockMatches[post.id] ?? [])].sort(
-    (a, b) => b.score - a.score,
-  );
-  const isOwn = post.userId === CURRENT_USER_ID;
+  const { matches } = result;
+  const isOwn = (await getViewerProfileId()) === post.userId;
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-10">
@@ -58,11 +64,12 @@ export default async function WantedDetailPage({
           </span>
           <div className="text-sm">
             <p className="font-medium">
-              {author?.displayName}
+              {author.displayName}
               {isOwn && " (you)"}
             </p>
             <p className="text-muted-foreground">
-              {author?.campus}, {category?.name}
+              {author.campus ? `${author.campus}, ` : ""}
+              {category?.name}
             </p>
           </div>
         </div>
@@ -75,22 +82,20 @@ export default async function WantedDetailPage({
           </span>
           <span className="inline-flex items-center gap-1.5 rounded-small bg-muted px-3 py-1.5">
             <Wallet className="size-4 text-muted-foreground" aria-hidden />
-            {post.budgetPerDay === null
+            {post.budgetPerDayCents === null
               ? "Flexible budget"
-              : `Up to $${post.budgetPerDay}/day`}
+              : `Up to ${formatPriceCents(post.budgetPerDayCents)}`}
           </span>
         </div>
         {!isOwn && (
           <div className="mt-6 flex items-center gap-3 border-t pt-5">
-            {author && (
-              <Avatar>
-                <AvatarFallback className="bg-paper-3 text-xs text-ink-2">
-                  {author.initials}
-                </AvatarFallback>
-              </Avatar>
-            )}
+            <Avatar>
+              <AvatarFallback className="bg-paper-3 text-xs text-ink-2">
+                {author.initials}
+              </AvatarFallback>
+            </Avatar>
             <p className="flex-1 text-sm text-muted-foreground">
-              Have one of these? List it and {author?.displayName.split(" ")[0]}{" "}
+              Have one of these? List it and {author.displayName.split(" ")[0]}{" "}
               will see it.
             </p>
             <Link
@@ -111,13 +116,11 @@ export default async function WantedDetailPage({
           <div>
             <h2 className="text-xl font-semibold">Suggested matches</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Ranked by relevance, category, availability for these dates, price
-              and pickup location.
+              Only listings that are available, in this category, within budget
+              and free on these dates.
             </p>
           </div>
-          <span className="shrink-0 rounded-pill border px-2.5 py-0.5 text-xs text-muted-foreground">
-            AI-ranked sample output
-          </span>
+          <MatchMethodNote method={result.method} />
         </div>
         {matches.length > 0 ? (
           <MatchList matches={matches} />
@@ -126,7 +129,7 @@ export default async function WantedDetailPage({
             <PackageOpen className="size-8 text-muted-foreground" aria-hidden />
             <p className="mt-4 font-medium">No listings match yet</p>
             <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-              Nothing in the sample data fits this post yet.
+              Nothing listed right now fits the category, budget and dates.
             </p>
           </div>
         )}

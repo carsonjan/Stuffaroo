@@ -10,7 +10,7 @@ import {
   Wrench,
 } from "lucide-react";
 
-import type { CategorySlug } from "@/lib/mock-data";
+import type { CategorySlug } from "@/lib/categories";
 
 const icons: Record<CategorySlug, LucideIcon> = {
   electronics: Laptop,

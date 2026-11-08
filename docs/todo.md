@@ -8,51 +8,52 @@ Priority labels follow AGENTS.md section 2.2: **P0** is demo-critical, **P1** is
 
 Settle these before building the matching items below. Each one is a team call, not an agent call (AGENTS.md section 15).
 
-- [ ] **Where backend logic lives.** The repo has a FastAPI app in `apps/api`, and AGENTS.md says the backend owns business logic. The team product spec instead describes Next.js Route Handlers / Server Actions with Zod. Pick one and update AGENTS.md section 3. The rest of this list assumes FastAPI.
-- [ ] **Database.** The team spec names Supabase PostgreSQL (plus Supabase Storage for images). Confirm, and decide whether FastAPI talks to it through SQLAlchemy/psycopg or the Supabase client.
+- [x] **Where backend logic lives.** Decided: FastAPI (`apps/api`). The repo has a FastAPI app in `apps/api`, and AGENTS.md says the backend owns business logic. The team product spec instead describes Next.js Route Handlers / Server Actions with Zod. Pick one and update AGENTS.md section 3. The rest of this list assumes FastAPI.
+- [x] **Database.** Decided: Tiger Cloud Postgres with pgvector + pgvectorscale, accessed with psycopg (plain SQL). Image storage is still open.
 - [x] **Auth.** Decided: Auth0 in the Next.js app, with FastAPI verifying Auth0 access tokens. See AGENTS.md section 3 (Authentication) and `docs/handoff-auth0.md`.
-- [ ] **AI provider.** The team spec names Google Gemini for listing drafts and matching.
+- [x] **AI provider.** Decided: Google Gemini embeddings for matching.
 - [ ] **Buy/sell scope.** The mock has both rent/borrow listings (`Listing`) and buy listings, deals and bundles (`mock-shop.ts`). Decide whether sale listings get wired for the demo or stay as a mockup.
 
 ## P0: core marketplace journey
 
 ### Foundation
 - [ ] Add `.env.example` with every variable the API and web app need (`DATABASE_URL`, Auth0 settings, `GEMINI_API_KEY`, `NEXT_PUBLIC_API_URL`, ...). No secrets in `NEXT_PUBLIC_*`.
-- [ ] Add config loading in `apps/api/app/core/` (pydantic-settings or plain env reads).
-- [ ] Add a typed API client in `apps/web/src/lib/` and read the base URL from `NEXT_PUBLIC_API_URL`.
-- [ ] Start `docs/api-contract.md` and keep it in step with FastAPI's OpenAPI output. Consider generating TS types from OpenAPI instead of hand-copying the types in `mock-data.ts`.
+- [x] Add config loading in `apps/api/app/core/` (pydantic-settings or plain env reads).
+- [x] Add a typed API client in `apps/web/src/lib/` and read the base URL from `NEXT_PUBLIC_API_URL`.
+- [x] Start `docs/api-contract.md` and keep it in step with FastAPI's OpenAPI output. Consider generating TS types from OpenAPI instead of hand-copying the types in `mock-data.ts`.
 
 ### Database
-- [ ] Write migrations for `profiles`, `listings`, `listing_images`, `wanted_posts`, `rental_requests`, `deposits`. Use the shapes in `mock-data.ts` as the starting point (they were written to match the planned schema).
-- [ ] UUID primary keys, foreign keys, indexes on `listings(category, availability_status)` and `rental_requests(listing_id, status)`.
-- [ ] Store money as integer cents (AGENTS.md section 6.3). The mock uses whole-dollar numbers, so convert at the boundary.
-- [ ] Seed script with the sample profiles, listings, wanted posts and requests, including at least one incompatible listing so matching visibly filters it out (AGENTS.md section 19.5).
+- [x] Write migrations for `profiles`, `listings`, `listing_images`, `wanted_posts`, `rental_requests`, `deposits`. Use the shapes in `mock-data.ts` as the starting point (they were written to match the planned schema).
+- [x] UUID primary keys, foreign keys, indexes on `listings(category, availability_status)` and `rental_requests(listing_id, status)`.
+- [x] Store money as integer cents (AGENTS.md section 6.3). The mock uses whole-dollar numbers, so convert at the boundary.
+- [x] Seed script with the sample profiles, listings, wanted posts and requests, including at least one incompatible listing so matching visibly filters it out (AGENTS.md section 19.5).
 
-### Auth (assigned: see `docs/handoff-auth0.md`)
-- [ ] Auth0 sign-in, sign-out and session in Next.js. Wire the existing "Sign out" item in `site-header.tsx`.
-- [ ] Forward the Auth0 access token from the Next.js server to FastAPI as a Bearer token.
-- [ ] Verify the token on every protected FastAPI route (JWKS, issuer, audience). Derive the user from `sub`, never from a client-sent ID.
-- [ ] Create or update the `profiles` row on first sign-in, keyed by `auth0_user_id`.
-- [ ] Replace `CURRENT_USER_ID` with the signed-in user everywhere it is used.
+### Auth (setup: `docs/handoff-auth0.md`)
+- [x] Auth0 sign-in, sign-out and session in Next.js. Wire the existing "Sign out" item in `site-header.tsx`.
+- [x] Forward the Auth0 access token from the Next.js server to FastAPI as a Bearer token.
+- [x] Verify the token on every protected FastAPI route (JWKS, issuer, audience). Derive the user from `sub`, never from a client-sent ID.
+- [x] Create or update the `profiles` row on first sign-in, keyed by `auth0_user_id`.
+- [x] Replace `CURRENT_USER_ID` with the signed-in user everywhere it is used.
+- [ ] Configure a real Auth0 tenant and demo users (needs dashboard access; see `docs/handoff-auth0.md`).
 
 ### Listings
-- [ ] `GET /api/listings` with `q`, `category`, `price` and `all` filters, matching what `app/marketplace/browse/page.tsx` filters in memory today.
-- [ ] `GET /api/listings/{id}` for the listing page.
-- [ ] `POST /api/listings` from `components/listings/listing-form.tsx`. Its submit currently only sets local `published` state. The form has no availability field yet; add one.
-- [ ] `GET /api/profiles/{id}` plus the owner's listings for `app/marketplace/profile/[id]/page.tsx`.
+- [x] `GET /api/listings` with `q`, `category`, `price` and `all` filters, matching what `app/marketplace/browse/page.tsx` filters in memory today.
+- [x] `GET /api/listings/{id}` for the listing page.
+- [x] `POST /api/listings` from `components/listings/listing-form.tsx`. Its submit currently only sets local `published` state. The form has no availability field yet; add one.
+- [x] `GET /api/profiles/{id}` plus the owner's listings for `app/marketplace/profile/[id]/page.tsx`.
 
 ### Wanted posts and matching
-- [ ] `GET /api/wanted`, `GET /api/wanted/{id}`, `POST /api/wanted` for the wanted pages and `wanted-form.tsx`.
-- [ ] `POST /api/matches` (or `GET /api/wanted/{id}/matches`): filter real listings by category, availability, price and dates first, then rank. Return `{listing_id, score, reason}` like `MatchSuggestion`, and drop any ID that is not in the database.
-- [ ] Replace `mockMatches` where it is read (`app/marketplace/wanted/[id]/page.tsx`, `components/wanted/wanted-form.tsx`, `components/wanted/wanted-card.tsx`) and the canned extraction in `wanted-form.tsx`. `match-list.tsx` only renders the matches it is given.
-- [ ] A deterministic fallback (category + keyword) when the AI call fails, labelled as such in the UI.
+- [x] `POST /api/wanted`. Done: `GET /api/wanted`, `GET /api/wanted/{id}`, for the wanted pages and `wanted-form.tsx`.
+- [x] `POST /api/matches` and `GET /api/wanted/{id}/matches`: filter real listings by category, availability, price and dates first, then rank. Return `{listing_id, score, reason}` like `MatchSuggestion`, and drop any ID that is not in the database.
+- [x] Replace `mockMatches` where it is read (`app/marketplace/wanted/[id]/page.tsx`, `components/wanted/wanted-form.tsx`, `components/wanted/wanted-card.tsx`) and the canned extraction in `wanted-form.tsx`. `match-list.tsx` only renders the matches it is given.
+- [x] A deterministic fallback (category + keyword) when the AI call fails, labelled as such in the UI.
 
 ### Rental requests
-- [ ] `POST /api/rentals` from `components/requests/request-form.tsx`. It currently only sets `submitted`.
-- [ ] `GET /api/rentals?role=borrower|owner` for `app/marketplace/dashboard/requests/page.tsx` and the dashboard.
-- [ ] `PATCH /api/rentals/{id}` for accept, reject, cancel, start and complete. `request-row.tsx` changes local state only today.
-- [ ] Enforce on the server: transitions are only pending to accepted/rejected/cancelled, accepted to active, active to completed; only the owner accepts or rejects; only the borrower cancels; no requests on your own listing; no overlapping accepted or active bookings for one listing.
-- [ ] pytest coverage for the state machine and the overlap check.
+- [x] `POST /api/rentals` from `components/requests/request-form.tsx`. It currently only sets `submitted`.
+- [x] `GET /api/rentals?role=borrower|owner` for `app/marketplace/dashboard/requests/page.tsx` and the dashboard.
+- [x] `POST /api/rentals/{id}/transition` (instead of PATCH) for accept, reject, cancel, start and complete. `request-row.tsx` changes local state only today.
+- [x] Enforce on the server: transitions are only pending to accepted/rejected/cancelled, accepted to active, active to completed; only the owner accepts or rejects; only the borrower cancels; no requests on your own listing; no overlapping accepted or active bookings for one listing.
+- [x] pytest coverage for the state machine and the overlap check.
 
 ## P1: differentiators and sponsors
 
@@ -60,7 +61,8 @@ Settle these before building the matching items below. Each one is a team call, 
 - [ ] **Image upload:** wire the image picker in `listing-form.tsx` to storage and save rows in `listing_images`.
 - [ ] **Solana Devnet deposit:** real wallet connection and a Devnet transfer in `components/deposits/deposit-demo.tsx`, a server check of the signature against a Devnet RPC, and a row in `deposits`. Describe it as a Devnet transfer, not escrow, unless a tested program exists (AGENTS.md section 9).
 - [ ] Error, loading and empty states for every call that replaces sample data.
-- [ ] Record each sponsor integration in `docs/sponsor-evidence.md` once it actually works.
+- [x] Record each sponsor integration in `docs/sponsor-evidence.md` (Tiger, Gemini on Vertex AI, Auth0; live-service checks still pending).
+- [ ] Point `DATABASE_URL` at Tiger Cloud, enable the Vertex AI API on the `stuffaroo` project, and configure the Auth0 tenant, then rerun the demo journey against the real services.
 
 ## P2: later
 

@@ -1,4 +1,4 @@
-import type { CategorySlug } from "@/lib/mock-data";
+import type { CategorySlug } from "@/lib/categories";
 import { cn } from "@/lib/utils";
 
 import { CategoryIcon } from "./category-icon";

@@ -1,5 +1,6 @@
 import { CalendarClock, Sparkles, Tag } from "lucide-react";
 import Link from "next/link";
+import { Suspense } from "react";
 
 import { CategoryIcon } from "@/components/marketplace/category-icon";
 import { PromptBox } from "@/components/marketplace/prompt-box";
@@ -8,12 +9,12 @@ import { Roo } from "@/components/roo";
 import { ModeSwitcher } from "@/components/shop/mode-switcher";
 import { MoveOutDays } from "@/components/shop/move-out-countdown";
 import { buttonVariants } from "@/components/ui/button";
-import { categories, listings, wantedPosts } from "@/lib/mock-data";
+import { getListings, getWantedPosts } from "@/lib/api";
+import { categories } from "@/lib/categories";
 import { priceDrops } from "@/lib/mock-shop";
 import { cn } from "@/lib/utils";
 
 const popular = ["camera", "tent", "keyboard", "textbook"];
-const firstRequest = wantedPosts.find((post) => post.status === "open");
 
 /** Nomu's quiet white pill: white fill, faint inner edge, ink-3 text. */
 const softPill =
@@ -63,7 +64,9 @@ export default function HomePage() {
 
       {/* Buy / Rent / Request, one grid */}
       <section className="mx-auto max-w-[1200px] px-4 sm:px-10">
-        <ModeSwitcher />
+        <Suspense fallback={<ModeSwitcher wanted={[]} />}>
+          <ModeSwitcherWithWanted />
+        </Suspense>
         <div className="mt-10 flex flex-wrap items-center gap-2">
           <Link
             href="/marketplace/browse"
@@ -74,30 +77,9 @@ export default function HomePage() {
           >
             Browse the marketplace
           </Link>
-          <nav className="flex flex-wrap gap-2" aria-label="Categories">
-            {categories.map((category) => {
-              const count = listings.filter(
-                (l) => l.category === category.slug,
-              ).length;
-              return (
-                <Link
-                  key={category.slug}
-                  href={`/marketplace/browse?category=${category.slug}`}
-                  className={cn(
-                    softPill,
-                    "press flex items-center gap-2 py-2 pr-4 pl-3 text-sm",
-                  )}
-                >
-                  <CategoryIcon
-                    category={category.slug}
-                    className="size-4 shrink-0"
-                  />
-                  {category.name}
-                  <span className="text-steel">{count}</span>
-                </Link>
-              );
-            })}
-          </nav>
+          <Suspense fallback={<CategoryNav counts={null} />}>
+            <CategoryNavWithCounts />
+          </Suspense>
         </div>
       </section>
 
@@ -146,9 +128,9 @@ export default function HomePage() {
             <h3 className="mt-auto text-2xl leading-tight tracking-[-0.03em] text-ink">
               Classmates are looking for
             </h3>
-            {firstRequest && (
-              <p className="mt-2 text-sm text-ink-3">{firstRequest.title}</p>
-            )}
+            <Suspense fallback={null}>
+              <LatestWantedTitle />
+            </Suspense>
           </Link>
         </div>
       </section>
@@ -179,4 +161,62 @@ export default function HomePage() {
       </section>
     </>
   );
+}
+
+/** Category counts come from the API; on failure the links render without counts. */
+async function CategoryNavWithCounts() {
+  let counts: Map<string, number> | null = null;
+  try {
+    const listings = await getListings();
+    counts = new Map();
+    for (const listing of listings) {
+      counts.set(listing.category, (counts.get(listing.category) ?? 0) + 1);
+    }
+  } catch {
+    counts = null;
+  }
+  return <CategoryNav counts={counts} />;
+}
+
+function CategoryNav({ counts }: { counts: Map<string, number> | null }) {
+  return (
+    <nav className="flex flex-wrap gap-2" aria-label="Categories">
+      {categories.map((category) => (
+        <Link
+          key={category.slug}
+          href={`/marketplace/browse?category=${category.slug}`}
+          className={cn(
+            softPill,
+            "press flex items-center gap-2 py-2 pr-4 pl-3 text-sm",
+          )}
+        >
+          <CategoryIcon category={category.slug} className="size-4 shrink-0" />
+          {category.name}
+          {counts && (
+            <span className="text-steel">{counts.get(category.slug) ?? 0}</span>
+          )}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+/** The newest open wanted post's title, or nothing if the API is unavailable. */
+async function LatestWantedTitle() {
+  try {
+    const [latest] = await getWantedPosts();
+    return latest ? (
+      <p className="mt-2 text-sm text-ink-3">{latest.title}</p>
+    ) : null;
+  } catch {
+    return null;
+  }
+}
+
+async function ModeSwitcherWithWanted() {
+  try {
+    return <ModeSwitcher wanted={await getWantedPosts()} />;
+  } catch {
+    return <ModeSwitcher wanted={[]} />;
+  }
 }

@@ -4,7 +4,7 @@
  * Discounts are always computed from the two prices, never stored.
  */
 
-import type { CategorySlug } from "./mock-data";
+import type { CategorySlug } from "./categories";
 
 /** The date the sample data is written against; the move-out countdown starts here. */
 export const SAMPLE_TODAY = "2026-11-07";

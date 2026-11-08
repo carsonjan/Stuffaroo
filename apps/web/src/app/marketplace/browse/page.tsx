@@ -3,9 +3,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { ApiErrorState } from "@/components/api-error-state";
 import { ListingCard } from "@/components/marketplace/listing-card";
 import { buttonVariants } from "@/components/ui/button";
-import { categories, type Listing, listings } from "@/lib/mock-data";
+import { ApiError, getListings } from "@/lib/api";
+import type { ListingDetail } from "@/lib/api-types";
+import { categories } from "@/lib/categories";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Browse" };
@@ -16,12 +19,6 @@ const priceFilters = [
   { value: "5", label: "Under $5/day" },
   { value: "10", label: "Under $10/day" },
 ] as const;
-
-function matchesPrice(listing: Listing, price: string): boolean {
-  if (!price) return true;
-  if (price === "free") return listing.pricePerDay === null;
-  return (listing.pricePerDay ?? 0) < Number(price);
-}
 
 function firstValue(value: string | string[] | undefined): string {
   return Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
@@ -65,20 +62,29 @@ async function MarketplaceBrowser({
 }: Pick<PageProps<"/marketplace/browse">, "searchParams">) {
   const params = await searchParams;
   const q = firstValue(params.q).trim();
-  const category = firstValue(params.category);
-  const price = firstValue(params.price);
+  const categoryParam = firstValue(params.category);
+  const category = categories.some((c) => c.slug === categoryParam)
+    ? categoryParam
+    : "";
+  const priceParam = firstValue(params.price);
+  const price = priceFilters.some((p) => p.value === priceParam)
+    ? priceParam
+    : "";
   const showUnavailable = firstValue(params.all) === "1";
 
-  const results = listings.filter(
-    (l) =>
-      (!q ||
-        `${l.title} ${l.description}`
-          .toLowerCase()
-          .includes(q.toLowerCase())) &&
-      (!category || l.category === category) &&
-      matchesPrice(l, price) &&
-      (showUnavailable || l.availability === "available"),
-  );
+  let results: ListingDetail[] = [];
+  let loadError: string | null = null;
+  try {
+    results = await getListings({
+      q,
+      category,
+      price,
+      includeUnavailable: showUnavailable,
+    });
+  } catch (error) {
+    if (!(error instanceof ApiError)) throw error;
+    loadError = error.detail;
+  }
 
   const hrefWith = (next: Record<string, string>) => {
     const merged = {
@@ -174,42 +180,53 @@ async function MarketplaceBrowser({
         </aside>
 
         <section aria-live="polite">
-          <p className="mb-4 text-sm text-muted-foreground">
-            {results.length} {results.length === 1 ? "item" : "items"}
-            {q && <> for &ldquo;{q}&rdquo;</>}
-          </p>
-          {results.length > 0 ? (
-            <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-x-4 gap-y-10 lg:grid-cols-[repeat(3,minmax(0,1fr))]">
-              {results.map((listing) => (
-                <ListingCard key={listing.id} listing={listing} />
-              ))}
-            </div>
+          {loadError !== null ? (
+            <ApiErrorState detail={loadError} />
           ) : (
-            <div className="flex flex-col items-center rounded-card border border-dashed px-6 py-16 text-center">
-              <SearchX className="size-8 text-muted-foreground" aria-hidden />
-              <h2 className="mt-4 text-lg font-semibold">Nothing listed yet</h2>
-              <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-                Post a wanted request and we&apos;ll let students with matching
-                items know.
+            <>
+              <p className="mb-4 text-sm text-muted-foreground">
+                {results.length} {results.length === 1 ? "item" : "items"}
+                {q && <> for &ldquo;{q}&rdquo;</>}
               </p>
-              <div className="mt-5 flex gap-2">
-                <Link
-                  href="/marketplace/wanted/new"
-                  className={cn(buttonVariants({ size: "lg" }), "px-4")}
-                >
-                  Post a wanted
-                </Link>
-                <Link
-                  href="/marketplace/browse"
-                  className={cn(
-                    buttonVariants({ variant: "outline", size: "lg" }),
-                    "px-4",
-                  )}
-                >
-                  Clear filters
-                </Link>
-              </div>
-            </div>
+              {results.length > 0 ? (
+                <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-x-4 gap-y-10 lg:grid-cols-[repeat(3,minmax(0,1fr))]">
+                  {results.map((listing) => (
+                    <ListingCard key={listing.id} listing={listing} />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center rounded-card border border-dashed px-6 py-16 text-center">
+                  <SearchX
+                    className="size-8 text-muted-foreground"
+                    aria-hidden
+                  />
+                  <h2 className="mt-4 text-lg font-semibold">
+                    Nothing listed yet
+                  </h2>
+                  <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+                    Post a wanted request and we&apos;ll let students with
+                    matching items know.
+                  </p>
+                  <div className="mt-5 flex gap-2">
+                    <Link
+                      href="/marketplace/wanted/new"
+                      className={cn(buttonVariants({ size: "lg" }), "px-4")}
+                    >
+                      Post a wanted
+                    </Link>
+                    <Link
+                      href="/marketplace/browse"
+                      className={cn(
+                        buttonVariants({ variant: "outline", size: "lg" }),
+                        "px-4",
+                      )}
+                    >
+                      Clear filters
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </section>
       </div>

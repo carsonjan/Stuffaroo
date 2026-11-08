@@ -15,7 +15,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,8 +32,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { CURRENT_USER_ID, getProfile } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import type { Viewer } from "@/lib/viewer";
 
 import { Logo } from "./logo";
 
@@ -66,13 +66,20 @@ const postOptions = [
   },
 ];
 
-/** Reads the current path; render inside <Suspense> with <SiteHeader activePath={null} /> as fallback. */
-export function SiteHeaderWithPath() {
-  return <SiteHeader activePath={usePathname()} />;
+/** Reads the current path; render inside <Suspense> with <SiteHeader activePath={null} viewer={null} /> as fallback. */
+export function SiteHeaderWithPath({ viewer }: { viewer: Viewer }) {
+  return <SiteHeader activePath={usePathname()} viewer={viewer} />;
 }
 
-export function SiteHeader({ activePath }: { activePath: string | null }) {
-  const me = getProfile(CURRENT_USER_ID);
+/** `viewer` is null while the session is still loading. */
+export function SiteHeader({
+  activePath,
+  viewer,
+}: {
+  activePath: string | null;
+  viewer: Viewer | null;
+}) {
+  const loginHref = `/auth/login?returnTo=${encodeURIComponent(activePath ?? "/marketplace")}`;
   const isActive = (href: string) =>
     activePath !== null &&
     (activePath === href || activePath.startsWith(`${href}/`));
@@ -133,7 +140,21 @@ export function SiteHeader({ activePath }: { activePath: string | null }) {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {me && (
+          {viewer?.status === "unconfigured" && (
+            <span className="hidden text-xs text-ink-3 lg:inline">
+              Sign-in not configured
+            </span>
+          )}
+          {viewer?.status === "signed-out" && (
+            // Plain <a>: /auth/login is an Auth0 route handler, not a page.
+            <a
+              href={loginHref}
+              className={cn(buttonVariants({ variant: "outline" }), "px-4")}
+            >
+              Sign in
+            </a>
+          )}
+          {viewer?.status === "signed-in" && (
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
@@ -147,7 +168,7 @@ export function SiteHeader({ activePath }: { activePath: string | null }) {
               >
                 <Avatar>
                   <AvatarFallback className="bg-tint-blue text-xs font-medium text-ink">
-                    {me.initials}
+                    {viewer.initials}
                   </AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
@@ -155,9 +176,13 @@ export function SiteHeader({ activePath }: { activePath: string | null }) {
                 <DropdownMenuGroup>
                   <DropdownMenuLabel>
                     <div className="font-medium text-foreground">
-                      {me.displayName}
+                      {viewer.name}
                     </div>
-                    <div className="text-xs font-normal">{me.campus}</div>
+                    {viewer.profile?.campus && (
+                      <div className="text-xs font-normal">
+                        {viewer.profile.campus}
+                      </div>
+                    )}
                   </DropdownMenuLabel>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
@@ -171,14 +196,20 @@ export function SiteHeader({ activePath }: { activePath: string | null }) {
                 >
                   <Coins /> Deposits
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  render={<Link href={`/marketplace/profile/${me.id}`} />}
-                >
-                  <User /> Public profile
-                </DropdownMenuItem>
+                {viewer.profile && (
+                  <DropdownMenuItem
+                    render={
+                      <Link
+                        href={`/marketplace/profile/${viewer.profile.id}`}
+                      />
+                    }
+                  >
+                    <User /> Public profile
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem disabled>
-                  <LogOut /> Sign out (not in mockup)
+                <DropdownMenuItem render={<a href="/auth/logout" />}>
+                  <LogOut /> Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -240,6 +271,22 @@ export function SiteHeader({ activePath }: { activePath: string | null }) {
                 >
                   Deposits
                 </Link>
+                {viewer?.status === "signed-out" && (
+                  <a
+                    href={loginHref}
+                    className="rounded-small px-3 py-2.5 text-base text-ink-2 hover:bg-paper-3"
+                  >
+                    Sign in
+                  </a>
+                )}
+                {viewer?.status === "signed-in" && (
+                  <a
+                    href="/auth/logout"
+                    className="rounded-small px-3 py-2.5 text-base text-ink-3 hover:text-ink-2"
+                  >
+                    Sign out
+                  </a>
+                )}
               </nav>
             </SheetContent>
           </Sheet>

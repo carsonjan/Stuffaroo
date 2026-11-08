@@ -1,25 +1,25 @@
-import { Calendar, Sparkles } from "lucide-react";
+import { Calendar } from "lucide-react";
 import Link from "next/link";
 
 import { buttonVariants } from "@/components/ui/button";
-import { formatDateRange } from "@/lib/format";
-import {
-  getCategory,
-  getProfile,
-  mockMatches,
-  type WantedPost,
-} from "@/lib/mock-data";
+import type { WantedPost } from "@/lib/api-types";
+import { getCategory } from "@/lib/categories";
+import { formatDateRange, formatPriceCents } from "@/lib/format";
 
 /**
- * A classmate's request, in the team's card style: what they need, when, their budget,
- * how many listings already match, and an "I have this!" action. The title opens the
- * post and its AI matches; the button starts a listing.
+ * A classmate's request, in the team's card style: what they need, when, their
+ * budget, and an "I have this!" action. The title opens the post and its matches;
+ * the button starts a listing. On your own posts (`own`) it opens the matches
+ * instead, since offering your own request makes no sense.
  */
-export function WantedCard({ post }: { post: WantedPost }) {
-  const author = getProfile(post.userId);
+export function WantedCard({
+  post,
+  own = false,
+}: {
+  post: WantedPost;
+  own?: boolean;
+}) {
   const category = getCategory(post.category);
-  const matchCount =
-    mockMatches[post.id]?.filter((m) => m.score >= 0.7).length ?? 0;
 
   return (
     <article className="flex min-w-0 flex-col gap-3 rounded-[32px] bg-paper-2 p-6 shadow-card">
@@ -42,25 +42,28 @@ export function WantedCard({ post }: { post: WantedPost }) {
         </Link>
       </h3>
       <p className="line-clamp-2 text-sm text-ink-3">{post.description}</p>
-      <p className="flex items-center gap-1.5 text-sm font-medium text-accent">
-        <Sparkles className="size-3.5" aria-hidden />
-        {matchCount > 0
-          ? `${matchCount} ${matchCount === 1 ? "match" : "matches"} on campus`
-          : "No matches yet"}
-      </p>
       <div className="mt-auto flex items-center justify-between gap-3 pt-2">
         <span className="text-xs text-ink-3">
-          {author?.displayName.split(" ")[0]},{" "}
-          {post.budgetPerDay === null
+          {post.author.displayName.split(" ")[0]},{" "}
+          {post.budgetPerDayCents === null
             ? "flexible budget"
-            : `up to $${post.budgetPerDay}/day`}
+            : `up to ${formatPriceCents(post.budgetPerDayCents)}`}
         </span>
-        <Link
-          href="/marketplace/listings/new"
-          className={buttonVariants({ size: "lg" })}
-        >
-          I have this!
-        </Link>
+        {own ? (
+          <Link
+            href={`/marketplace/wanted/${post.id}`}
+            className={buttonVariants({ variant: "outline", size: "lg" })}
+          >
+            See matches
+          </Link>
+        ) : (
+          <Link
+            href="/marketplace/listings/new"
+            className={buttonVariants({ size: "lg" })}
+          >
+            I have this!
+          </Link>
+        )}
       </div>
     </article>
   );

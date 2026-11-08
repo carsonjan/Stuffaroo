@@ -1,8 +1,8 @@
 "use client";
 
-import { CircleCheck, ImagePlus, LoaderCircle, Sparkles } from "lucide-react";
+import { ImagePlus, LoaderCircle, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { startTransition, useActionState, useState } from "react";
 
 import {
   controlClass,
@@ -13,9 +13,14 @@ import {
 import { ListingThumb } from "@/components/marketplace/listing-thumb";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  type CategorySlug,
+  type Condition,
+  categories,
+} from "@/lib/categories";
 import { formatMoney, formatPrice } from "@/lib/format";
-import { type CategorySlug, type Condition, categories } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import { type CreateListingState, createListingAction } from "./actions";
 
 type Draft = {
   title: string;
@@ -39,6 +44,17 @@ const emptyDraft: Draft = {
   location: "North Campus",
 };
 
+const initialState: CreateListingState = { status: "idle" };
+
+const pickupAreas = [
+  "North Campus",
+  "Main Quad",
+  "Engineering Hall",
+  "South Residences",
+  "Library District",
+  "Arts Building",
+];
+
 /** Canned stand-in for the Gemini listing assistant in this mockup. */
 const sampleSuggestion: Partial<Draft> = {
   title: "Nintendo Switch OLED with 2 Joy-Cons",
@@ -57,17 +73,10 @@ export function ListingForm() {
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const [generating, setGenerating] = useState(false);
   const [aiFilled, setAiFilled] = useState(false);
-  const [published, setPublished] = useState(false);
-  // Mockup: only the file names are kept, to show what was picked. Nothing is uploaded.
-  const [photoNames, setPhotoNames] = useState<string[]>([]);
-  const pickPhotos = (files: FileList | null) => {
-    if (!files) return;
-    const names = Array.from(files)
-      .filter((f) => f.type.startsWith("image/"))
-      .map((f) => f.name);
-    // Names double as list keys, so drop duplicates.
-    setPhotoNames([...new Set(names)].slice(0, 5));
-  };
+  const [state, formAction, isPending] = useActionState(
+    createListingAction,
+    initialState,
+  );
 
   const update = <K extends keyof Draft>(key: K, value: Draft[K]) =>
     setDraft((d) => ({ ...d, [key]: value }));
@@ -81,44 +90,6 @@ export function ListingForm() {
     }, 900);
   };
 
-  if (published) {
-    return (
-      <div className="mt-10 flex flex-col items-center rounded-card border bg-card px-6 py-14 text-center">
-        <CircleCheck className="size-10 text-accent" aria-hidden />
-        <h2 className="mt-4 text-xl font-semibold">Your listing is live</h2>
-        <p className="mt-1 text-muted-foreground">
-          We&apos;ll let you know when someone requests it.
-        </p>
-        <p className="mt-2 text-xs text-muted-foreground italic">
-          Mockup: nothing was saved.
-        </p>
-        <div className="mt-6 flex gap-2">
-          <Link
-            href="/marketplace/dashboard"
-            className={cn(buttonVariants({ size: "lg" }), "px-4")}
-          >
-            Go to dashboard
-          </Link>
-          <button
-            type="button"
-            onClick={() => {
-              setPublished(false);
-              setDraft(emptyDraft);
-              setAiFilled(false);
-              setPhotoNames([]);
-            }}
-            className={cn(
-              buttonVariants({ variant: "outline", size: "lg" }),
-              "px-4",
-            )}
-          >
-            List another
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   const price =
     draft.pricing === "free" || !draft.pricePerDay
       ? null
@@ -129,15 +100,20 @@ export function ListingForm() {
     <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_320px]">
       <form
         className="flex flex-col gap-8"
-        onSubmit={(e) => {
-          e.preventDefault();
-          setPublished(true);
+        onSubmit={(event) => {
+          // Submit manually so React doesn't reset the form after the action.
+          event.preventDefault();
+          const formData = new FormData(event.currentTarget);
+          startTransition(() => formAction(formData));
         }}
       >
         {/* AI assist */}
         <section className="rounded-card border border-rule-2 bg-paper-2 p-5">
           <div className="flex items-center gap-2 text-sm font-medium text-accent">
             <Sparkles className="size-4" aria-hidden /> Draft with AI
+            <span className="rounded-pill border border-rule px-2 py-0.5 text-xs font-normal text-ink-3">
+              Mockup
+            </span>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
             Describe the item however you like. We&apos;ll suggest a title,
@@ -185,8 +161,10 @@ export function ListingForm() {
           <Field label="Title" htmlFor="title">
             <input
               id="title"
+              name="title"
               required
-              maxLength={80}
+              minLength={3}
+              maxLength={120}
               value={draft.title}
               onChange={(e) => update("title", e.target.value)}
               className={cn(controlClass, aiFilled && "bg-accent/30")}
@@ -199,7 +177,9 @@ export function ListingForm() {
           >
             <Textarea
               id="description"
+              name="description"
               required
+              maxLength={2000}
               rows={5}
               value={draft.description}
               onChange={(e) => update("description", e.target.value)}
@@ -210,6 +190,7 @@ export function ListingForm() {
             <Field label="Category" htmlFor="category">
               <NativeSelect
                 id="category"
+                name="category"
                 value={draft.category}
                 onChange={(e) =>
                   update("category", e.target.value as CategorySlug)
@@ -225,6 +206,7 @@ export function ListingForm() {
             <Field label="Condition" htmlFor="condition">
               <NativeSelect
                 id="condition"
+                name="condition"
                 value={draft.condition}
                 onChange={(e) =>
                   update("condition", e.target.value as Condition)
@@ -239,54 +221,32 @@ export function ListingForm() {
           <Field
             label="Photos"
             htmlFor="photos"
-            hint="Up to 5 images. JPG or PNG."
+            hint="Photo upload isn't available yet. Listings show a category image for now."
             asText
           >
             <label
               htmlFor="photos"
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
-                e.preventDefault();
-                pickPhotos(e.dataTransfer.files);
-              }}
-              className="flex cursor-pointer flex-col items-center gap-2 rounded-card border border-dashed bg-card px-6 py-8 text-center text-sm text-muted-foreground hover:border-rule-2 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-focus"
+              className="flex cursor-not-allowed flex-col items-center gap-2 rounded-card border border-dashed bg-muted/40 px-6 py-8 text-center text-sm text-muted-foreground"
             >
-              <ImagePlus className="size-6" aria-hidden />
-              <span>
-                <span className="font-medium text-foreground">
-                  Click to upload
-                </span>{" "}
-                or drag photos here
-              </span>
+              <ImagePlus className="size-6 opacity-60" aria-hidden />
+              <span>Photo upload coming soon</span>
               <input
                 id="photos"
                 type="file"
                 accept="image/*"
                 multiple
+                disabled
+                aria-describedby="photos-title"
                 className="sr-only"
-                onChange={(e) => pickPhotos(e.target.files)}
               />
             </label>
-            {photoNames.length > 0 && (
-              <div className="mt-2 text-sm" aria-live="polite">
-                <ul className="flex flex-col gap-0.5">
-                  {photoNames.map((name) => (
-                    <li key={name} className="truncate">
-                      {name}
-                    </li>
-                  ))}
-                </ul>
-                <p className="mt-1 text-xs text-muted-foreground italic">
-                  Mockup: photos are not uploaded or saved.
-                </p>
-              </div>
-            )}
           </Field>
         </section>
 
         {/* Pricing */}
         <section className="flex flex-col gap-5">
           <h2 className="text-lg font-semibold">Pricing & pickup</h2>
+          <input type="hidden" name="pricing" value={draft.pricing} />
           <div
             className="flex flex-wrap gap-2"
             role="radiogroup"
@@ -316,7 +276,10 @@ export function ListingForm() {
               <Field label="Price per day" htmlFor="price">
                 <MoneyInput
                   id="price"
+                  name="pricePerDay"
                   required
+                  min={1}
+                  max={1000}
                   value={draft.pricePerDay}
                   onChange={(e) => update("pricePerDay", e.target.value)}
                 />
@@ -329,6 +292,8 @@ export function ListingForm() {
             >
               <MoneyInput
                 id="deposit"
+                name="deposit"
+                max={10000}
                 value={draft.deposit}
                 onChange={(e) => update("deposit", e.target.value)}
               />
@@ -336,17 +301,11 @@ export function ListingForm() {
             <Field label="Pickup area" htmlFor="location">
               <NativeSelect
                 id="location"
+                name="location"
                 value={draft.location}
                 onChange={(e) => update("location", e.target.value)}
               >
-                {[
-                  "North Campus",
-                  "Main Quad",
-                  "Engineering Hall",
-                  "South Residences",
-                  "Library District",
-                  "Arts Building",
-                ].map((loc) => (
+                {pickupAreas.map((loc) => (
                   <option key={loc}>{loc}</option>
                 ))}
               </NativeSelect>
@@ -354,7 +313,12 @@ export function ListingForm() {
           </div>
         </section>
 
-        <div className="flex justify-end gap-2 border-t pt-6">
+        <div className="flex flex-wrap items-center justify-end gap-2 border-t pt-6">
+          {state.status === "error" && (
+            <p role="alert" className="mr-auto text-sm text-destructive">
+              {state.message}
+            </p>
+          )}
           <Link
             href="/marketplace/browse"
             className={cn(
@@ -364,8 +328,20 @@ export function ListingForm() {
           >
             Cancel
           </Link>
-          <Button type="submit" size="lg" className="px-5">
-            Publish listing
+          <Button
+            type="submit"
+            size="lg"
+            className="px-5"
+            disabled={isPending}
+            aria-busy={isPending || undefined}
+          >
+            {isPending && (
+              <LoaderCircle
+                className="animate-spin motion-reduce:animate-none"
+                data-icon="inline-start"
+              />
+            )}
+            {isPending ? "Publishing…" : "Publish listing"}
           </Button>
         </div>
       </form>
