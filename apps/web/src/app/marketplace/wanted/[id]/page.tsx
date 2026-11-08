@@ -8,8 +8,8 @@ import { buttonVariants } from "@/components/ui/button";
 import { MatchList, MatchMethodNote } from "@/components/wanted/match-list";
 import { ApiError, getWantedMatches, getWantedPost } from "@/lib/api";
 import type { MatchResult, WantedPost } from "@/lib/api-types";
+import { getCategory } from "@/lib/categories";
 import { formatDateRange, formatPriceCents } from "@/lib/format";
-import { getCategory } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { getViewerProfileId } from "@/lib/viewer";
 

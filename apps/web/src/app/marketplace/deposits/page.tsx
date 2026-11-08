@@ -2,8 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+import { ApiErrorState } from "@/components/api-error-state";
 import { DepositDemo } from "@/components/deposits/deposit-demo";
-import { getListing, getProfile, rentalRequests } from "@/lib/mock-data";
+import { SignInPrompt } from "@/components/sign-in-prompt";
+import { ApiError, getRental, getRentals } from "@/lib/api";
+import type { RentalRequest } from "@/lib/api-types";
+import { getViewer } from "@/lib/viewer";
 
 export const metadata: Metadata = { title: "Deposit demo" };
 
@@ -41,21 +45,57 @@ export default function DepositsPage({
 async function DepositForRequest({
   searchParams,
 }: Pick<PageProps<"/marketplace/deposits">, "searchParams">) {
-  const { request: requestId } = await searchParams;
-  // No ?request= shows the first sample request; an unknown id is a 404, not a different item.
-  const request = requestId
-    ? rentalRequests.find((r) => r.id === requestId)
-    : rentalRequests[0];
-  if (!request) notFound();
-  const listing = getListing(request.listingId);
-  const owner = listing ? getProfile(listing.ownerId) : undefined;
-  if (!listing || !owner) return null;
+  const viewer = await getViewer();
+  if (viewer.status !== "signed-in") {
+    return (
+      <SignInPrompt
+        status={viewer.status}
+        returnTo="/marketplace/deposits"
+        title="Sign in to see your deposits"
+        description="The deposit demo uses one of your own accepted rental requests."
+        className="mt-8"
+      />
+    );
+  }
+
+  const { request: requestParam } = await searchParams;
+  const requestId = Array.isArray(requestParam)
+    ? requestParam[0]
+    : requestParam;
+  let request: RentalRequest | null | undefined;
+  try {
+    if (requestId) {
+      // Only the borrower or owner can load it; anyone else gets a 404.
+      request = await getRental(requestId);
+    } else {
+      // Default to the viewer's own accepted or active borrow.
+      request = (await getRentals("borrower")).find(
+        (r) => r.status === "accepted" || r.status === "active",
+      );
+    }
+  } catch (error) {
+    if (!(error instanceof ApiError)) throw error;
+    return (
+      <div className="mt-8">
+        <ApiErrorState detail={error.detail} />
+      </div>
+    );
+  }
+  if (requestId && !request) notFound();
+  if (!request) {
+    return (
+      <p className="mt-8 rounded-card border border-dashed px-6 py-10 text-center text-sm text-muted-foreground">
+        You don&apos;t have an accepted request yet. Once an owner accepts one,
+        open it from your dashboard to try the deposit demo.
+      </p>
+    );
+  }
 
   return (
     <DepositDemo
-      itemTitle={listing.title}
-      ownerName={owner.displayName}
-      depositUsd={listing.depositAmount ?? 0}
+      itemTitle={request.listing.title}
+      ownerName={request.listing.owner.displayName}
+      depositCents={request.listing.depositCents}
       dates={{ start: request.startDate, end: request.endDate }}
     />
   );

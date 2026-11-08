@@ -13,8 +13,12 @@ import {
 import { ListingThumb } from "@/components/marketplace/listing-thumb";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  type CategorySlug,
+  type Condition,
+  categories,
+} from "@/lib/categories";
 import { formatMoney, formatPrice } from "@/lib/format";
-import { type CategorySlug, type Condition, categories } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { type CreateListingState, createListingAction } from "./actions";
 

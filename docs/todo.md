@@ -61,7 +61,8 @@ Settle these before building the matching items below. Each one is a team call, 
 - [ ] **Image upload:** wire the image picker in `listing-form.tsx` to storage and save rows in `listing_images`.
 - [ ] **Solana Devnet deposit:** real wallet connection and a Devnet transfer in `components/deposits/deposit-demo.tsx`, a server check of the signature against a Devnet RPC, and a row in `deposits`. Describe it as a Devnet transfer, not escrow, unless a tested program exists (AGENTS.md section 9).
 - [ ] Error, loading and empty states for every call that replaces sample data.
-- [ ] Record each sponsor integration in `docs/sponsor-evidence.md` once it actually works.
+- [x] Record each sponsor integration in `docs/sponsor-evidence.md` (Tiger, Gemini on Vertex AI, Auth0; live-service checks still pending).
+- [ ] Point `DATABASE_URL` at Tiger Cloud, enable the Vertex AI API on the `stuffaroo` project, and configure the Auth0 tenant, then rerun the demo journey against the real services.
 
 ## P2: later
 

@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 import type { ListingDetail } from "@/lib/api-types";
+import { getCategory } from "@/lib/categories";
 import { formatPriceCents } from "@/lib/format";
-import { getCategory } from "@/lib/mock-data";
 import { ListingThumb } from "./listing-thumb";
 import { AvailabilityBadge } from "./status-badge";
 

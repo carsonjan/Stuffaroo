@@ -3,8 +3,8 @@ import Link from "next/link";
 
 import { buttonVariants } from "@/components/ui/button";
 import type { WantedPost } from "@/lib/api-types";
+import { getCategory } from "@/lib/categories";
 import { formatDateRange, formatPriceCents } from "@/lib/format";
-import { getCategory } from "@/lib/mock-data";
 
 /**
  * A classmate's request, in the team's card style: what they need, when, their

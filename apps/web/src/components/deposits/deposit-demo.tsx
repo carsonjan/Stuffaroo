@@ -11,7 +11,7 @@ import {
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { formatDateRange } from "@/lib/format";
+import { formatDateRange, formatMoneyCents } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 type Stage =
@@ -61,12 +61,12 @@ const order: Stage[] = [
 export function DepositDemo({
   itemTitle,
   ownerName,
-  depositUsd,
+  depositCents,
   dates,
 }: {
   itemTitle: string;
   ownerName: string;
-  depositUsd: number;
+  depositCents: number | null;
   dates: { start: string; end: string };
 }) {
   const [stage, setStage] = useState<Stage>("disconnected");
@@ -90,7 +90,10 @@ export function DepositDemo({
               label="Dates"
               value={formatDateRange(dates.start, dates.end)}
             />
-            <Detail label="Agreed deposit" value={`$${depositUsd}`} />
+            <Detail
+              label="Agreed deposit"
+              value={formatMoneyCents(depositCents)}
+            />
             <Detail label="Demo transfer" value={`${DEMO_AMOUNT_SOL} SOL`} />
           </dl>
           <p className="mt-4 flex gap-2 rounded-small bg-muted p-3 text-xs text-muted-foreground">

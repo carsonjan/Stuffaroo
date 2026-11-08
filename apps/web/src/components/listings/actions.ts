@@ -5,7 +5,11 @@ import { redirect } from "next/navigation";
 
 import { ApiError, createListing, describeApiError } from "@/lib/api";
 import type { ListingInput } from "@/lib/api-types";
-import { type CategorySlug, type Condition, categories } from "@/lib/mock-data";
+import {
+  type CategorySlug,
+  type Condition,
+  categories,
+} from "@/lib/categories";
 
 export type CreateListingState =
   | { status: "idle" }

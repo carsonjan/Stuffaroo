@@ -12,8 +12,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
 import { ApiError, getListing, getListings } from "@/lib/api";
 import type { ListingDetail } from "@/lib/api-types";
+import { getCategory } from "@/lib/categories";
 import { formatMoneyCents, formatPriceCents, isoDateAfter } from "@/lib/format";
-import { getCategory } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { getViewer } from "@/lib/viewer";
 

@@ -3,7 +3,7 @@
  * FastAPI OpenAPI schema. Money is integer cents; IDs are UUID strings.
  */
 
-import type { AvailabilityStatus, CategorySlug, Condition } from "./mock-data";
+import type { AvailabilityStatus, CategorySlug, Condition } from "./categories";
 
 export type Profile = {
   id: string;

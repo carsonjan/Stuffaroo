@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { MatchList, MatchMethodNote } from "@/components/wanted/match-list";
-import { categories } from "@/lib/mock-data";
+import { categories } from "@/lib/categories";
 import type { Viewer } from "@/lib/viewer";
 import {
   type FindMatchesState,

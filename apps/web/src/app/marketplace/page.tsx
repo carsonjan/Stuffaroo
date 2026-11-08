@@ -10,7 +10,7 @@ import { ModeSwitcher } from "@/components/shop/mode-switcher";
 import { MoveOutDays } from "@/components/shop/move-out-countdown";
 import { buttonVariants } from "@/components/ui/button";
 import { getListings, getWantedPosts } from "@/lib/api";
-import { categories } from "@/lib/mock-data";
+import { categories } from "@/lib/categories";
 import { priceDrops } from "@/lib/mock-shop";
 import { cn } from "@/lib/utils";
 

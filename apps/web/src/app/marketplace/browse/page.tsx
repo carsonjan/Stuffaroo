@@ -8,7 +8,7 @@ import { ListingCard } from "@/components/marketplace/listing-card";
 import { buttonVariants } from "@/components/ui/button";
 import { ApiError, getListings } from "@/lib/api";
 import type { ListingDetail } from "@/lib/api-types";
-import { categories } from "@/lib/mock-data";
+import { categories } from "@/lib/categories";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Browse" };

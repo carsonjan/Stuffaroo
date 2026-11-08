@@ -16,7 +16,7 @@ The backend is being wired in chunks (see [docs/todo.md](docs/todo.md) and [docs
 | Auth | Auth0 in Next.js; FastAPI verifies the forwarded access token. Off until Auth0 env vars are set |
 | AI matching | Real: hard filters in SQL (availability, category, budget, booked dates, own listings), then Gemini embeddings ranked on Tiger's DiskANN index. Without Gemini configured it falls back to keyword ranking and the UI says so |
 | AI listing drafts | Canned sample response, labelled as a mockup |
-| Solana deposit | Simulated, labelled as simulated. No wallet is contacted |
+| Solana deposit | Uses your real accepted request and its deposit amount, but the transfer itself is simulated and labelled as such. No wallet is contacted |
 
 Creating things and changing request status needs sign-in. With Auth0 not configured, those screens explain that instead of pretending to work.
 
@@ -47,12 +47,15 @@ apps/
   web/            Next.js frontend
     src/app/          routes
     src/components/   UI, grouped by domain (marketplace, listings, wanted, requests, ...)
-    src/lib/          sample data and formatting helpers
+    src/lib/          API client, auth, categories, formatting, buy/deals sample data
   api/            FastAPI backend
     app/              main.py, routers/, services/, models/, core/
     tests/
 docs/
-  todo.md         backend wiring plan
+  api-contract.md       API endpoints and rules
+  todo.md               remaining work
+  handoff-auth0.md      Auth0 setup and demo accounts
+  sponsor-evidence.md   what each sponsor technology powers, and what's verified
 ```
 
 ## Setup

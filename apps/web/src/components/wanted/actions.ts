@@ -10,7 +10,7 @@ import {
   findMatches,
 } from "@/lib/api";
 import type { MatchQuery, MatchResult, WantedInput } from "@/lib/api-types";
-import { type CategorySlug, categories } from "@/lib/mock-data";
+import { type CategorySlug, categories } from "@/lib/categories";
 
 export type FindMatchesState =
   | { status: "idle" }
