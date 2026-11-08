@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import roo from "@/assets/roo.png.asset.json";
+import roo from "@/assets/roo.png";
 import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -74,7 +74,7 @@ function AuthPage() {
 
   return (
     <div className="mx-auto max-w-sm space-y-4 text-center">
-      <img src={roo.url} alt="" className="mx-auto h-32" />
+      <img src={roo} alt="" className="mx-auto h-32" />
       <h1 className="text-3xl font-extrabold">
         {mode === "in" ? "Welcome back, mate" : "Join the mob"}
       </h1>
