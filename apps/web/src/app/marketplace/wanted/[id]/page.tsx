@@ -23,14 +23,14 @@ export function generateStaticParams() {
 
 export async function generateMetadata({
   params,
-}: PageProps<"/wanted/[id]">): Promise<Metadata> {
+}: PageProps<"/marketplace/wanted/[id]">): Promise<Metadata> {
   const post = getWantedPost((await params).id);
   return { title: post?.title ?? "Wanted" };
 }
 
 export default async function WantedDetailPage({
   params,
-}: PageProps<"/wanted/[id]">) {
+}: PageProps<"/marketplace/wanted/[id]">) {
   const { id } = await params;
   const post = getWantedPost(id);
   if (!post) notFound();
@@ -45,7 +45,7 @@ export default async function WantedDetailPage({
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-10">
       <Link
-        href="/wanted"
+        href="/marketplace/wanted"
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
         All wanted posts
@@ -94,7 +94,7 @@ export default async function WantedDetailPage({
               will see it.
             </p>
             <Link
-              href="/listings/new"
+              href="/marketplace/listings/new"
               className={cn(
                 buttonVariants({ variant: "outline", size: "lg" }),
                 "px-3.5",

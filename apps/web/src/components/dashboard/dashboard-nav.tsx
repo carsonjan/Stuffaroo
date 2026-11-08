@@ -6,9 +6,9 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const tabs = [
-  { href: "/dashboard", label: "Overview" },
-  { href: "/dashboard/requests", label: "Requests" },
-  { href: "/deposits", label: "Deposits" },
+  { href: "/marketplace/dashboard", label: "Overview" },
+  { href: "/marketplace/dashboard/requests", label: "Requests" },
+  { href: "/marketplace/deposits", label: "Deposits" },
 ];
 
 export function DashboardNavWithPath() {

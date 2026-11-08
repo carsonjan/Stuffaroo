@@ -12,7 +12,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({
   params,
-}: PageProps<"/profile/[id]">): Promise<Metadata> {
+}: PageProps<"/marketplace/profile/[id]">): Promise<Metadata> {
   const profile = getProfile((await params).id);
   return { title: profile?.displayName ?? "Profile" };
 }
@@ -25,7 +25,7 @@ const joinedFormatter = new Intl.DateTimeFormat("en-US", {
 
 export default async function ProfilePage({
   params,
-}: PageProps<"/profile/[id]">) {
+}: PageProps<"/marketplace/profile/[id]">) {
   const { id } = await params;
   const profile = getProfile(id);
   if (!profile) notFound();

@@ -84,7 +84,7 @@ export function ListingForm() {
         </p>
         <div className="mt-6 flex gap-2">
           <Link
-            href="/dashboard"
+            href="/marketplace/dashboard"
             className={cn(buttonVariants({ size: "lg" }), "px-4")}
           >
             Go to dashboard
@@ -325,7 +325,7 @@ export function ListingForm() {
 
         <div className="flex justify-end gap-2 border-t pt-6">
           <Link
-            href="/marketplace"
+            href="/marketplace/browse"
             className={cn(
               buttonVariants({ variant: "ghost", size: "lg" }),
               "px-4",

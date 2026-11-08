@@ -42,7 +42,7 @@ export function RequestRow({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <Link
-              href={`/listings/${listing.id}`}
+              href={`/marketplace/listings/${listing.id}`}
               className="truncate font-medium hover:text-ink-2"
             >
               {listing.title}
@@ -116,7 +116,7 @@ export function RequestRow({
           status === "accepted" &&
           listing.depositAmount !== null && (
             <Link
-              href={`/deposits?request=${request.id}`}
+              href={`/marketplace/deposits?request=${request.id}`}
               className={cn(buttonVariants({ size: "lg" }), "px-3")}
             >
               <Coins data-icon="inline-start" /> Deposit demo

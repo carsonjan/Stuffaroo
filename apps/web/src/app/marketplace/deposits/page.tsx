@@ -7,7 +7,9 @@ import { getListing, getProfile, rentalRequests } from "@/lib/mock-data";
 
 export const metadata: Metadata = { title: "Deposit demo" };
 
-export default function DepositsPage({ searchParams }: PageProps<"/deposits">) {
+export default function DepositsPage({
+  searchParams,
+}: PageProps<"/marketplace/deposits">) {
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-10">
       <div className="flex flex-wrap items-center gap-2">
@@ -38,7 +40,7 @@ export default function DepositsPage({ searchParams }: PageProps<"/deposits">) {
 
 async function DepositForRequest({
   searchParams,
-}: Pick<PageProps<"/deposits">, "searchParams">) {
+}: Pick<PageProps<"/marketplace/deposits">, "searchParams">) {
   const { request: requestId } = await searchParams;
   // No ?request= shows the first sample request; an unknown id is a 404, not a different item.
   const request = requestId

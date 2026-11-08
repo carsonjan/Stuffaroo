@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "Requests" };
 
 export default function RequestsPage({
   searchParams,
-}: PageProps<"/dashboard/requests">) {
+}: PageProps<"/marketplace/dashboard/requests">) {
   return (
     <Suspense
       fallback={
@@ -31,7 +31,7 @@ export default function RequestsPage({
 
 async function RequestTabs({
   searchParams,
-}: Pick<PageProps<"/dashboard/requests">, "searchParams">) {
+}: Pick<PageProps<"/marketplace/dashboard/requests">, "searchParams">) {
   const { tab } = await searchParams;
   const myListingIds = new Set(
     listings.filter((l) => l.ownerId === CURRENT_USER_ID).map((l) => l.id),

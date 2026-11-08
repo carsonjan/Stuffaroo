@@ -19,7 +19,7 @@ export function PromptBox({
 }) {
   return (
     <form
-      action="/marketplace"
+      action="/marketplace/browse"
       className={cn(
         "flex h-16 w-full items-center gap-2 rounded-pill border border-rule-field bg-paper-2 pr-2 pl-6 shadow-float text-left focus-within:outline-2 focus-within:outline-offset-4 focus-within:outline-focus",
         className,

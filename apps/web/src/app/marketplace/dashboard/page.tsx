@@ -58,7 +58,7 @@ export default function DashboardPage() {
       <section>
         <SectionHeader
           title="Needs your response"
-          href="/dashboard/requests"
+          href="/marketplace/dashboard/requests"
           linkLabel="All requests"
         />
         {pendingIncoming.length > 0 ? (
@@ -77,7 +77,7 @@ export default function DashboardPage() {
       <section>
         <SectionHeader
           title="Your upcoming borrows"
-          href="/dashboard/requests?tab=outgoing"
+          href="/marketplace/dashboard/requests?tab=outgoing"
           linkLabel="View all"
         />
         <ul className="divide-y rounded-card border bg-card">
@@ -91,7 +91,7 @@ export default function DashboardPage() {
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold">Your listings</h2>
           <Link
-            href="/listings/new"
+            href="/marketplace/listings/new"
             className={cn(
               buttonVariants({ variant: "outline", size: "lg" }),
               "px-3",
@@ -119,7 +119,7 @@ export default function DashboardPage() {
                 <tr key={l.id}>
                   <td className="px-4 py-3">
                     <Link
-                      href={`/listings/${l.id}`}
+                      href={`/marketplace/listings/${l.id}`}
                       className="flex items-center gap-3 hover:text-ink-2"
                     >
                       <ListingThumb
@@ -149,7 +149,7 @@ export default function DashboardPage() {
       <section>
         <SectionHeader
           title="Your wanted posts"
-          href="/wanted/new"
+          href="/marketplace/wanted/new"
           linkLabel="Post another"
         />
         <div className="grid gap-4 md:grid-cols-2">

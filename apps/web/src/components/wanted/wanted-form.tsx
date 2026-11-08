@@ -133,7 +133,7 @@ export function WantedForm() {
 
           <div className="flex justify-end gap-2 border-t pt-6">
             <Link
-              href="/wanted"
+              href="/marketplace/wanted"
               className={cn(
                 buttonVariants({ variant: "ghost", size: "lg" }),
                 "px-4",
@@ -142,7 +142,7 @@ export function WantedForm() {
               Cancel
             </Link>
             <Link
-              href="/wanted/w-2"
+              href="/marketplace/wanted/w-2"
               className={cn(buttonVariants({ size: "lg" }), "px-5")}
             >
               Post wanted

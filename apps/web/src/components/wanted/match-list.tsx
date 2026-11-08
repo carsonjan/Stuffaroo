@@ -28,7 +28,7 @@ export function MatchList({ matches }: { matches: MatchSuggestion[] }) {
         return (
           <li key={match.listingId}>
             <Link
-              href={`/listings/${listing.id}`}
+              href={`/marketplace/listings/${listing.id}`}
               className="flex flex-col gap-4 rounded-card border bg-card p-4 transition-colors hover:border-rule-2 sm:flex-row"
             >
               <ListingThumb

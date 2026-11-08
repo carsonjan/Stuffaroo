@@ -13,7 +13,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
 
   return (
     <Link
-      href={`/listings/${listing.id}`}
+      href={`/marketplace/listings/${listing.id}`}
       className="group flex min-w-0 flex-col rounded-[40px] bg-paper-2 p-3 shadow-card transition-transform duration-[220ms] ease-out hover:-translate-y-1"
     >
       <div className="relative overflow-hidden rounded-[28px] shadow-[var(--interior-edge)]">

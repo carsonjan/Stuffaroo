@@ -41,7 +41,7 @@ Source: nomu.store, fetched 2026-11-07, for every element; the team's Stuffaroo 
 
 ## Pages
 - `/` home: Roo and "What can Roo find for you today?", the search, the Buy / Rent / Request switcher, category pills, three teasers, the close
-- `/deals`: price drops, on sale now, dorm bundles (discounts computed from original prices); `/move-out`: countdown to April 30 and listings to reserve; `/wanted`: "Classmates are looking for" with "I have this!"
+- `/marketplace/deals`: price drops, on sale now, dorm bundles (discounts computed from original prices); `/marketplace/move-out`: countdown to April 30 and listings to reserve; `/marketplace/wanted`: "Classmates are looking for" with "I have this!"
 - Nav: Browse, Deals, Wanted, Move-out, a Post menu (sell, rent out, request); Dashboard and Deposits live in the avatar menu
 
 ## Motion

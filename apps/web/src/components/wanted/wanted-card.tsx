@@ -35,7 +35,7 @@ export function WantedCard({ post }: { post: WantedPost }) {
       </div>
       <h3 className="text-xl leading-snug tracking-[-0.02em] text-ink">
         <Link
-          href={`/wanted/${post.id}`}
+          href={`/marketplace/wanted/${post.id}`}
           className="rounded-small underline-offset-4 hover:underline"
         >
           {post.title}
@@ -55,7 +55,10 @@ export function WantedCard({ post }: { post: WantedPost }) {
             ? "flexible budget"
             : `up to $${post.budgetPerDay}/day`}
         </span>
-        <Link href="/listings/new" className={buttonVariants({ size: "lg" })}>
+        <Link
+          href="/marketplace/listings/new"
+          className={buttonVariants({ size: "lg" })}
+        >
           I have this!
         </Link>
       </div>

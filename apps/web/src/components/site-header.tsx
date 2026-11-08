@@ -38,28 +38,28 @@ import { cn } from "@/lib/utils";
 import { Logo } from "./logo";
 
 const navItems = [
-  { href: "/marketplace", label: "Browse" },
-  { href: "/deals", label: "Deals" },
-  { href: "/wanted", label: "Wanted" },
-  { href: "/move-out", label: "Move-out" },
+  { href: "/marketplace/browse", label: "Browse" },
+  { href: "/marketplace/deals", label: "Deals" },
+  { href: "/marketplace/wanted", label: "Wanted" },
+  { href: "/marketplace/move-out", label: "Move-out" },
 ];
 
 /** The team's Post menu: three ways to put something on Stuffaroo. */
 const postOptions = [
   {
-    href: "/listings/new",
+    href: "/marketplace/listings/new",
     label: "Sell an item",
     hint: "Set a price and pickup date",
     icon: ShoppingBag,
   },
   {
-    href: "/listings/new",
+    href: "/marketplace/listings/new",
     label: "Rent something out",
     hint: "Per day or per term, with a deposit",
     icon: HandCoins,
   },
   {
-    href: "/wanted/new",
+    href: "/marketplace/wanted/new",
     label: "Post a request",
     hint: "Tell classmates what you need",
     icon: Megaphone,
@@ -81,7 +81,7 @@ export function SiteHeader({ activePath }: { activePath: string | null }) {
     <header className="sticky top-0 z-[300] h-[104px] px-3 pt-4 sm:px-4">
       <div className="site-nav-pill mx-auto flex h-20 max-w-[1170px] items-center gap-6 rounded-pill bg-paper-2 py-4 pr-4 pl-8 shadow-float">
         <Link
-          href="/"
+          href="/marketplace"
           className="shrink-0 rounded-small text-ink"
           aria-label="Stuffaroo home"
         >
@@ -161,17 +161,23 @@ export function SiteHeader({ activePath }: { activePath: string | null }) {
                   </DropdownMenuLabel>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem render={<Link href="/dashboard" />}>
+                <DropdownMenuItem
+                  render={<Link href="/marketplace/dashboard" />}
+                >
                   <LayoutDashboard /> Dashboard
                 </DropdownMenuItem>
-                <DropdownMenuItem render={<Link href="/deposits" />}>
+                <DropdownMenuItem
+                  render={<Link href="/marketplace/deposits" />}
+                >
                   <Coins /> Deposits
                 </DropdownMenuItem>
-                <DropdownMenuItem render={<Link href={`/profile/${me.id}`} />}>
+                <DropdownMenuItem
+                  render={<Link href={`/marketplace/profile/${me.id}`} />}
+                >
                   <User /> Public profile
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem render={<Link href="/" />}>
+                <DropdownMenuItem render={<Link href="/marketplace" />}>
                   <LogOut /> Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -223,13 +229,13 @@ export function SiteHeader({ activePath }: { activePath: string | null }) {
                   </Link>
                 ))}
                 <Link
-                  href="/dashboard"
+                  href="/marketplace/dashboard"
                   className="mt-4 rounded-small px-3 py-2.5 text-base text-ink-3 hover:text-ink-2"
                 >
                   Dashboard
                 </Link>
                 <Link
-                  href="/deposits"
+                  href="/marketplace/deposits"
                   className="rounded-small px-3 py-2.5 text-base text-ink-3 hover:text-ink-2"
                 >
                   Deposits

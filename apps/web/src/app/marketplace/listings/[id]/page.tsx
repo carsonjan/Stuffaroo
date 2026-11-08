@@ -25,14 +25,14 @@ export function generateStaticParams() {
 
 export async function generateMetadata({
   params,
-}: PageProps<"/listings/[id]">): Promise<Metadata> {
+}: PageProps<"/marketplace/listings/[id]">): Promise<Metadata> {
   const listing = getListing((await params).id);
   return { title: listing?.title ?? "Listing" };
 }
 
 export default async function ListingPage({
   params,
-}: PageProps<"/listings/[id]">) {
+}: PageProps<"/marketplace/listings/[id]">) {
   const { id } = await params;
   const listing = getListing(id);
   if (!listing) notFound();
@@ -52,7 +52,7 @@ export default async function ListingPage({
   return (
     <div className="mx-auto max-w-[1200px] px-4 py-8 sm:px-10">
       <Link
-        href="/marketplace"
+        href="/marketplace/browse"
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
         Back to browse
@@ -77,7 +77,7 @@ export default async function ListingPage({
           <div className="mt-8">
             <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
               <Link
-                href={`/marketplace?category=${listing.category}`}
+                href={`/marketplace/browse?category=${listing.category}`}
                 className="hover:text-foreground"
               >
                 {category?.name}
@@ -121,7 +121,7 @@ export default async function ListingPage({
                     You can&apos;t request your own item.
                   </p>
                   <Link
-                    href="/dashboard"
+                    href="/marketplace/dashboard"
                     className={cn(
                       buttonVariants({ variant: "outline", size: "lg" }),
                       "mt-3 w-full",
@@ -137,7 +137,7 @@ export default async function ListingPage({
                   This item isn&apos;t available right now. Post a wanted
                   request and we&apos;ll match you with similar items.
                   <Link
-                    href="/wanted/new"
+                    href="/marketplace/wanted/new"
                     className={cn(
                       buttonVariants({ variant: "outline", size: "lg" }),
                       "mt-3 w-full",
@@ -152,7 +152,7 @@ export default async function ListingPage({
 
           {owner && (
             <Link
-              href={`/profile/${owner.id}`}
+              href={`/marketplace/profile/${owner.id}`}
               className="flex items-center gap-3 rounded-card border bg-card p-4 transition-colors hover:border-rule-2"
             >
               <Avatar size="lg">

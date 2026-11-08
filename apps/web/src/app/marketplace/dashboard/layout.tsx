@@ -8,7 +8,7 @@ import { CURRENT_USER_ID, getProfile } from "@/lib/mock-data";
 
 export default function DashboardLayout({
   children,
-}: LayoutProps<"/dashboard">) {
+}: LayoutProps<"/marketplace/dashboard">) {
   const me = getProfile(CURRENT_USER_ID);
   return (
     <div className="mx-auto max-w-[1200px] px-4 py-10 sm:px-10">

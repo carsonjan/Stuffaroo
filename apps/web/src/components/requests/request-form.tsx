@@ -37,7 +37,7 @@ export function RequestForm({ listing }: { listing: Listing }) {
           Mockup: nothing was sent.
         </p>
         <Link
-          href="/dashboard/requests"
+          href="/marketplace/dashboard/requests"
           className={cn(
             buttonVariants({ variant: "outline", size: "lg" }),
             "mt-4 w-full",

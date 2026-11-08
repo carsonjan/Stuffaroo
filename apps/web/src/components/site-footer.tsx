@@ -11,7 +11,7 @@ export function SiteFooter() {
       <div className="mx-auto grid max-w-[1200px] gap-12 px-4 pt-16 pb-12 sm:grid-cols-[minmax(0,1fr)_auto] sm:px-10">
         <div className="flex flex-col gap-4">
           <Link
-            href="/"
+            href="/marketplace"
             className="w-fit rounded-small"
             aria-label="Stuffaroo home"
           >
@@ -26,16 +26,16 @@ export function SiteFooter() {
             <h3 className="text-[13px] leading-5 font-semibold tracking-normal text-ink">
               Marketplace
             </h3>
-            <Link href="/marketplace" className={linkClass}>
+            <Link href="/marketplace/browse" className={linkClass}>
               Browse
             </Link>
-            <Link href="/deals" className={linkClass}>
+            <Link href="/marketplace/deals" className={linkClass}>
               Deals
             </Link>
-            <Link href="/move-out" className={linkClass}>
+            <Link href="/marketplace/move-out" className={linkClass}>
               Move-out
             </Link>
-            <Link href="/wanted" className={linkClass}>
+            <Link href="/marketplace/wanted" className={linkClass}>
               Wanted posts
             </Link>
           </nav>
@@ -43,10 +43,10 @@ export function SiteFooter() {
             <h3 className="text-[13px] leading-5 font-semibold tracking-normal text-ink">
               Post
             </h3>
-            <Link href="/listings/new" className={linkClass}>
+            <Link href="/marketplace/listings/new" className={linkClass}>
               Lend an item
             </Link>
-            <Link href="/wanted/new" className={linkClass}>
+            <Link href="/marketplace/wanted/new" className={linkClass}>
               Post a request
             </Link>
           </nav>
@@ -54,7 +54,7 @@ export function SiteFooter() {
             <h3 className="text-[13px] leading-5 font-semibold tracking-normal text-ink">
               Demo
             </h3>
-            <Link href="/deposits" className={linkClass}>
+            <Link href="/marketplace/deposits" className={linkClass}>
               Deposit demo
             </Link>
           </nav>

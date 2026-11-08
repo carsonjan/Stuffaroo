@@ -24,7 +24,10 @@ export default function WantedPage() {
             students have listed.
           </p>
         </div>
-        <Link href="/wanted/new" className={buttonVariants({ size: "lg" })}>
+        <Link
+          href="/marketplace/wanted/new"
+          className={buttonVariants({ size: "lg" })}
+        >
           <Plus data-icon="inline-start" /> Post a request
         </Link>
       </div>
