@@ -148,7 +148,7 @@ To run the landing page and the marketplace together:
 ./run.sh          # pnpm dev plus the homepage dev server
 ```
 
-The homepage's buttons point at `http://localhost:3000/marketplace`.
+For local development, `run.sh` points the homepage buttons at `http://localhost:3000/marketplace`.
 
 ```sh
 pnpm dev:web      # web only
@@ -157,6 +157,28 @@ pnpm api:docker   # API in Docker instead of uv; run `pnpm dev:web` alongside it
 ```
 
 The API health endpoint is at `http://localhost:8000/health`.
+
+## Deploying to Vultr
+
+Docker Compose runs Nginx, Certbot, the homepage, the marketplace, and the API. Nginx publishes ports 80 and 443; the application ports are private to the Docker network. Certbot obtains and renews the certificate automatically, and Nginx switches to HTTPS when it is available.
+
+1. Point an A record for `stuffaroo.shop` at the Vultr server's public IPv4 address. Open ports 80 and 443 in the Vultr and server firewalls. Install Docker with Compose. The marketplace build also needs access to Google Fonts.
+2. On the server, copy `apps/api/.env.example` to `apps/api/.env` and `apps/web/.env.example` to `apps/web/.env.local`, then fill in the production values. Set `DATABASE_URL` to a reachable PostgreSQL instance with the required extensions; the example's local database default will not work inside the API container. For Gemini, use `GEMINI_API_KEY` and disable Vertex AI, or configure credentials available inside the container. Do not copy secrets into the repository or image.
+3. Configure Auth0 with `https://stuffaroo.shop/auth/callback` as an allowed callback URL, `https://stuffaroo.shop` as an allowed logout URL and web origin, and the matching API audience. Compose sets `APP_BASE_URL` and the internal `API_URL` for the web container.
+4. Build and start everything:
+
+   ```sh
+   docker compose up -d --build
+   ```
+
+   Nginx is rebuilt when you run `docker compose up`, so changes to `nginx/` are picked up automatically. After DNS resolves, certificate issuance may take a few minutes. Until then the site is available over HTTP; sign-in requires HTTPS. Check `docker compose logs certbot nginx` if issuance fails. Certificates persist in the `certificates` Docker volume; do not delete it when restarting the stack.
+5. For a new database, apply the migrations once:
+
+   ```sh
+   docker compose run --rm api python -m app.core.db
+   ```
+
+   Seed data separately only if required for the target database; see the database setup above. Visit `https://stuffaroo.shop/` and `https://stuffaroo.shop/marketplace`, then check sign-in and the marketplace's API-backed pages. Inspect failures with `docker compose logs`.
 
 ### Connecting the real services
 

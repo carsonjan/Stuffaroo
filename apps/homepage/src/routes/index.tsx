@@ -13,10 +13,10 @@ import {
   ShoppingBag,
   Sparkles,
 } from "lucide-react";
-import roo from "@/assets/roo.png.asset.json";
+import roo from "@/assets/roo.png";
 import { Button } from "@/components/ui/button";
 
-const MARKETPLACE_URL = "http://localhost:3000/marketplace";
+const MARKETPLACE_URL = import.meta.env.VITE_MARKETPLACE_URL || "/marketplace";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -134,7 +134,7 @@ function Landing() {
                 </p>
               </div>
               <img
-                src={roo.url}
+                src={roo}
                 alt="Roo, the Stuffaroo kangaroo, with a pouch full of campus essentials"
                 width={300}
                 height={320}

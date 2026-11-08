@@ -1,0 +1,66 @@
+services:
+  nginx:
+    image: stuffaroo-nginx
+    build: ./nginx
+    pull_policy: build
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - certificates:/etc/letsencrypt:ro
+      - acme-challenge:/var/www/certbot:ro
+    entrypoint: ["sh", "/etc/nginx/stuffaroo/entrypoint.sh"]
+    depends_on:
+      - homepage
+      - web
+
+  certbot:
+    image: certbot/certbot:latest
+    restart: unless-stopped
+    volumes:
+      - certificates:/etc/letsencrypt
+      - acme-challenge:/var/www/certbot
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        trap 'exit 0' TERM INT
+        while :; do
+          if certbot certonly --webroot -w /var/www/certbot --non-interactive \
+            --agree-tos --register-unsafely-without-email --keep-until-expiring \
+            -d stuffaroo.shop; then
+            sleep 12h & wait $$!
+          else
+            sleep 60 & wait $$!
+          fi
+        done
+    depends_on:
+      - nginx
+
+  homepage:
+    build:
+      context: .
+      target: homepage
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      target: web
+    restart: unless-stopped
+    env_file: apps/web/.env.local
+    environment:
+      API_URL: http://api:8000
+      APP_BASE_URL: https://stuffaroo.shop
+    depends_on:
+      - api
+
+  api:
+    build:
+      context: apps/api
+    restart: unless-stopped
+    env_file: apps/api/.env
+
+volumes:
+  certificates:
+  acme-challenge:
