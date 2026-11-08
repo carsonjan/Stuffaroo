@@ -1,0 +1,53 @@
+direction: right
+
+student: "Students / Browser" {
+  shape: person
+}
+
+vultr: "Vultr VPS" {
+  style.fill: "#EFF6FF"
+  style.stroke: "#2563EB"
+  style.stroke-width: 2
+
+  nginx: "Nginx" {
+    style.fill: "#DBEAFE"
+    style.stroke: "#3B82F6"
+  }
+
+  homepage: "Homepage\nReact + Vite" {
+    style.fill: "#FFFFFF"
+  }
+
+  marketplace: "Marketplace\nNext.js" {
+    style.fill: "#FFFFFF"
+
+    api: "Server API\nBusiness logic"
+  }
+
+  nginx -> homepage: "Root domain"
+  nginx -> marketplace: "App subdomain"
+  homepage -> marketplace: "Get started"
+}
+
+auth0: "Auth0\nAuthentication" {
+  style.fill: "#FEF3C7"
+  style.stroke: "#D97706"
+}
+
+tiger: "Tiger Data\nPostgreSQL + pgvector" {
+  shape: cylinder
+  style.fill: "#DCFCE7"
+  style.stroke: "#16A34A"
+}
+
+gemini: "Google Gemini\nGenerative AI + Embeddings" {
+  style.fill: "#F3E8FF"
+  style.stroke: "#9333EA"
+}
+
+student -> vultr.nginx: "HTTPS"
+student <-> auth0: "Login / Redirect"
+
+vultr.marketplace.api <-> auth0: "Auth / Session"
+vultr.marketplace.api <-> tiger: "Listings, requests,\nvector search"
+vultr.marketplace.api <-> gemini: "Listing assistance,\nsemantic embeddings"
