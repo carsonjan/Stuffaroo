@@ -6,13 +6,13 @@ Students buy things they only need for a week, and throw out perfectly good stuf
 
 ## Status
 
-The frontend is a clickable mockup running on sample data. The backend is a FastAPI scaffold with only a health endpoint, and nothing is wired together yet. See [docs/todo.md](docs/todo.md) for the backend wiring plan.
+The backend is being wired in chunks (see [docs/todo.md](docs/todo.md) and [docs/api-contract.md](docs/api-contract.md)). Browsing, listing detail and profiles now read from the database through the API. The other screens still run on sample data.
 
 | Area | State |
 | --- | --- |
 | Web app (`apps/web`) | All main screens built and responsive. Data comes from `src/lib/mock-data.ts` and `src/lib/mock-shop.ts` |
-| API (`apps/api`) | FastAPI app with `GET /health` and CORS for `localhost:3000` |
-| Database | Not set up |
+| API (`apps/api`) | FastAPI with read endpoints for listings and profiles (`/api/listings`, `/api/profiles/{id}`) |
+| Database | Tiger Cloud Postgres (pgvector + pgvectorscale). Locally, the same image in Docker. Schema in `apps/api/migrations/`, fictional demo data in `apps/api/app/seed/` |
 | Auth | Not set up. The UI acts as one hard-coded student (`CURRENT_USER_ID`) |
 | AI matching and drafting | Canned sample responses, labelled as mockup or sample output in the UI |
 | Solana deposit | Simulated, labelled as simulated. No wallet is contacted |
@@ -66,7 +66,21 @@ pnpm exec lefthook install
 
 The workspace approves the `lefthook` installation script in `pnpm-workspace.yaml`; `sharp` and `unrs-resolver` remain denied as in the original web setup. Review other packages individually if pnpm requests approval.
 
-No environment variables are needed yet.
+### Database
+
+The API uses Postgres with pgvector and pgvectorscale: a Tiger Cloud service, or the same image locally in Docker.
+
+```sh
+pnpm db:up        # start timescale/timescaledb-ha:pg17 on localhost:5433
+pnpm db:migrate   # apply apps/api/migrations/*.sql
+pnpm db:seed      # load the fictional demo students, listings and requests
+```
+
+To use Tiger Cloud instead, copy `apps/api/.env.example` to `apps/api/.env` and set `DATABASE_URL` to the service URL (with `sslmode=require`), then run `pnpm db:migrate` and `pnpm db:seed`.
+
+The web app reads `API_URL` (default `http://localhost:8000`).
+
+API tests create a throwaway `stuffaroo_test` database on the local server and skip if it isn't running. CI runs them against the same image.
 
 ## Running
 

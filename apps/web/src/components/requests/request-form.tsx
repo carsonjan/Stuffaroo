@@ -7,8 +7,8 @@ import { useState } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { daysBetween, formatDateRange } from "@/lib/format";
-import type { Listing } from "@/lib/mock-data";
+import type { Listing } from "@/lib/api-types";
+import { daysBetween, formatDateRange, formatMoneyCents } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 const inputClass =
@@ -22,7 +22,7 @@ export function RequestForm({ listing }: { listing: Listing }) {
 
   const validRange = Boolean(start && end && end >= start);
   const days = validRange ? daysBetween(start, end) : 0;
-  const rentalTotal = (listing.pricePerDay ?? 0) * days;
+  const rentalTotalCents = (listing.pricePerDayCents ?? 0) * days;
 
   if (submitted) {
     return (
@@ -95,16 +95,20 @@ export function RequestForm({ listing }: { listing: Listing }) {
         <dl className="flex flex-col gap-1.5 border-t pt-4 text-sm">
           <div className="flex justify-between">
             <dt className="text-muted-foreground">
-              {listing.pricePerDay === null
+              {listing.pricePerDayCents === null
                 ? "Borrowing"
-                : `$${listing.pricePerDay} × ${days} ${days === 1 ? "day" : "days"}`}
+                : `${formatMoneyCents(listing.pricePerDayCents)} × ${days} ${days === 1 ? "day" : "days"}`}
             </dt>
-            <dd>{listing.pricePerDay === null ? "Free" : `$${rentalTotal}`}</dd>
+            <dd>
+              {listing.pricePerDayCents === null
+                ? "Free"
+                : formatMoneyCents(rentalTotalCents)}
+            </dd>
           </div>
-          {listing.depositAmount !== null && (
+          {listing.depositCents !== null && (
             <div className="flex justify-between">
               <dt className="text-muted-foreground">Refundable deposit</dt>
-              <dd>${listing.depositAmount}</dd>
+              <dd>{formatMoneyCents(listing.depositCents)}</dd>
             </div>
           )}
         </dl>

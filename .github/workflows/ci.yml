@@ -20,6 +20,22 @@ jobs:
     env:
       # Skip installing git hooks on the runner.
       LEFTHOOK: "0"
+      # API tests run against the service database below and must not skip.
+      REQUIRE_TEST_DB: "1"
+      TEST_ADMIN_DATABASE_URL: postgresql://postgres:stuffaroo@localhost:5433/postgres
+    services:
+      # Same image family as Tiger Cloud: Postgres + pgvector + pgvectorscale.
+      postgres:
+        image: timescale/timescaledb-ha:pg17
+        env:
+          POSTGRES_PASSWORD: stuffaroo
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
     steps:
       - uses: actions/checkout@v4
 

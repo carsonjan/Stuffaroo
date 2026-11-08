@@ -1,15 +1,16 @@
 import Link from "next/link";
 
-import { formatPrice } from "@/lib/format";
-import { getCategory, getProfile, type Listing } from "@/lib/mock-data";
+import type { ListingDetail } from "@/lib/api-types";
+import { formatPriceCents } from "@/lib/format";
+import { getCategory } from "@/lib/mock-data";
 import { ListingThumb } from "./listing-thumb";
 import { AvailabilityBadge } from "./status-badge";
 
 /** A white-rimmed card: a pastel picture, then title, price and pickup. */
-export function ListingCard({ listing }: { listing: Listing }) {
-  const owner = getProfile(listing.ownerId);
+export function ListingCard({ listing }: { listing: ListingDetail }) {
+  const { owner } = listing;
   const category = getCategory(listing.category);
-  const isFree = listing.pricePerDay === null;
+  const isFree = listing.pricePerDayCents === null;
 
   return (
     <Link
@@ -37,12 +38,11 @@ export function ListingCard({ listing }: { listing: Listing }) {
               isFree ? "font-medium text-accent" : "font-medium text-ink"
             }
           >
-            {formatPrice(listing.pricePerDay)}
+            {formatPriceCents(listing.pricePerDayCents)}
           </span>
         </div>
         <p className="text-xs text-ink-3">
-          {listing.location}
-          {owner && <>, from {owner.displayName.split(" ")[0]}</>},{" "}
+          {listing.location}, from {owner.displayName.split(" ")[0]},{" "}
           {listing.condition.toLowerCase()}
         </p>
       </div>

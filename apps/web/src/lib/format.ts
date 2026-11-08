@@ -6,6 +6,24 @@ export function formatMoney(amount: number | null): string {
   return amount === null ? "None" : `$${amount}`;
 }
 
+function centsToText(cents: number): string {
+  const dollars = Math.floor(cents / 100);
+  const rest = cents % 100;
+  return rest === 0
+    ? `$${dollars}`
+    : `$${dollars}.${String(rest).padStart(2, "0")}`;
+}
+
+/** Per-day price from API cents. null means free to borrow. */
+export function formatPriceCents(cents: number | null): string {
+  return cents === null ? "Free" : `${centsToText(cents)}/day`;
+}
+
+/** A one-off amount from API cents, such as a deposit. */
+export function formatMoneyCents(cents: number | null): string {
+  return cents === null ? "None" : centsToText(cents);
+}
+
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
   day: "numeric",
