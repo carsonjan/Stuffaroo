@@ -148,7 +148,7 @@ To run the landing page and the marketplace together:
 ./run.sh          # pnpm dev plus the homepage dev server
 ```
 
-The homepage's buttons point at `http://localhost:3000/marketplace`.
+For local development, `run.sh` points the homepage buttons at `http://localhost:3000/marketplace`.
 
 ```sh
 pnpm dev:web      # web only
@@ -157,6 +157,32 @@ pnpm api:docker   # API in Docker instead of uv; run `pnpm dev:web` alongside it
 ```
 
 The API health endpoint is at `http://localhost:8000/health`.
+
+## Deploying to Vultr
+
+The Docker Compose stack runs the homepage on local port 8080, the Next.js marketplace on local port 3000, and the API on a private Docker network. Host Nginx routes the public domain to the two frontend containers. The ports are bound to loopback and should not be exposed directly.
+
+1. Point an A record for `stuffaroo.shop` at the Vultr server's public IPv4 address. Open ports 80 and 443 in the Vultr and server firewalls. Install Docker with Compose, Nginx, and Certbot's Nginx plugin. The marketplace build also needs access to Google Fonts.
+2. On the server, copy `apps/api/.env.example` to `apps/api/.env` and `apps/web/.env.example` to `apps/web/.env.local`, then fill in the production values. Set `DATABASE_URL` to a reachable PostgreSQL instance with the required extensions; the example's local database default will not work inside the API container. For Gemini, use `GEMINI_API_KEY` and disable Vertex AI, or configure credentials available inside the container. Do not copy secrets into the repository or image.
+3. Configure Auth0 with `https://stuffaroo.shop/auth/callback` as an allowed callback URL, `https://stuffaroo.shop` as an allowed logout URL and web origin, and the matching API audience. Compose sets `APP_BASE_URL` and the internal `API_URL` for the web container.
+4. Build and start the containers, and apply the database migrations:
+
+   ```sh
+   docker compose up -d --build
+   docker compose run --rm api python -m app.core.db
+   ```
+
+   Seed data separately only if required for the target database; see the database setup above.
+5. Install the host Nginx configuration and obtain HTTPS certificates after DNS resolves:
+
+   ```sh
+   sudo cp nginx/stuffaroo.conf /etc/nginx/sites-available/stuffaroo
+   sudo ln -s /etc/nginx/sites-available/stuffaroo /etc/nginx/sites-enabled/stuffaroo
+   sudo nginx -t && sudo systemctl reload nginx
+   sudo certbot --nginx -d stuffaroo.shop
+   ```
+
+   Choose the HTTP-to-HTTPS redirect when prompted. Remove a conflicting default Nginx site if necessary, and verify Certbot renewal is enabled. Visit `https://stuffaroo.shop/` and `https://stuffaroo.shop/marketplace`, then check sign-in and the marketplace's API-backed pages. Inspect failures with `docker compose logs`.
 
 ### Connecting the real services
 

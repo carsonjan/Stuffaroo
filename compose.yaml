@@ -1,0 +1,28 @@
+services:
+  homepage:
+    build:
+      context: .
+      target: homepage
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+
+  web:
+    build:
+      context: .
+      target: web
+    restart: unless-stopped
+    env_file: apps/web/.env.local
+    environment:
+      API_URL: http://api:8000
+      APP_BASE_URL: https://stuffaroo.shop
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - api
+
+  api:
+    build:
+      context: apps/api
+    restart: unless-stopped
+    env_file: apps/api/.env

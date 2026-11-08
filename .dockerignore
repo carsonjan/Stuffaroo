@@ -1,0 +1,12 @@
+.git
+**/node_modules
+**/.next
+**/.output
+**/.tanstack
+**/.wrangler
+**/.venv
+**/__pycache__
+**/.env
+**/.env.*
+!**/.env.example
+**/gcp-key.json
