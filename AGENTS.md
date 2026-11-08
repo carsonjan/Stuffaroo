@@ -22,6 +22,16 @@ The project is being developed by three developers during a 24-hour hackathon.
 
 This document provides instructions for AI coding agents and human contributors.
 
+### 1.1 Current state (updated 2026-11-07)
+
+Check this before assuming anything is wired up.
+
+- **Frontend (`apps/web`):** a clickable mockup of every main screen (marketplace, listing detail, create listing, wanted posts and matches, deals, move-out, dashboard and requests, profiles, deposit demo). All data comes from `src/lib/mock-data.ts` and `src/lib/mock-shop.ts`. Forms and status buttons only change local React state.
+- **Backend (`apps/api`):** FastAPI scaffold with `GET /health` only. No database, auth or AI integration exists yet.
+- **Labelled mockups:** AI drafting, AI matching and the Solana deposit show canned or simulated results and say so in the UI. Keep those labels until the real integration replaces them (sections 2.5 and 19.3).
+- **Signed-in user:** hard-coded as `CURRENT_USER_ID` in `mock-data.ts`.
+- **Next step:** the backend wiring plan and its open decisions are in `docs/todo.md`. When you wire a screen to a real endpoint, remove the matching sample data and tick the item there.
+
 ---
 
 ## 2. Core Engineering Principles
@@ -108,8 +118,9 @@ The following is the intended baseline architecture. Inspect the repository befo
 - Next.js with App Router
 - React
 - TypeScript with strict mode
-- Tailwind CSS
-- Reusable React components
+- Tailwind CSS 4, with design tokens in `src/app/tokens.css` and the design system described in `apps/web/DESIGN.md`
+- shadcn/ui components built on Base UI (`@base-ui/react`) in `src/components/ui/`
+- Lucide icons
 - pnpm package management
 
 Use existing UI libraries and conventions already adopted by the repository.
@@ -171,7 +182,6 @@ stuffaroo/
 │   │   ├── src/
 │   │   │   ├── app/
 │   │   │   ├── components/
-│   │   │   ├── features/
 │   │   │   └── lib/
 │   │   ├── public/
 │   │   └── package.json
@@ -214,40 +224,32 @@ Create directories only when their contents are necessary.
 
 ### 4.1 Frontend structure
 
-Organize feature-specific code under:
+The frontend groups domain components by folder under `components/`:
 
 ```text
-apps/web/src/features/<feature>/
-```
-
-Examples:
-
-```text
-features/
-├── listings/
-├── requests/
-├── matching/
-├── rentals/
-└── auth/
-```
-
-A feature may contain:
-
-```text
-features/listings/
+apps/web/src/
+├── app/                 # routes and layouts
 ├── components/
-├── hooks/
-├── api.ts
-├── types.ts
-└── utils.ts
+│   ├── ui/              # shadcn/ui primitives
+│   ├── marketplace/     # listing cards, thumbnails, status badges, search prompt
+│   ├── listings/        # listing form
+│   ├── wanted/          # wanted posts and match list
+│   ├── requests/        # rental request form and rows
+│   ├── dashboard/
+│   ├── deposits/        # Solana deposit demo
+│   ├── shop/            # buy listings, deals, bundles, move-out
+│   └── forms/           # shared form fields
+└── lib/                 # sample data, formatting helpers, utils
 ```
+
+Follow this layout. Put new domain components in the matching `components/<domain>/` folder rather than introducing a parallel `features/` tree.
 
 Use:
 
 - `app/` for routes, layouts, and route-level composition.
-- `components/` for genuinely reusable UI components.
-- `features/` for domain-specific functionality.
-- `lib/` for shared infrastructure, API clients, and utilities.
+- `components/ui/` for generic UI primitives.
+- `components/<domain>/` for domain-specific UI.
+- `lib/` for shared infrastructure, API clients, and utilities. Put the API client here when the backend is wired.
 
 Avoid putting substantial business logic directly into route components.
 
@@ -1319,6 +1321,10 @@ Record:
 ### docs/sponsor-evidence.md
 
 Track implementation and evidence for sponsor prizes.
+
+### docs/todo.md
+
+The backend wiring plan, with open decisions and P0/P1/P2 items. Tick items as they land.
 
 Avoid redundant documentation. Prefer updating existing documents.
 
