@@ -1,178 +1,161 @@
+/*
+ * Stuffaroo design tokens. The single source of truth; DESIGN.md explains the rules.
+ * Tailwind v4 reads @theme, so every token here is also a utility (bg-surface, text-ink-2, rounded-tile…).
+ */
 @theme static {
-  /* Palette: pastel orange (peach, apricot, blush, sand at one tone). Type: Nomu's Inter scale (h1 94/400 at -0.05em, card heads 30/400, body 19/1.65) */
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-md: 1rem;
-  --text-base: 1rem;
-  --text-lg: 1.1875rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 1.875rem;
-  --text-3xl: 2.75rem;
-  --text-display: clamp(3rem, 5vw + 1rem, 5.75rem);
-  --text-section: 2.75rem;
-  --text-title: 1.875rem;
-  --text-lead: 1.1875rem;
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  --color-error: #e40014;
-  --color-success: #429c7c;
-  --color-paper: #fff9f2;
-  --color-paper-2: #ffffff;
-  --color-paper-3: #f8eee5;
-  --color-pebble: #eee2d7;
-  --color-interior: #faf3ec;
-  --color-ink: #2d1d14;
-  --color-ink-2: #2d1d14;
-  --color-ink-3: #715f53;
-  --color-ink-4: #715f53;
-  --color-steel: #837064;
-  --color-ash: #958275;
-  --color-rule: #f0e6dd;
-  --color-rule-2: #eadfd5;
-  --color-rule-field: #a18a7b;
-  --color-signal: #f9b786;
-  --color-signal-hover: #fcc89f;
-  --color-signal-deep: #b2511e;
-  --color-accent: #b2511e;
-  --color-accent-deep: #933d08;
-  --color-accent-ink: #2d1d14;
-  --color-wash: #ffdfd0;
-  --color-tint-peach: #ffdfd0;
-  --color-tint-blue: #fce3c8;
-  --color-tint-mint: #ffddd9;
-  --color-tint-butter: #f3e7c6;
-  --color-focus: #b2511e;
-  --color-roo-fur: #e79a62;
+  /* Colour: near-monochrome, photos carry the colour */
+  --color-bg: #fafaf8;
+  --color-surface: #f1f1ef;
+  --color-surface-2: #e7e7e4;
+  --color-ink: #0e0c0d;
+  --color-ink-2: #5c5c5c;
+  /* #9a9a9a fails AA for text on --bg (2.7:1); tertiary *text* uses --ink-3, icons and strikethrough may use --ink-4 */
+  --color-ink-3: #767676;
+  --color-ink-4: #9a9a9a;
+  --color-line: rgb(0 0 0 / 0.08);
+  --color-white: #ffffff;
+  /* Brand orange: primary brand actions, the active mode, Roo, one sticker per screen. Never headings or backgrounds. */
+  --color-roo: #f26b1d;
+  --color-roo-deep: #c2500f;
+  --color-deal: #d92d20;
+  --color-ok: #1f9d55;
+
+  /* Sticker fills */
+  --color-peach-a: #ffb38a;
+  --color-peach-b: #ff7eb3;
+  --color-lime-a: #d4f55b;
+  --color-lime-b: #ffe14d;
+  --color-holo-a: #a0e9ff;
+  --color-holo-b: #cdb4ff;
+  --color-holo-c: #ffc6e5;
+
+  /* Roo's fur, for the static Roo sticker (empty states, success screens, 404) only */
+  --color-roo-fur: #e8894a;
   --color-roo-belly: #f9dcc0;
   --color-roo-ear: #f7b3a1;
   --color-roo-pouch: #f2be92;
-  --color-roo-line: #3b2a20;
+  --color-roo-line: #0e0c0d;
   --color-roo-cheek: #ff8f8f;
   --color-roo-book: #cdefe2;
   --color-roo-lamp: #ffe9a8;
-  --font-display: var(--font-inter), "Inter", ui-sans-serif, sans-serif;
-  --font-body: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-outlier: var(--font-fredoka), "Fredoka", ui-rounded, sans-serif;
-  --radius-tag: 9999px;
-  --radius-small: 12px;
-  --radius-field: 14px;
-  --radius-card: 28px;
-  --radius-feature: 40px;
+
+  /* Type: Inter Tight 300/400/500 for everything; Gluten 900 for the wordmark only */
+  --font-sans:
+    var(--font-inter-tight), "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-sans);
+  --font-body: var(--font-sans);
+  --font-logo: var(--font-gluten), "Gluten", ui-rounded, var(--font-sans);
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+
+  /* Raw sizes for the type tiers (the tiers themselves are .t-* classes in base.css) */
+  --text-label: 0.75rem;
+  --text-meta: 0.6875rem;
+  --text-card: 0.875rem;
+  --text-body: 1rem;
+  --text-label-lg: 0.875rem;
+
+  /* Radius: these five values and nothing else */
+  --radius-tile: 28px;
+  --radius-card: 20px;
+  --radius-thumb: 18px;
+  --radius-img: 14px;
+  --radius-badge: 8px;
   --radius-pill: 9999px;
-  --shadow-card: 0 16px 40px -24px rgb(45 29 20 / 0.26);
-  --shadow-float: 0 16px 44px -12px rgb(45 29 20 / 0.2);
-  --shadow-pop: 0 3px 0 0 #2d1d14;
-  --tracking-display: -0.045em;
-  --tracking-ui: 0;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --shadow-sticker:
+    0 10px 24px -8px rgb(14 12 13 / 0.28), 0 2px 4px rgb(14 12 13 / 0.12);
+  --shadow-float: 0 12px 32px -12px rgb(14 12 13 / 0.22);
+
+  /*
+   * Legacy names, pointed at the new palette so screens not yet rebuilt keep
+   * rendering in the new look. Delete each once no screen uses it.
+   */
+  --color-paper: #fafaf8;
+  --color-paper-2: #ffffff;
+  --color-paper-3: #f1f1ef;
+  --color-pebble: #e7e7e4;
+  --color-interior: #f1f1ef;
+  --color-steel: #767676;
+  --color-ash: #9a9a9a;
+  --color-rule: rgb(0 0 0 / 0.08);
+  --color-rule-2: rgb(0 0 0 / 0.12);
+  --color-rule-field: #9a9a9a;
+  --color-signal: #f26b1d;
+  --color-signal-hover: #c2500f;
+  --color-signal-deep: #0e0c0d;
+  --color-accent: #0e0c0d;
+  --color-accent-deep: #0e0c0d;
+  --color-accent-ink: #ffffff;
+  --color-wash: #f1f1ef;
+  --color-tint-peach: #f1f1ef;
+  --color-tint-blue: #f1f1ef;
+  --color-tint-mint: #f1f1ef;
+  --color-tint-butter: #f1f1ef;
+  --color-focus: #0e0c0d;
+  --color-error: #d92d20;
+  --color-success: #1f9d55;
+  --radius-small: 8px;
+  --radius-field: 14px;
+  --radius-feature: 28px;
+  --radius-tag: 9999px;
+  --shadow-card: none;
+  --shadow-pop: none;
+  --text-display: 3.25rem;
+  --text-section: 2.25rem;
+  --text-title: 1.375rem;
+  --text-lead: 1rem;
 }
+
 :root {
-  --space-3xs: 2px;
-  --space-2xs: 4px;
-  --space-xs: 8px;
-  --space-sm: 12px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 40px;
-  --space-2xl: 64px;
-  --space-3xl: 96px;
-  --space-4xl: 144px;
-  --dur-micro: 120ms;
-  --dur-short: 220ms;
-  --dur-long: 420ms;
-  --gutter: 40px;
-  --gap-columns: 32px;
-  --section-gap-s: 120px;
-  --section-gap: 144px;
-  --section-gap-l: 176px;
-  --z-base: 1;
-  --z-raised: 10;
-  --z-dropdown: 100;
-  --z-sticky: 200;
-  --z-sticky-nav: 300;
-  --z-modal: 400;
-  --z-toast: 500;
-  --z-tooltip: 600;
-  --rule-hair: 1px;
-  /* Springs as CSS easings (Apple: damping 1.0 / 0.8, response 0.4s); use with --dur-spring */
-  --spring: linear(
-    0,
-    0.058,
-    0.181,
-    0.322,
-    0.457,
-    0.575,
-    0.673,
-    0.752,
-    0.814,
-    0.861,
-    0.898,
-    0.925,
-    0.945,
-    0.96,
-    0.971,
-    0.979,
-    0.985,
-    0.989,
-    0.992,
-    0.995,
-    0.996,
-    0.997,
-    0.998,
-    0.999,
-    1
+  /* Spacing: 4px base */
+  --gutter: 32px;
+  --section-gap: 96px;
+  --container: 1360px;
+
+  /* Frosted (Krea) */
+  --frost-light: rgb(255 255 255 / 0.55);
+  --frost-dark: rgb(20 20 20 / 0.45);
+  --frost-blur: blur(18px) saturate(160%);
+  --frost-border: rgb(255 255 255 / 0.5);
+  --frost-highlight: inset 0 1px 0 rgb(255 255 255 / 0.6);
+  /* Solid fallbacks when backdrop-filter is missing or transparency is reduced */
+  --frost-light-solid: #f4f4f2;
+  --frost-dark-solid: #262426;
+
+  /* Sticker gradients */
+  --grad-peach: linear-gradient(
+    135deg,
+    var(--color-peach-a),
+    var(--color-peach-b)
   );
-  --spring-bounce: linear(
-    0,
-    0.052,
-    0.171,
-    0.316,
-    0.464,
-    0.598,
-    0.712,
-    0.805,
-    0.875,
-    0.927,
-    0.964,
-    0.988,
-    1.003,
-    1.011,
-    1.014,
-    1.015,
-    1.014,
-    1.012,
-    1.01,
-    1.008,
-    1.006,
-    1.004,
-    1.003,
-    1.002,
-    1
+  --grad-lime: linear-gradient(
+    135deg,
+    var(--color-lime-a),
+    var(--color-lime-b)
   );
-  --dur-spring: 590ms;
-  --dur-spring-bounce: 540ms;
-  --material: rgb(255 255 255 / 0.62);
-  --material-edge: inset 0 1px 0 rgb(255 255 255 / 0.7);
-  --grid-line: rgb(45 29 20 / 0.05);
-  --cta-gradient: linear-gradient(92.45deg, #f7a470, #f9b786);
-  --interior-edge: inset 0 0 0 1px rgb(45 29 20 / 0.06);
-  --blue-band: linear-gradient(180deg, #ffe1c7 0%, #fff1de 100%);
-  --container: 1200px;
+  --grad-holo: linear-gradient(
+    135deg,
+    var(--color-holo-a),
+    var(--color-holo-b) 50%,
+    var(--color-holo-c)
+  );
+
+  /* Motion */
+  --dur-hover: 200ms;
+  --dur-enter: 400ms;
+
+  --z-sticky: 300;
+  --z-nav: 400;
 }
-@media (max-width: 60rem) {
-  :root {
-    --gutter: 24px;
-    --section-gap-s: 80px;
-    --section-gap: 96px;
-    --section-gap-l: 120px;
-  }
-}
-@media (max-width: 40rem) {
+
+@media (max-width: 767px) {
   :root {
     --gutter: 16px;
-    --section-gap-s: 56px;
-    --section-gap: 72px;
-    --section-gap-l: 96px;
-    --gap-columns: 16px;
+    --section-gap: 64px;
   }
 }

@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { type RequestRentalState, requestRentalAction } from "./actions";
 
 const inputClass =
-  "h-11 w-full rounded-field border border-input bg-paper-2 px-4 text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+  "h-11 w-full rounded-pill bg-surface px-4 text-[0.875rem] text-ink outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
 
 const initialState: RequestRentalState = { status: "idle" };
 
@@ -47,9 +47,9 @@ export function RequestForm({
   if (state.status === "sent") {
     const { request } = state;
     return (
-      <div className="flex flex-col items-center rounded-card bg-paper-2 p-5 text-center">
-        <CircleCheck className="size-8 text-accent" aria-hidden />
-        <p className="mt-3 font-medium">Request sent</p>
+      <div className="flex flex-col items-center rounded-card bg-surface p-5 text-center">
+        <CircleCheck className="size-8 text-ok" strokeWidth={1.5} aria-hidden />
+        <p className="t-h3 mt-3">Request sent</p>
         <p className="mt-1 text-sm text-muted-foreground">
           {formatDateRange(request.startDate, request.endDate)}. The owner can
           accept or decline it. Check its status in your dashboard.
@@ -81,7 +81,9 @@ export function RequestForm({
       <input type="hidden" name="listingId" value={listing.id} />
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="start">From</Label>
+          <Label htmlFor="start" className="t-label text-ink">
+            From
+          </Label>
           <input
             id="start"
             name="startDate"
@@ -94,7 +96,9 @@ export function RequestForm({
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="end">Until</Label>
+          <Label htmlFor="end" className="t-label text-ink">
+            Until
+          </Label>
           <input
             id="end"
             name="endDate"
@@ -108,20 +112,23 @@ export function RequestForm({
         </div>
       </div>
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="message">Message to owner</Label>
+        <Label htmlFor="message" className="t-label text-ink">
+          Message to owner
+        </Label>
         <Textarea
           id="message"
           name="message"
           maxLength={1000}
           rows={3}
+          className="rounded-card border-0 bg-surface px-4 py-3 text-[0.875rem]"
           placeholder="Say hi and mention when you could pick it up."
         />
       </div>
 
       {validRange && (
-        <dl className="flex flex-col gap-1.5 border-t pt-4 text-sm">
+        <dl className="t-price flex flex-col gap-1.5 border-t border-line pt-4 text-[0.875rem]">
           <div className="flex justify-between">
-            <dt className="text-muted-foreground">
+            <dt className="font-light text-ink-2">
               {isFree
                 ? "Borrowing"
                 : `${formatMoneyCents(listing.pricePerDayCents)} × ${days} ${days === 1 ? "day" : "days"}`}
@@ -130,7 +137,7 @@ export function RequestForm({
           </div>
           {listing.depositCents !== null && (
             <div className="flex justify-between">
-              <dt className="text-muted-foreground">Refundable deposit</dt>
+              <dt className="font-light text-ink-2">Refundable deposit</dt>
               <dd>{formatMoneyCents(listing.depositCents)}</dd>
             </div>
           )}
@@ -144,8 +151,9 @@ export function RequestForm({
       )}
       <Button
         type="submit"
+        variant="brand"
         size="lg"
-        className="h-11"
+        className="w-full"
         disabled={!validRange || isPending}
         aria-busy={isPending || undefined}
       >
@@ -161,7 +169,7 @@ export function RequestForm({
             ? "Request to borrow"
             : "Request to rent"}
       </Button>
-      <p className="text-center text-xs text-muted-foreground">
+      <p className="text-center text-[0.75rem] font-light text-ink-2">
         Nothing is due until the owner accepts.
       </p>
     </form>

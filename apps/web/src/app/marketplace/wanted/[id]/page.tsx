@@ -114,7 +114,7 @@ export default async function WantedDetailPage({
       <section className="mt-10">
         <div className="mb-4 flex items-end justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold">Suggested matches</h2>
+            <h2 className="text-xl font-medium">Suggested matches</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Only listings that are available, in this category, within budget
               and free on these dates.

@@ -216,7 +216,7 @@ export function WantedForm({
       {state.status === "done" && (
         <section aria-live="polite">
           <div className="mb-1 flex items-center justify-between gap-4">
-            <h2 className="text-lg font-semibold">Available now</h2>
+            <h2 className="text-lg font-medium">Available now</h2>
             <MatchMethodNote method={state.result.method} />
           </div>
           <p className="mb-4 text-sm text-muted-foreground">

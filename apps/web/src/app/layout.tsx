@@ -1,27 +1,35 @@
 import type { Metadata } from "next";
-import { Fredoka, Inter } from "next/font/google";
+import { Gluten, Inter_Tight } from "next/font/google";
 
 import "./globals.css";
 
-const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
-const fredoka = Fredoka({
-  variable: "--font-fredoka",
+const interTight = Inter_Tight({
+  variable: "--font-inter-tight",
   subsets: ["latin"],
-  weight: ["600", "700"],
+  weight: ["300", "400", "500"],
+});
+
+const gluten = Gluten({
+  variable: "--font-gluten",
+  subsets: ["latin"],
+  weight: ["900"],
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "Stuffaroo: borrow from students near you",
+    default: "Stuffaroo: buy, rent and request from UBC classmates",
     template: "%s · Stuffaroo",
   },
   description:
-    "A student-to-student marketplace to lend, borrow and rent the things you need for a few days instead of buying them.",
+    "A campus marketplace where UBC students buy, rent, borrow and request everyday items from classmates, with pickup at spots on campus.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${inter.variable} ${fredoka.variable} h-full`}>
+    <html
+      lang="en"
+      className={`${interTight.variable} ${gluten.variable} h-full`}
+    >
       <body className="min-h-full">{children}</body>
     </html>
   );

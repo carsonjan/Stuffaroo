@@ -1,20 +1,4 @@
-/* Hallmark · shape: centred hero, blue bento band, quiet pill index with cards, bento steps, centred close (/) · inner screens kept · genre: playful · theme: brand (Nomu, nomu.store, spec 2026-11-07; playful touches from the team's Stuffaroo index.html) · redesign: full
- * palette: pastel orange, one peach tone · paper: #fff9f2 with a faint grid · ink: #2d1d14, body #715f53 · accent: #f9b786 fills (gradient from #f7a470) with ink text (9.4:1), #b2511e orange text, #933d08 on pastels · tints: peach #ffdfd0, apricot #fce3c8, blush #ffddd9, sand #f3e7c6 · display: Inter 400 at -0.045em · body: Inter · outlier: Fredoka 700 (the hopping wordmark) · mascot: Roo, from the team's index.html · cards: Nomu bento · hero: Banner, Roo with a speech bubble over a big tight headline and the search pill (/) · nav: white floating pill · footer: wordmark mast with link columns · signature: a wanted post answered by real listings, in a bento card
- * axes: light/grotesk-sans/chromatic-orange · posture: committed · surface: absolute · contrast: pass · fold: pass · job: borrow (search) · brand: Nomu (spec 2026-11-07) · v2.0.0 */
-/* Hallmark · pre-emit critique: P4 H4 E4 S4 R4 V4 · weakest: S, Nomu's structure is generic polish by request; Roo, the hopping Fredoka wordmark and the team's student copy carry the play */
-/* Hallmark · waive 38iii · the hero's second line "between classmates." in orange, once, as Nomu's hero sets its second line · the user asked for nomu.store's hero treatment */
-/* Hallmark · waive 7b · white cards #ffffff on the cream page, Nomu's --nomu-card read from its CSS · the white rim is the card style the user asked for */
-/* Hallmark · waive 23 · orange covers about 9% of the first screen: the hero's second line, Roo and the pill buttons · the user chose a pastel orange palette, orange is its one colour */
-/* Hallmark · waive 1 · Inter as the display face, read from Nomu's CSS (h1 93.6px at -0.05em) · the user asked for nomu.store's style and the project already loads Inter */
-/* Hallmark · dismissed 41 · accent #b2511e is only ever orange text on paper and white (4.9:1); orange fills are #f9b786 with ink text (9.4:1) */
-/* Hallmark · waive 79 · the hero's foot is the peach band, inside the 1440x900 first screen · Nomu's hero hands off to its next band the same way */
-/* Hallmark · waive 80 · Roo, the team's own kangaroo mascot, copied from their index.html with its colours moved into tokens · the user asked to add the kangaroo from that file */
-/* Hallmark · waive 44c · Roo and the speech bubble stand at the hero's right edge beside the search pill, off the centred text column · the user asked for the mascot and bubble on the side */
-/* Hallmark · dismissed 29 · the nav pill alone is an Apple-style material (white at 62%, 20px blur, bright top edge) site-wide, solid under prefers-reduced-transparency and prefers-contrast */
-/* Hallmark · waive 3 · the category icon in each listing's picture well stands in for the item's photo until listings carry pictures · the cards are photo cards, the icon is a placeholder */
-/* Hallmark · waive 49b · wanted-post titles are headings set as links and wrap by design on a 320px phone · footer and nav links are set nowrap */
-/* Hallmark · dismissed 77 · /move-out is a one-job page: the countdown and the listings to reserve, by design three sections with the footer */
-/* Hallmark · dismissed F18 · data-slot="avatar" is shadcn's tag on the 32px initials avatar, not a photo slot; photo slots carry data-alt */
+/* Stuffaroo: see DESIGN.md. Tokens live in tokens.css, base rules and type tiers in base.css. */
 
 @import "tailwindcss";
 @import "./tokens.css";
@@ -24,7 +8,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* shadcn/ui reads these names; each points at a system token (export-formats.md § shadcn) */
+/* shadcn/ui reads these names; each points at a system token */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -42,70 +26,98 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --font-sans: var(--font-body);
   --font-heading: var(--font-display);
+  --font-wordmark: var(--font-logo);
   --font-mono: ui-monospace, "SF Mono", monospace;
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-sm: var(--radius-badge);
+  --radius-md: var(--radius-img);
+  --radius-lg: var(--radius-card);
+  --radius-xl: var(--radius-tile);
 }
 
 :root {
-  --background: var(--color-paper);
+  --background: var(--color-bg);
   --foreground: var(--color-ink);
-  --card: var(--color-paper-2);
+  --card: var(--color-white);
   --card-foreground: var(--color-ink);
-  --popover: var(--color-paper);
+  --popover: var(--color-white);
   --popover-foreground: var(--color-ink);
-  --primary: var(--color-ink-2);
-  --primary-foreground: var(--color-accent-ink);
-  --secondary: var(--color-paper-3);
-  --secondary-foreground: var(--color-ink-2);
-  --muted: var(--color-paper-2);
-  --muted-foreground: var(--color-ink-3);
-  --accent: var(--color-paper-3);
+  --primary: var(--color-ink);
+  --primary-foreground: var(--color-white);
+  --secondary: var(--color-surface);
+  --secondary-foreground: var(--color-ink);
+  --muted: var(--color-surface);
+  --muted-foreground: var(--color-ink-2);
+  --accent: var(--color-surface-2);
   --accent-foreground: var(--color-ink);
-  --destructive: var(--color-error);
-  --border: var(--color-rule);
-  --input: var(--color-rule-field);
-  --ring: var(--color-focus);
-  --radius: 8px;
+  --destructive: var(--color-deal);
+  --border: var(--color-line);
+  --input: var(--color-surface-2);
+  --ring: var(--color-ink);
+  --radius: var(--radius-card);
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
 }
 
-/* Apple-style chrome (material nav, press feedback): unlayered so it outranks utility classes */
-.site-nav-pill {
-  background-color: var(--material);
-  backdrop-filter: blur(20px) saturate(180%);
-  box-shadow: var(--material-edge), var(--shadow-float);
+/* Frosted surfaces (Krea): unlayered so they outrank utilities. Solid fallback first. */
+.frost,
+.frost-dark {
+  background-color: var(--frost-light-solid);
+  border: 1px solid var(--frost-border);
+  box-shadow: var(--frost-highlight);
 }
+.frost-dark {
+  background-color: var(--frost-dark-solid);
+  border-color: rgb(255 255 255 / 0.14);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12);
+  color: var(--color-white);
+}
+@supports (
+    (backdrop-filter: blur(1px)) or
+    (-webkit-backdrop-filter: blur(1px))
+  ) {
+  .frost {
+    background-color: var(--frost-light);
+    -webkit-backdrop-filter: var(--frost-blur);
+    backdrop-filter: var(--frost-blur);
+  }
+  .frost-dark {
+    background-color: var(--frost-dark);
+    -webkit-backdrop-filter: var(--frost-blur);
+    backdrop-filter: var(--frost-blur);
+  }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .frost {
+    background-color: var(--frost-light-solid);
+    backdrop-filter: none;
+  }
+  .frost-dark {
+    background-color: var(--frost-dark-solid);
+    backdrop-filter: none;
+  }
+}
+
 [data-slot="button"],
 a[class*="group/button"] {
   transition:
-    transform var(--dur-micro) var(--ease-out),
-    filter var(--dur-micro) var(--ease-out),
-    background-color var(--dur-micro) var(--ease-out);
+    transform var(--dur-hover) var(--ease-out),
+    background-color var(--dur-hover) var(--ease-out),
+    color var(--dur-hover) var(--ease-out);
 }
 [data-slot="button"]:active,
 a[class*="group/button"]:active {
   transform: scale(0.97);
 }
-@media (prefers-reduced-transparency: reduce) {
-  .site-nav-pill {
-    background-color: var(--color-paper-2);
-    backdrop-filter: none;
-  }
+
+/* Sheets (mobile filters) sit above the sticky header (300) and the bottom nav (400) */
+[data-slot="sheet-overlay"] {
+  z-index: 450;
 }
-@media (prefers-contrast: more) {
-  .site-nav-pill {
-    background-color: var(--color-paper-2);
-    backdrop-filter: none;
-    box-shadow: inset 0 0 0 1.5px var(--color-ink);
-  }
+[data-slot="sheet-content"] {
+  z-index: 460;
 }

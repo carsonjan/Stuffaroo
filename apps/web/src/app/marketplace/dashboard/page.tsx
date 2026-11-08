@@ -108,7 +108,7 @@ export default async function DashboardPage() {
 
       <section>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Your listings</h2>
+          <h2 className="text-xl font-medium">Your listings</h2>
           <Link
             href="/marketplace/listings/new"
             className={cn(
@@ -204,7 +204,7 @@ function SectionHeader({
 }) {
   return (
     <div className="mb-4 flex items-center justify-between">
-      <h2 className="text-xl font-semibold">{title}</h2>
+      <h2 className="text-xl font-medium">{title}</h2>
       <Link
         href={href}
         className="rounded-small text-sm whitespace-nowrap text-ink-3 underline-offset-4 hover:text-ink-2 hover:underline"
