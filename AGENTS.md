@@ -30,6 +30,7 @@ Check this before assuming anything is wired up.
 - **Backend (`apps/api`):** FastAPI scaffold with `GET /health` only. No database, auth or AI integration exists yet.
 - **Labelled mockups:** AI drafting, AI matching and the Solana deposit show canned or simulated results and say so in the UI. Keep those labels until the real integration replaces them (sections 2.5 and 19.3).
 - **Signed-in user:** hard-coded as `CURRENT_USER_ID` in `mock-data.ts`.
+- **Auth:** decided as Auth0 in the Next.js app (section 3, Authentication). Not implemented yet. It is assigned to a separate agent through `docs/handoff-auth0.md`. Other agents should not add Auth0 config, packages or env vars.
 - **Next step:** the backend wiring plan and its open decisions are in `docs/todo.md`. When you wire a screen to a real endpoint, remove the matching sample data and tick the item there.
 
 ---
@@ -155,6 +156,17 @@ AI is intended primarily for semantic matching and other features that provide m
 - Use structured outputs where applicable.
 - Validate model-generated data before using it.
 - Use deterministic filtering and ordinary application logic when sufficient.
+
+### Authentication
+
+Decided: **Auth0, integrated in the Next.js app** with the Auth0 Next.js SDK (`@auth0/nextjs-auth0`). Do not use Supabase Auth or another provider.
+
+- Next.js owns sign-in, sign-out, the callback and the session cookie.
+- FastAPI does not run its own login. It trusts a request only when it carries an Auth0 access token that it verifies itself (signature via the tenant's JWKS, issuer, audience, expiry). It derives the user from the token's `sub` claim.
+- The Next.js server forwards that access token to FastAPI as `Authorization: Bearer <token>`. Never send a user ID from the browser as proof of identity.
+- Auth0 secrets stay server-side. None use the `NEXT_PUBLIC_` prefix.
+
+Setup is deferred to a dedicated agent. The full brief is in `docs/handoff-auth0.md`. Until that work lands, keep using `CURRENT_USER_ID` and do not add Auth0 code, packages or env vars.
 
 ### Optional integrations
 
@@ -1182,6 +1194,7 @@ When authentication is implemented:
 - Enforce ownership checks server-side.
 - Do not trust client-provided user identity.
 - Do not bypass authorization merely because a route is not linked from the UI.
+- Next.js `proxy.ts` checks are optimistic redirects only. Re-check the session in the page, route handler or server action, and verify the token again in FastAPI.
 
 ### 16.3 Validation
 

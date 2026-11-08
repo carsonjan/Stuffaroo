@@ -10,7 +10,7 @@ Settle these before building the matching items below. Each one is a team call, 
 
 - [ ] **Where backend logic lives.** The repo has a FastAPI app in `apps/api`, and AGENTS.md says the backend owns business logic. The team product spec instead describes Next.js Route Handlers / Server Actions with Zod. Pick one and update AGENTS.md section 3. The rest of this list assumes FastAPI.
 - [ ] **Database.** The team spec names Supabase PostgreSQL (plus Supabase Storage for images). Confirm, and decide whether FastAPI talks to it through SQLAlchemy/psycopg or the Supabase client.
-- [ ] **Auth.** The team spec names Auth0, not Supabase Auth. Confirm, and decide how the web app passes the session to FastAPI (Auth0 access token verified by the API is the usual pattern).
+- [x] **Auth.** Decided: Auth0 in the Next.js app, with FastAPI verifying Auth0 access tokens. See AGENTS.md section 3 (Authentication) and `docs/handoff-auth0.md`.
 - [ ] **AI provider.** The team spec names Google Gemini for listing drafts and matching.
 - [ ] **Buy/sell scope.** The mock has both rent/borrow listings (`Listing`) and buy listings, deals and bundles (`mock-shop.ts`). Decide whether sale listings get wired for the demo or stay as a mockup.
 
@@ -28,10 +28,11 @@ Settle these before building the matching items below. Each one is a team call, 
 - [ ] Store money as integer cents (AGENTS.md section 6.3). The mock uses whole-dollar numbers, so convert at the boundary.
 - [ ] Seed script with the sample profiles, listings, wanted posts and requests, including at least one incompatible listing so matching visibly filters it out (AGENTS.md section 19.5).
 
-### Auth
-- [ ] Sign in and sign out in the web app. Wire the existing "Sign out" item in `site-header.tsx`.
-- [ ] Verify the session or token on every protected API route. Derive the user from it, never from a client-sent ID.
-- [ ] Create or update the `profiles` row on first sign-in.
+### Auth (assigned: see `docs/handoff-auth0.md`)
+- [ ] Auth0 sign-in, sign-out and session in Next.js. Wire the existing "Sign out" item in `site-header.tsx`.
+- [ ] Forward the Auth0 access token from the Next.js server to FastAPI as a Bearer token.
+- [ ] Verify the token on every protected FastAPI route (JWKS, issuer, audience). Derive the user from `sub`, never from a client-sent ID.
+- [ ] Create or update the `profiles` row on first sign-in, keyed by `auth0_user_id`.
 - [ ] Replace `CURRENT_USER_ID` with the signed-in user everywhere it is used.
 
 ### Listings
