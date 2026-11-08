@@ -6,14 +6,14 @@ Students buy things they only need for a week, and throw out perfectly good stuf
 
 ## Status
 
-The backend is being wired in chunks (see [docs/todo.md](docs/todo.md) and [docs/api-contract.md](docs/api-contract.md)). Browsing, listing detail, profiles, wanted posts and matching now read from the database through the API. Sign-in, creating listings and requests, and the dashboard still run on sample data.
+The backend is being wired in chunks (see [docs/todo.md](docs/todo.md) and [docs/api-contract.md](docs/api-contract.md)). Browsing, listing detail, profiles, wanted posts and matching now read from the database through the API. Sign-in is wired through Auth0 (it switches on once a tenant is configured; see [docs/handoff-auth0.md](docs/handoff-auth0.md)). Creating listings and requests, and the dashboard, still run on sample data.
 
 | Area | State |
 | --- | --- |
 | Web app (`apps/web`) | All main screens built and responsive. Data comes from `src/lib/mock-data.ts` and `src/lib/mock-shop.ts` |
 | API (`apps/api`) | FastAPI with read endpoints for listings, profiles and wanted posts, and matching (`/api/matches`, `/api/wanted/{id}/matches`) |
 | Database | Tiger Cloud Postgres (pgvector + pgvectorscale). Locally, the same image in Docker. Schema in `apps/api/migrations/`, fictional demo data in `apps/api/app/seed/` |
-| Auth | Not set up. The UI acts as one hard-coded student (`CURRENT_USER_ID`) |
+| Auth | Auth0 in Next.js; FastAPI verifies the forwarded access token. Off until Auth0 env vars are set. The dashboard still shows a hard-coded sample student |
 | AI matching | Real: hard filters in SQL (availability, category, budget, booked dates, own listings), then Gemini embeddings ranked on Tiger's DiskANN index. Without a Gemini key it falls back to keyword ranking and the UI says so |
 | AI listing drafts | Canned sample response, labelled as a mockup |
 | Solana deposit | Simulated, labelled as simulated. No wallet is contacted |
@@ -80,7 +80,7 @@ pnpm db:embed     # embed listings with Gemini (needs GEMINI_API_KEY in apps/api
 
 To use Tiger Cloud instead, copy `apps/api/.env.example` to `apps/api/.env` and set `DATABASE_URL` to the service URL (with `sslmode=require`), then run `pnpm db:migrate` and `pnpm db:seed`.
 
-The web app reads `API_URL` (default `http://localhost:8000`).
+The web app reads `API_URL` (default `http://localhost:8000`). For sign-in, copy `apps/web/.env.example` to `apps/web/.env.local` and follow [docs/handoff-auth0.md](docs/handoff-auth0.md).
 
 API tests create a throwaway `stuffaroo_test` database on the local server and skip if it isn't running. CI runs them against the same image.
 

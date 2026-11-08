@@ -67,3 +67,68 @@ def client(database_url: str, monkeypatch: pytest.MonkeyPatch) -> Iterator[TestC
         yield test_client
     db.close_pool()
     config.get_settings.cache_clear()
+
+
+AUTH0_DOMAIN = "stuffaroo-test.us.auth0.com"
+AUTH0_AUDIENCE = "https://api.stuffaroo.test"
+
+
+class TokenFactory:
+    """Signs RS256 access tokens like Auth0 would, with a throwaway key."""
+
+    def __init__(self) -> None:
+        from cryptography.hazmat.primitives.asymmetric import rsa
+
+        self.key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        self.other_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        self.userinfo: dict[str, dict] = {}
+
+    def token(
+        self,
+        sub: str,
+        *,
+        key=None,
+        audience: str = AUTH0_AUDIENCE,
+        expires_in: int = 3600,
+    ) -> str:
+        import time
+
+        import jwt
+
+        now = int(time.time())
+        claims = {
+            "sub": sub,
+            "iss": f"https://{AUTH0_DOMAIN}/",
+            "aud": [audience, f"https://{AUTH0_DOMAIN}/userinfo"],
+            "iat": now,
+            "exp": now + expires_in,
+        }
+        return jwt.encode(claims, key or self.key, algorithm="RS256")
+
+    def headers(self, sub: str, **userinfo: object) -> dict[str, str]:
+        """Auth header for `sub`; userinfo is what Auth0 /userinfo would return."""
+        self.userinfo[sub] = {"sub": sub, **userinfo}
+        return {"Authorization": f"Bearer {self.token(sub)}"}
+
+
+@pytest.fixture
+def auth(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> TokenFactory:
+    """Configures Auth0 settings and replaces JWKS and /userinfo lookups."""
+    import jwt
+
+    from app.core import auth as auth_module
+
+    factory = TokenFactory()
+    monkeypatch.setenv("AUTH0_DOMAIN", AUTH0_DOMAIN)
+    monkeypatch.setenv("AUTH0_AUDIENCE", AUTH0_AUDIENCE)
+    config.get_settings.cache_clear()
+    monkeypatch.setattr(
+        auth_module, "signing_key", lambda token, domain: factory.key.public_key()
+    )
+
+    def userinfo(token: str, domain: str) -> dict:
+        sub = jwt.decode(token, options={"verify_signature": False})["sub"]
+        return factory.userinfo.get(sub, {})
+
+    monkeypatch.setattr(auth_module, "fetch_userinfo", userinfo)
+    return factory

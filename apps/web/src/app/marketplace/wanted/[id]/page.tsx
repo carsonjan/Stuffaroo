@@ -11,6 +11,7 @@ import type { MatchResult, WantedPost } from "@/lib/api-types";
 import { formatDateRange, formatPriceCents } from "@/lib/format";
 import { getCategory } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import { getViewerProfileId } from "@/lib/viewer";
 
 export async function generateMetadata({
   params,
@@ -45,8 +46,7 @@ export default async function WantedDetailPage({
   const { author } = post;
   const category = getCategory(post.category);
   const { matches } = result;
-  // Set from the signed-in profile once Auth0 is wired (chunk 3).
-  const isOwn = false;
+  const isOwn = (await getViewerProfileId()) === post.userId;
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-10">

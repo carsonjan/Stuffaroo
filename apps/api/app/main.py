@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
 from app.core.db import close_pool
-from app.routers import listings, profiles, wanted
+from app.routers import listings, me, profiles, wanted
 
 
 @asynccontextmanager
@@ -25,6 +25,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(me.router)
 app.include_router(listings.router)
 app.include_router(profiles.router)
 app.include_router(wanted.router)

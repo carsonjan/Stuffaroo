@@ -2,6 +2,7 @@ import { Suspense } from "react";
 
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader, SiteHeaderWithPath } from "@/components/site-header";
+import { getViewer } from "@/lib/viewer";
 
 export default function MarketplaceLayout({
   children,
@@ -12,11 +13,15 @@ export default function MarketplaceLayout({
         Design preview: all listings, people and transactions shown are sample
         data.
       </p>
-      <Suspense fallback={<SiteHeader activePath={null} />}>
-        <SiteHeaderWithPath />
+      <Suspense fallback={<SiteHeader activePath={null} viewer={null} />}>
+        <HeaderWithViewer />
       </Suspense>
       <main className="flex-1">{children}</main>
       <SiteFooter />
     </div>
   );
+}
+
+async function HeaderWithViewer() {
+  return <SiteHeaderWithPath viewer={await getViewer()} />;
 }

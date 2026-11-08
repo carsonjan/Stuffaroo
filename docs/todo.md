@@ -28,12 +28,13 @@ Settle these before building the matching items below. Each one is a team call, 
 - [x] Store money as integer cents (AGENTS.md section 6.3). The mock uses whole-dollar numbers, so convert at the boundary.
 - [x] Seed script with the sample profiles, listings, wanted posts and requests, including at least one incompatible listing so matching visibly filters it out (AGENTS.md section 19.5).
 
-### Auth (assigned: see `docs/handoff-auth0.md`)
-- [ ] Auth0 sign-in, sign-out and session in Next.js. Wire the existing "Sign out" item in `site-header.tsx`.
-- [ ] Forward the Auth0 access token from the Next.js server to FastAPI as a Bearer token.
-- [ ] Verify the token on every protected FastAPI route (JWKS, issuer, audience). Derive the user from `sub`, never from a client-sent ID.
-- [ ] Create or update the `profiles` row on first sign-in, keyed by `auth0_user_id`.
-- [ ] Replace `CURRENT_USER_ID` with the signed-in user everywhere it is used.
+### Auth (setup: `docs/handoff-auth0.md`)
+- [x] Auth0 sign-in, sign-out and session in Next.js. Wire the existing "Sign out" item in `site-header.tsx`.
+- [x] Forward the Auth0 access token from the Next.js server to FastAPI as a Bearer token.
+- [x] Verify the token on every protected FastAPI route (JWKS, issuer, audience). Derive the user from `sub`, never from a client-sent ID.
+- [x] Create or update the `profiles` row on first sign-in, keyed by `auth0_user_id`.
+- [ ] Replace `CURRENT_USER_ID` with the signed-in user everywhere it is used. Done for the header, listing and wanted pages; the dashboard is chunk 4.
+- [ ] Configure a real Auth0 tenant and demo users (needs dashboard access; see `docs/handoff-auth0.md`).
 
 ### Listings
 - [x] `GET /api/listings` with `q`, `category`, `price` and `all` filters, matching what `app/marketplace/browse/page.tsx` filters in memory today.

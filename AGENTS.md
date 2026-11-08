@@ -27,10 +27,10 @@ This document provides instructions for AI coding agents and human contributors.
 Check this before assuming anything is wired up.
 
 - **Frontend (`apps/web`):** a clickable mockup of every main screen (marketplace, listing detail, create listing, wanted posts and matches, deals, move-out, dashboard and requests, profiles, deposit demo). Every mockup route lives under `/marketplace` (`src/app/marketplace/`, with its own layout); the root `/` is still the starter page. All data comes from `src/lib/mock-data.ts` and `src/lib/mock-shop.ts`. Forms and status buttons only change local React state.
-- **Backend (`apps/api`):** FastAPI on Tiger Cloud Postgres (pgvector + pgvectorscale; local Docker image for dev and CI). Read endpoints for listings, profiles and wanted posts, plus matching (Gemini embeddings on pgvectorscale with a labelled keyword fallback), are live and used by the web app. Auth and rentals are being added in chunks (see `docs/todo.md`). The contract is `docs/api-contract.md`.
+- **Backend (`apps/api`):** FastAPI on Tiger Cloud Postgres (pgvector + pgvectorscale; local Docker image for dev and CI). Read endpoints for listings, profiles and wanted posts, plus matching (Gemini embeddings on pgvectorscale with a labelled keyword fallback), are live and used by the web app. Auth0 token verification and `/api/me` are live. Creating listings, wanted posts and rental requests is being added in chunks (see `docs/todo.md`). The contract is `docs/api-contract.md`.
 - **Labelled mockups:** AI listing drafts and the Solana deposit show canned or simulated results and say so in the UI. Matching is real; the UI states whether results came from Gemini embeddings or the keyword fallback. Keep those labels until the real integration replaces them (sections 2.5 and 19.3).
 - **Signed-in user:** hard-coded as `CURRENT_USER_ID` in `mock-data.ts`.
-- **Auth:** decided as Auth0 in the Next.js app (section 3, Authentication). Not implemented yet. It is assigned to a separate agent through `docs/handoff-auth0.md`. Other agents should not add Auth0 config, packages or env vars.
+- **Auth:** Auth0 in the Next.js app (section 3, Authentication) is implemented: `src/lib/auth0.ts`, `src/proxy.ts`, `src/lib/viewer.ts`, and token verification in `apps/api/app/core/auth.py`. It stays off until the env vars in `docs/handoff-auth0.md` are set. Use `getViewer()` / `getViewerProfileId()` for the signed-in user and `apiFetch(..., { auth: true })` for protected API calls.
 - **Next step:** the backend wiring plan and its open decisions are in `docs/todo.md`. When you wire a screen to a real endpoint, remove the matching sample data and tick the item there.
 
 ---
@@ -166,7 +166,7 @@ Decided: **Auth0, integrated in the Next.js app** with the Auth0 Next.js SDK (`@
 - The Next.js server forwards that access token to FastAPI as `Authorization: Bearer <token>`. Never send a user ID from the browser as proof of identity.
 - Auth0 secrets stay server-side. None use the `NEXT_PUBLIC_` prefix.
 
-Setup is deferred to a dedicated agent. The full brief is in `docs/handoff-auth0.md`. Until that work lands, keep using `CURRENT_USER_ID` and do not add Auth0 code, packages or env vars.
+Setup steps and demo accounts are in `docs/handoff-auth0.md`.
 
 ### Optional integrations
 

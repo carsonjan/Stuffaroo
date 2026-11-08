@@ -1,16 +1,18 @@
 /**
  * Server-side client for the Stuffaroo API (FastAPI in apps/api). Only import
  * this from server components and server actions: the base URL is server-only
- * config, and later auth headers carry the user's access token.
+ * config, and authenticated calls carry the user's Auth0 access token.
  */
 
 import type {
   ListingDetail,
   MatchQuery,
   MatchResult,
+  Profile,
   ProfileWithListings,
   WantedPost,
 } from "./api-types";
+import { getAuth0 } from "./auth0";
 
 const API_URL = process.env.API_URL ?? "http://localhost:8000";
 const TIMEOUT_MS = 8000;
@@ -34,12 +36,29 @@ type FetchOptions = {
   query?: Query;
   method?: "GET" | "POST";
   body?: unknown;
+  /** Send the signed-in user's access token. */
+  auth?: boolean;
 };
+
+/** The current user's Auth0 access token for the API. */
+async function accessToken(): Promise<string> {
+  const auth0 = getAuth0();
+  if (!auth0) throw new ApiError(503, "Sign-in isn't configured yet.");
+  try {
+    const { token } = await auth0.getAccessToken();
+    return token;
+  } catch {
+    throw new ApiError(401, "Sign in required");
+  }
+}
 
 async function apiFetch<T>(
   path: string,
-  { query, method = "GET", body }: FetchOptions = {},
+  { query, method = "GET", body, auth = false }: FetchOptions = {},
 ): Promise<T> {
+  const headers = new Headers({ Accept: "application/json" });
+  if (auth) headers.set("Authorization", `Bearer ${await accessToken()}`);
+  if (body !== undefined) headers.set("Content-Type", "application/json");
   const url = new URL(path, API_URL);
   for (const [key, value] of Object.entries(query ?? {})) {
     if (value !== undefined && value !== "")
@@ -52,10 +71,7 @@ async function apiFetch<T>(
       method,
       cache: "no-store",
       signal: AbortSignal.timeout(TIMEOUT_MS),
-      headers: {
-        Accept: "application/json",
-        ...(body === undefined ? {} : { "Content-Type": "application/json" }),
-      },
+      headers,
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch {
@@ -158,4 +174,18 @@ export function getWantedMatches(id: string): Promise<MatchResult> {
 
 export function findMatches(query: MatchQuery): Promise<MatchResult> {
   return apiFetch("/api/matches", { method: "POST", body: query });
+}
+
+/** The signed-in user's profile, or null when signed out or sign-in is off. */
+export async function getMe(): Promise<Profile | null> {
+  try {
+    return await apiFetch<Profile>("/api/me", { auth: true });
+  } catch (error) {
+    if (
+      error instanceof ApiError &&
+      (error.status === 401 || error.status === 503)
+    )
+      return null;
+    throw error;
+  }
 }

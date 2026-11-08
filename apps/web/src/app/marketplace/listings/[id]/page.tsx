@@ -14,6 +14,7 @@ import type { ListingDetail } from "@/lib/api-types";
 import { formatMoneyCents, formatPriceCents } from "@/lib/format";
 import { getCategory } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import { getViewerProfileId } from "@/lib/viewer";
 
 export async function generateMetadata({
   params,
@@ -51,8 +52,7 @@ export default async function ListingPage({
 
   const { owner } = listing;
   const category = getCategory(listing.category);
-  // Set from the signed-in profile once Auth0 is wired (chunk 3).
-  const isOwn = false;
+  const isOwn = (await getViewerProfileId()) === listing.ownerId;
 
   return (
     <div className="mx-auto max-w-[1200px] px-4 py-8 sm:px-10">
