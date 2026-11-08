@@ -8,7 +8,11 @@ API_ROOT = Path(__file__).resolve().parents[2]
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=API_ROOT / ".env", env_file_encoding="utf-8", extra="ignore"
+        env_file=API_ROOT / ".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        # `DATABASE_URL=` (blank, as in .env.example) means "use the default".
+        env_ignore_empty=True,
     )
 
     # Tiger Cloud (or any Postgres with pgvector + pgvectorscale). The default

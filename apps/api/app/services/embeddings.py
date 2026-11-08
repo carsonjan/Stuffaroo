@@ -52,9 +52,8 @@ def embed_texts(texts: list[str], task_type: TaskType) -> list[list[float]]:
                 task_type=task_type, output_dimensionality=EMBEDDING_DIMENSIONS
             ),
         )
-    except (
-        Exception
-    ) as error:  # SDK raises several error types; all mean "no embedding".
+    # The SDK raises several error types; all of them mean "no embedding".
+    except Exception as error:
         raise EmbeddingError(f"Gemini embedding request failed: {error}") from error
 
     embeddings = response.embeddings or []
