@@ -115,6 +115,7 @@ async function MarketplaceBrowser({
         >
           {category && <input type="hidden" name="category" value={category} />}
           {price && <input type="hidden" name="price" value={price} />}
+          {showUnavailable && <input type="hidden" name="all" value="1" />}
           <Search
             className="size-4 shrink-0 text-muted-foreground"
             aria-hidden

@@ -23,10 +23,10 @@ export default function DepositsPage({
         </span>
       </div>
       <p className="mt-2 max-w-2xl text-muted-foreground">
-        A demonstration of sending a rental deposit as a Devnet SOL transfer.
-        Devnet tokens have no monetary value. This is a direct wallet-to-wallet
-        transfer (not escrow), and it&apos;s separate from the borrowing request
-        itself.
+        A simulation of sending a rental deposit as a Devnet SOL transfer. No
+        wallet is connected and no transaction is sent. Devnet tokens have no
+        monetary value. This is a direct wallet-to-wallet transfer (not escrow),
+        and it&apos;s separate from the borrowing request itself.
       </p>
       <Suspense
         fallback={
