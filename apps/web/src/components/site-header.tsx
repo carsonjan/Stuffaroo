@@ -137,7 +137,10 @@ export function SiteHeader({
             >
               Post an item
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-72 p-2">
+            <DropdownMenuContent
+              align="end"
+              className="w-72 p-2 z-[var(--z-toast)]"
+            >
               {postOptions.map(({ href, label, hint, icon: Icon }) => (
                 <DropdownMenuItem
                   key={label}
