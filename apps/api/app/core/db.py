@@ -17,11 +17,11 @@ def get_pool() -> ConnectionPool:
     if _pool is None:
         _pool = ConnectionPool(
             get_settings().database_url,
-            min_size=1,
-            max_size=10,
+            min_size=0,
+            max_size=2,
             kwargs={
                 "row_factory": dict_row,
-                # Tiger Cloud's connection pooler runs in transaction mode, where
+                # Transaction poolers do not retain session state, so
                 # server-side prepared statements break; never auto-prepare.
                 "prepare_threshold": None,
                 "connect_timeout": 10,
@@ -50,7 +50,10 @@ def migrate(
     """Apply pending numbered .sql files in order. Returns the versions applied."""
     applied: list[str] = []
     with psycopg.connect(
-        database_url or get_settings().database_url, autocommit=True
+        database_url
+        or get_settings().database_direct_url
+        or get_settings().database_url,
+        autocommit=True,
     ) as conn:
         conn.execute(
             "create table if not exists schema_migrations ("

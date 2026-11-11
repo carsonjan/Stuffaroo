@@ -199,7 +199,7 @@ export function WantedForm({
               <>
                 {/* Plain <a>: /auth/login is an Auth0 route handler, not a page. */}
                 <a
-                  href="/auth/login?returnTo=/marketplace/wanted/new"
+                  href={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/auth/login?returnTo=${encodeURIComponent(`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/marketplace/wanted/new`)}`}
                   className="font-medium text-ink-2 underline underline-offset-4"
                 >
                   Sign in to post

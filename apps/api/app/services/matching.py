@@ -2,8 +2,8 @@
 
 1. Hard filters in SQL: available, category, budget, free on the requested
    dates, not the requester's own listing. Semantic similarity never overrides these.
-2. Rank with Gemini embeddings (cosine distance on the DiskANN index), or fall
-   back to keyword overlap when Gemini is unavailable. The result says which.
+2. Rank with PostgreSQL full-text search, or optionally Gemini embeddings.
+   The result says which.
 3. Reasons are built from the listing's real attributes only.
 """
 
@@ -24,7 +24,6 @@ from app.services.listings import LISTING_DETAIL_SELECT, listing_from_row
 logger = logging.getLogger(__name__)
 
 MAX_MATCHES = 6
-KEYWORD_CANDIDATES = 200
 CATEGORY_NAMES = {
     "electronics": "Electronics",
     "cameras": "Cameras",
@@ -178,30 +177,32 @@ def _similarities(
     return {row["id"]: float(row["similarity"]) for row in rows}
 
 
-def _keyword_matches(conn: psycopg.Connection, need: Need) -> list[Match]:
+def _fulltext_matches(conn: psycopg.Connection, need: Need) -> list[Match]:
     words = tokens(need.text)
+    if not words:
+        return []
     where, params = _filters(need)
+    document = (
+        "setweight(to_tsvector('english', coalesce(l.title, '')), 'A') || "
+        "setweight(to_tsvector('english', coalesce(l.description, '')), 'B')"
+    )
+    query = " OR ".join(words)
     rows = conn.execute(
-        f"{LISTING_DETAIL_SELECT} where {where} order by l.created_at desc limit %s",
-        [*params, KEYWORD_CANDIDATES],
+        f"select ranked.*, ts_rank_cd(({document}), websearch_to_tsquery('english', %s), 32) as search_rank "
+        f"from listings l join profiles o on o.id = l.owner_id "
+        f"join ({LISTING_DETAIL_SELECT} where {where}) ranked on ranked.id = l.id "
+        f"where ({document}) @@ websearch_to_tsquery('english', %s) "
+        "order by search_rank desc, l.created_at desc limit %s",
+        [query, *params, query, MAX_MATCHES],
     ).fetchall()
-    matches = []
-    for row in rows:
-        listing = listing_from_row(row)
-        haystack = f"{listing.title} {listing.description}".lower()
-        hits = [w for w in words if w in haystack]
-        if not hits:
-            continue
-        lead = "Mentions " + ", ".join(f"“{w}”" for w in hits[:3])
-        matches.append(
-            Match(
-                listing=listing,
-                score=round(len(hits) / len(words), 3),
-                reason=build_reason(listing, need, lead),
-            )
+    return [
+        Match(
+            listing=listing_from_row(row),
+            score=round(float(row["search_rank"]), 3),
+            reason=build_reason(listing_from_row(row), need, "Matches your search"),
         )
-    matches.sort(key=lambda m: m.score, reverse=True)
-    return matches[:MAX_MATCHES]
+        for row in rows
+    ]
 
 
 def find_matches(conn: psycopg.Connection, need: Need) -> MatchResult:
@@ -209,5 +210,5 @@ def find_matches(conn: psycopg.Connection, need: Need) -> MatchResult:
         try:
             return MatchResult(method="vector", matches=_vector_matches(conn, need))
         except embeddings.EmbeddingError as error:
-            logger.warning("Falling back to keyword matching: %s", error)
-    return MatchResult(method="keyword", matches=_keyword_matches(conn, need))
+            logger.warning("Falling back to full-text matching: %s", error)
+    return MatchResult(method="fulltext", matches=_fulltext_matches(conn, need))

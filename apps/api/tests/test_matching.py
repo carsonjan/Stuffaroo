@@ -31,6 +31,7 @@ def vector_client(
     client: TestClient, database_url: str, monkeypatch: pytest.MonkeyPatch
 ) -> Iterator[TestClient]:
     """Client with 'Gemini' configured (fake embedder) and listings embedded."""
+    monkeypatch.setenv("ENABLE_GEMINI", "true")
     monkeypatch.setenv("GEMINI_API_KEY", "test-key")
     monkeypatch.setenv("MATCH_MIN_SIMILARITY", "0")
     monkeypatch.setenv("MATCH_MAX_GAP_FROM_BEST", "1")
@@ -61,9 +62,9 @@ def test_wanted_list_and_detail(client: TestClient) -> None:
 
 def test_keyword_fallback_without_gemini(client: TestClient) -> None:
     result = client.post("/api/matches", json={"text": "mechanical keyboard"}).json()
-    assert result["method"] == "keyword"
+    assert result["method"] == "fulltext"
     assert str(seed_id("l-2")) in ids(result)
-    assert "keyboard" in result["matches"][0]["reason"]
+    assert result["matches"][0]["listing"]["id"] == str(seed_id("l-2"))
 
 
 def test_budget_is_a_hard_filter(client: TestClient) -> None:
@@ -129,7 +130,7 @@ def test_gemini_failure_falls_back_to_keyword(
     result = vector_client.post(
         "/api/matches", json={"text": "mechanical keyboard"}
     ).json()
-    assert result["method"] == "keyword"
+    assert result["method"] == "fulltext"
     assert str(seed_id("l-2")) in ids(result)
 
 
@@ -237,3 +238,45 @@ def test_model_output_is_validated() -> None:
     # Out-of-range or non-integer candidate numbers are ignored, never trusted.
     assert relevance.valid_numbers([1, 3, 0, 7, -2], count=3) == {1, 3}
     assert relevance.valid_numbers([], count=3) == set()
+
+
+def test_fulltext_empty_and_irrelevant_search(client: TestClient) -> None:
+    for text in ("the and for", "quasarspaceship"):
+        result = client.post("/api/matches", json={"text": text}).json()
+        assert result == {"method": "fulltext", "matches": []}
+
+
+def test_google_credentials_do_not_enable_gemini_by_default(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("GEMINI_API_KEY", "unused")
+    monkeypatch.setenv("GOOGLE_GENAI_USE_VERTEXAI", "true")
+    monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "unused")
+    config.get_settings.cache_clear()
+
+    def no_request(*args, **kwargs):
+        raise AssertionError("Google must not be called")
+
+    monkeypatch.setattr(embeddings, "embed_texts", no_request)
+    result = client.post("/api/matches", json={"text": "mechanical keyboard"}).json()
+    assert result["method"] == "fulltext"
+    assert str(seed_id("l-2")) in ids(result)
+
+
+def test_fulltext_respects_booking_and_owner(client: TestClient) -> None:
+    result = client.get(f"/api/wanted/{seed_id('w-1')}/matches").json()
+    assert str(seed_id("l-1")) not in ids(result)
+    assert str(seed_id("l-8")) in ids(result)
+    result = client.get(f"/api/wanted/{seed_id('w-4')}/matches").json()
+    assert str(seed_id("l-11")) not in ids(result)
+
+
+def test_gemini_is_opt_in(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("GEMINI_API_KEY", "unused")
+    monkeypatch.setenv("GOOGLE_GENAI_USE_VERTEXAI", "true")
+    monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "unused")
+    monkeypatch.delenv("ENABLE_GEMINI", raising=False)
+    monkeypatch.setitem(config.Settings.model_config, "env_file", None)
+    config.get_settings.cache_clear()
+    assert not embeddings.is_configured()
+    config.get_settings.cache_clear()

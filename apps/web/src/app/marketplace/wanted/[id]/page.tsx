@@ -29,7 +29,7 @@ export default async function WantedDetailPage({
 }: PageProps<"/marketplace/wanted/[id]">) {
   const { id } = await params;
   let post: WantedPost | null;
-  let result: MatchResult = { method: "keyword", matches: [] };
+  let result: MatchResult = { method: "fulltext", matches: [] };
   try {
     post = await getWantedPost(id);
     if (post) result = await getWantedMatches(id);

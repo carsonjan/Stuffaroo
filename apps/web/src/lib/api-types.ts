@@ -59,7 +59,7 @@ export type Match = {
 
 export type MatchResult = {
   /** "keyword" means Gemini embeddings were unavailable for this request. */
-  method: "vector" | "keyword";
+  method: "vector" | "fulltext";
   matches: Match[];
 };
 

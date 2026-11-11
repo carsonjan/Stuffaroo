@@ -18,7 +18,7 @@ export function SearchBox({
 }) {
   return (
     <form
-      action="/marketplace/browse"
+      action={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/marketplace/browse`}
       className={cn(
         "frost flex flex-col gap-3 rounded-tile p-3 shadow-float focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink",
         className,

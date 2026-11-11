@@ -60,6 +60,7 @@ def client(database_url: str, monkeypatch: pytest.MonkeyPatch) -> Iterator[TestC
     # Tests never read apps/api/.env, so real Gemini/Auth0 settings there are ignored.
     monkeypatch.setitem(config.Settings.model_config, "env_file", None)
     for name in (
+        "ENABLE_GEMINI",
         "GEMINI_API_KEY",
         "GOOGLE_GENAI_USE_VERTEXAI",
         "GOOGLE_CLOUD_PROJECT",

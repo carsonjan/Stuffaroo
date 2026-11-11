@@ -1,3 +1,5 @@
+> **Migration in progress:** The target deployment is Vercel + Neon with PostgreSQL full-text search. Follow [the migration and deployment guide](docs/deployment-vercel-neon.md); the Vultr/Tiger descriptions below document the previous deployment. Do not retire it until the new deployment is verified.
+
 <div align="center">
 
 <h1>Stuffaroo</h1>
@@ -150,7 +152,7 @@ The workspace approves the `lefthook` installation script in `pnpm-workspace.yam
 
 ### Database
 
-The API uses Postgres with pgvector and pgvectorscale: a Tiger Cloud service, or the same image locally in Docker.
+The API uses PostgreSQL with pgvector and btree_gist. `pnpm db:up` starts a compatible local pgvector image.
 
 ```sh
 pnpm db:up        # start timescale/timescaledb-ha:pg17 on localhost:5433

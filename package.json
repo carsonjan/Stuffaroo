@@ -7,7 +7,7 @@
     "dev:web": "pnpm --dir apps/web dev",
     "dev:api": "uv run --directory apps/api fastapi dev app/main.py",
     "dev:homepage": "VITE_MARKETPLACE_URL=http://localhost:3000/marketplace pnpm --dir apps/homepage dev",
-    "db:up": "docker start stuffaroo-db 2>/dev/null || docker run -d --name stuffaroo-db -p 5433:5432 -e POSTGRES_PASSWORD=stuffaroo -e POSTGRES_DB=stuffaroo timescale/timescaledb-ha:pg17",
+    "db:up": "docker start stuffaroo-db 2>/dev/null || docker run -d --name stuffaroo-db -p 5433:5432 -e POSTGRES_PASSWORD=stuffaroo -e POSTGRES_DB=stuffaroo pgvector/pgvector:pg17",
     "db:migrate": "uv run --directory apps/api python -m app.core.db",
     "db:seed": "uv run --directory apps/api python -m app.seed",
     "db:embed": "uv run --directory apps/api python -m app.embed_listings",

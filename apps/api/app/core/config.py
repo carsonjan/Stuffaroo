@@ -19,9 +19,13 @@ class Settings(BaseSettings):
     # points at the local Docker container described in the README.
     database_url: str = "postgresql://postgres:stuffaroo@localhost:5433/stuffaroo"
 
+    database_direct_url: str | None = None
+
     # Auth0: both must be set for protected endpoints to work.
     auth0_domain: str | None = None
     auth0_audience: str | None = None
+
+    enable_gemini: bool = False
 
     # Gemini, either through Vertex AI on a Google Cloud project (uses
     # Application Default Credentials and the project's billing/credits) or with

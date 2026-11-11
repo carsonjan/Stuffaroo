@@ -83,7 +83,7 @@ class Match(CamelModel):
 
 
 class MatchResult(CamelModel):
-    method: Literal["vector", "keyword"]
+    method: Literal["vector", "fulltext"]
     matches: list[Match]
 
 

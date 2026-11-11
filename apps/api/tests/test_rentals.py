@@ -212,6 +212,7 @@ def test_new_listing_is_embedded_when_gemini_is_configured(
 ) -> None:
     from app.core import config
 
+    monkeypatch.setenv("ENABLE_GEMINI", "true")
     monkeypatch.setenv("GEMINI_API_KEY", "test-key")
     config.get_settings.cache_clear()
     monkeypatch.setattr(embeddings, "embed_texts", fake_embed)

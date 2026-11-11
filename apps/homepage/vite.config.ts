@@ -9,7 +9,24 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
+const webOrigin = process.env["WEB_ORIGIN"];
+if (process.env["VERCEL"] && (!webOrigin || !/^https:\/\/[a-z0-9.-]+\.vercel\.app$/.test(webOrigin))) {
+  throw new Error("Set WEB_ORIGIN to the web project's HTTPS vercel.app origin");
+}
+
+const nitroOptions = {
+    preset: process.env["VERCEL"] ? "vercel" : "cloudflare-module",
+    routeRules: webOrigin ? {
+      "/app": { proxy: `${webOrigin}/app` },
+      "/app/**": { proxy: `${webOrigin}/app/**` },
+      "/marketplace": { redirect: { to: "/app/marketplace", status: 307 } },
+      "/marketplace/**": { redirect: { to: "/app/marketplace/**", status: 307 } },
+      "/auth/**": { redirect: { to: "/app/auth/**", status: 307 } },
+    } : {},
+};
+
 export default defineConfig({
+  nitro: nitroOptions,
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this

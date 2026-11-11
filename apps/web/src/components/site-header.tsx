@@ -76,7 +76,7 @@ export function SiteHeader({
   activePath: string | null;
   viewer: Viewer | null;
 }) {
-  const loginHref = `/auth/login?returnTo=${encodeURIComponent(activePath ?? "/marketplace")}`;
+  const loginHref = `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/auth/login?returnTo=${encodeURIComponent(`${process.env.NEXT_PUBLIC_BASE_PATH || ""}${activePath ?? "/marketplace"}`)}`;
 
   return (
     <header className="sticky top-0 z-[var(--z-sticky)] border-b border-line bg-bg/95 backdrop-blur-md">
@@ -90,7 +90,7 @@ export function SiteHeader({
         </Link>
 
         <form
-          action="/marketplace/browse"
+          action={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/marketplace/browse`}
           className="hidden h-11 max-w-[640px] flex-1 items-center gap-2.5 rounded-pill bg-surface px-4 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink md:mx-auto md:flex"
         >
           <Search className="size-4 shrink-0 text-ink-2" aria-hidden />
@@ -211,7 +211,13 @@ export function SiteHeader({
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem render={<a href="/auth/logout" />}>
+                <DropdownMenuItem
+                  render={
+                    <a
+                      href={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/auth/logout`}
+                    />
+                  }
+                >
                   <LogOut /> Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -221,7 +227,10 @@ export function SiteHeader({
       </div>
 
       {/* Mobile: search gets its own full-width row */}
-      <form action="/marketplace/browse" className="container pb-3 md:hidden">
+      <form
+        action={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/marketplace/browse`}
+        className="container pb-3 md:hidden"
+      >
         <div className="flex h-11 items-center gap-2.5 rounded-pill bg-surface px-4 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink">
           <Search className="size-4 shrink-0 text-ink-2" aria-hidden />
           <label htmlFor="header-search-mobile" className="visually-hidden">

@@ -169,7 +169,10 @@ function RangeForm({
 }) {
   return (
     <li className="mt-2">
-      <form action="/marketplace/browse" className="flex items-end gap-2">
+      <form
+        action={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/marketplace/browse`}
+        className="flex items-end gap-2"
+      >
         <Keep filters={f} skip={["min", "max", "price"]} />
         <label
           htmlFor={`${idPrefix}-min`}
@@ -223,7 +226,10 @@ function DateForm({
 }) {
   return (
     <li>
-      <form action="/marketplace/browse" className="flex items-end gap-2">
+      <form
+        action={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/marketplace/browse`}
+        className="flex items-end gap-2"
+      >
         <Keep filters={f} skip={["date"]} />
         <label htmlFor={`${idPrefix}-date`} className="visually-hidden">
           Date

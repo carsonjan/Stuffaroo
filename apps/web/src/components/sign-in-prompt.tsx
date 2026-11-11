@@ -36,7 +36,7 @@ export function SignInPrompt({
           </p>
           {/* Plain <a>: /auth/login is an Auth0 route handler, not a page. */}
           <a
-            href={`/auth/login?returnTo=${encodeURIComponent(returnTo)}`}
+            href={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/auth/login?returnTo=${encodeURIComponent(`${process.env.NEXT_PUBLIC_BASE_PATH || ""}${returnTo}`)}`}
             className={cn(
               buttonVariants({ variant: "brand", size: "lg" }),
               "mt-5",

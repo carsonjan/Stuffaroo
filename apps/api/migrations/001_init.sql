@@ -1,7 +1,5 @@
--- Stuffaroo schema. Targets Tiger Cloud (Postgres + pgvector + pgvectorscale).
--- vectorscale CASCADE also installs pgvector. btree_gist backs the
--- no-overlapping-bookings exclusion constraint.
-create extension if not exists vectorscale cascade;
+-- PostgreSQL with pgvector; btree_gist enforces rental booking exclusion.
+create extension if not exists vector;
 create extension if not exists btree_gist;
 
 create table profiles (
@@ -39,7 +37,6 @@ create table listings (
 );
 create index listings_browse_idx on listings (availability_status, category, created_at desc);
 create index listings_owner_idx on listings (owner_id);
-create index listings_embedding_idx on listings using diskann (embedding vector_cosine_ops);
 
 create table listing_images (
   id uuid primary key default gen_random_uuid(),

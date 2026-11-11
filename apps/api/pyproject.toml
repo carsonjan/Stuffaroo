@@ -12,6 +12,9 @@ dependencies = [
     "pyjwt[crypto]>=2.10",
 ]
 
+[project.scripts]
+app = "app.main:app"
+
 [dependency-groups]
 dev = [
     "cryptography>=43",

@@ -11,7 +11,7 @@ export function MatchMethodNote({ method }: { method: MatchResult["method"] }) {
     <span className="shrink-0 rounded-pill border px-2.5 py-0.5 text-xs text-muted-foreground">
       {method === "vector"
         ? "Ranked with Gemini embeddings"
-        : "Keyword match (AI matching unavailable)"}
+        : "Ranked by text relevance"}
     </span>
   );
 }

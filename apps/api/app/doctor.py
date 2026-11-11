@@ -20,7 +20,7 @@ from app.core.db import MIGRATIONS_DIR
 from app.services import embeddings, relevance
 
 WEB_ENV = API_ROOT.parent / "web" / ".env.local"
-REQUIRED_EXTENSIONS = ("vector", "vectorscale", "btree_gist")
+REQUIRED_EXTENSIONS = ("vector", "btree_gist")
 WEB_REQUIRED = (
     "API_URL",
     "AUTH0_DOMAIN",
@@ -84,7 +84,7 @@ def check_database() -> None:
             else:
                 bad(
                     f"extension {name} not available",
-                    "use a Tiger Cloud service (it ships pgvector + pgvectorscale)",
+                    "use PostgreSQL with pgvector and btree_gist",
                 )
         migrations = sorted(p.stem for p in MIGRATIONS_DIR.glob("*.sql"))
         applied = set()
@@ -107,21 +107,24 @@ def check_database() -> None:
             bad("no listings", "run `pnpm db:seed`")
         else:
             ok(f"{profiles} profiles, {listings} listings")
-        if listings and embedded < listings:
+        if get_settings().enable_gemini and listings and embedded < listings:
             bad(
                 f"{listings - embedded} of {listings} listings have no embedding",
                 "run `pnpm db:embed` (needs Gemini)",
             )
-        elif listings:
+        elif get_settings().enable_gemini and listings:
             ok("every listing has an embedding")
 
 
 def check_gemini() -> None:
     print("Gemini")
     settings = get_settings()
+    if not settings.enable_gemini:
+        skip("disabled; using PostgreSQL full-text search")
+        return
     if not embeddings.is_configured():
         bad(
-            "not configured (matching will use the keyword fallback)",
+            "not configured (matching will use the full-text search)",
             "put gcp-key.json in apps/api (get it privately from a teammate), "
             "or set GEMINI_API_KEY in apps/api/.env"
             if os.environ.get("STUFFAROO_CONTAINER")

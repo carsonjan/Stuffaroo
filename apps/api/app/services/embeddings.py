@@ -86,7 +86,7 @@ def make_client(settings: Settings, location: str | None = None) -> genai.Client
 
 
 def is_configured() -> bool:
-    return client_options(get_settings()) is not None
+    return get_settings().enable_gemini and client_options(get_settings()) is not None
 
 
 def _normalize(values: list[float]) -> list[float]:

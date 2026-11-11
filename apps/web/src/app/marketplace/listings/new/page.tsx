@@ -41,7 +41,7 @@ async function PostFlowForViewer() {
       signedIn={viewer.status === "signed-in"}
       signInHref={
         viewer.status === "signed-out"
-          ? `/auth/login?returnTo=${encodeURIComponent("/marketplace/listings/new")}`
+          ? `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/auth/login?returnTo=${encodeURIComponent(`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/marketplace/listings/new`)}`
           : null
       }
       today={today}

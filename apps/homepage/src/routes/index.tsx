@@ -16,7 +16,7 @@ import {
 import roo from "@/assets/roo.png";
 import { Button } from "@/components/ui/button";
 
-const MARKETPLACE_URL = import.meta.env.VITE_MARKETPLACE_URL || "/marketplace";
+const MARKETPLACE_URL = import.meta.env["VITE_MARKETPLACE_URL"] || "/app/marketplace";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
