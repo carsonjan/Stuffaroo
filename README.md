@@ -221,6 +221,11 @@ pnpm api:docker   # API in Docker instead of uv; run `pnpm dev:web` alongside it
 
 The API health endpoint is at `http://localhost:8000/health`.
 
+### Troubleshooting
+
+- **Homepage images don't load (404) after moving the repo folder:** a dev server started from the old path may still be running. Stop it (or find it with `lsof -i :8080`), then restart from the new location with `./run.sh`.
+- **`git status` says up to date, but teammates have pushed:** run `git fetch` first. `git status` only compares against the last fetch.
+
 ## Deploying to Vultr
 
 Docker Compose runs Nginx, Certbot, the homepage, the marketplace, and the API. Nginx publishes ports 80 and 443; the application ports are private to the Docker network. Certbot obtains and renews the certificate automatically, and Nginx switches to HTTPS when it is available.
