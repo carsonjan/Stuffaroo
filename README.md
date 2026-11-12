@@ -268,3 +268,7 @@ Use the live site at https://stuffaroo.shop/marketplace, or run it locally with 
 5. Optionally walk through the simulated Devnet deposit at `/marketplace/deposits`.
 
 Listings, people and requests come from the seeded fictional demo data plus whatever you create. The deposit step is simulated and labelled as such.
+
+## Team
+
+Built at HackCamp 2026 by Carson Jan, Yilei Zhou, Wyn S.
